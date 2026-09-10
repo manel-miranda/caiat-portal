@@ -17,14 +17,14 @@ import { useOnline } from "@/components/OfflineBanner";
 
 export const Route = createFileRoute("/_authenticated/stays/new")({
   head: () => ({ meta: [{ title: "New stay — Caiat Operations" }] }),
-  validateSearch: (search: Record<string, unknown>) => ({
-    room: typeof search.room === "string" ? search.room : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { room?: string } =>
+    typeof search['room'] === "string" ? { room: search['room'] } : {},
   component: NewStayPage,
 });
 
 function NewStayPage() {
-  const { room: presetRoom } = Route.useSearch();
+  const search = Route.useSearch();
+  const presetRoom = search.room;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -43,8 +43,8 @@ function NewStayPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!online) return toast.error(t("offline"));
-    if (!roomId) return toast.error(t("room"));
+    if (!online) { toast.error(t("offline")); return; }
+    if (!roomId) { toast.error(t("room")); return; }
     setBusy(true);
     const { data: guest, error: gErr } = await supabase
       .from("guests")
@@ -53,7 +53,8 @@ function NewStayPage() {
       .single();
     if (gErr || !guest) {
       setBusy(false);
-      return toast.error(gErr?.message ?? "Error");
+      toast.error(gErr?.message ?? "Error");
+      return;
     }
     const { data: stay, error } = await supabase
       .from("stays")
@@ -71,7 +72,10 @@ function NewStayPage() {
       .select("id")
       .single();
     setBusy(false);
-    if (error || !stay) return toast.error(error?.message ?? "Error");
+    if (error || !stay) {
+      toast.error(error?.message ?? "Error");
+      return;
+    }
     void logAudit(user?.id, "stay.created", "stay", stay.id, { guest: guestName, room: roomId });
     await queryClient.invalidateQueries();
     toast.success(t("createStay"));
