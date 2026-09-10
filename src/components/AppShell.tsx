@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { BedDouble, Bell, LogOut } from "lucide-react";
+import { BedDouble, Bell, LogOut, LayoutDashboard, Banknote, History } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
