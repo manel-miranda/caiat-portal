@@ -164,3 +164,37 @@ export async function checkoutStay(params: {
     admin_override: params.override,
   });
 }
+
+/** Insert or update the cash count for a business date (admin only via RLS). */
+export async function saveCashCount(params: {
+  date: string;
+  expectedTotal: number;
+  countedTotal: number;
+  notes?: string | null | undefined;
+  existingId?: string | null | undefined;
+  userId: string;
+}) {
+  const row = {
+    business_date: params.date,
+    expected_total: params.expectedTotal,
+    counted_total: params.countedTotal,
+    notes: params.notes?.trim() || null,
+    closed_by: params.userId,
+    closed_at: new Date().toISOString(),
+  };
+
+  const query = params.existingId
+    ? supabase.from("cash_reconciliations").update(row).eq("id", params.existingId)
+    : supabase.from("cash_reconciliations").insert(row);
+
+  const { data, error } = await query.select("id, difference").single();
+  if (error) throw error;
+
+  void logAudit(params.userId, "cash.reconciled", "cash_reconciliation", data.id, {
+    business_date: params.date,
+    expected_total: params.expectedTotal,
+    counted_total: params.countedTotal,
+    difference: data.difference,
+  });
+  return data;
+}
