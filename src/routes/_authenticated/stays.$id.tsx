@@ -110,7 +110,7 @@ function StayDetailPage() {
               key={c.id}
               label={`${c.label}${Number(c.quantity) !== 1 ? ` ×${c.quantity}` : ""}`}
               value={mad(c.total)}
-              sub={c.notes ?? ""}
+              sub={(c.notes ?? "").replace(/\[req:[^\]]+\]/g, "").trim()}
             />
           ))}
           <div className="!mt-3 border-t border-border pt-3">
