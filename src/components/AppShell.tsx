@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { BedDouble, Bell, LogOut } from "lucide-react";
+import { BedDouble, Bell, LogOut, LayoutDashboard, Banknote, History } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -10,11 +10,14 @@ import type { ReactNode } from "react";
 
 type NavItem = { to: string; label: string; icon: typeof BedDouble; adminOnly?: boolean };
 
-// Only routes that exist are listed; management screens are added back with
-// their pages so the bottom bar never contains a dead link.
+// Only routes that exist are listed; management screens are owner-only and the
+// routes themselves re-check the role, so hiding here is convenience, not security.
 const NAV: NavItem[] = [
   { to: "/home", label: t("navRooms"), icon: BedDouble },
   { to: "/requests", label: t("navRequests"), icon: Bell },
+  { to: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard, adminOnly: true },
+  { to: "/cash", label: t("navCash"), icon: Banknote, adminOnly: true },
+  { to: "/activity", label: t("navActivity"), icon: History, adminOnly: true },
 ];
 
 export function AppShell({ title, children }: { title?: string; children: ReactNode }) {
