@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
@@ -8,9 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/lib/auth";
-import { addDaysISO, todayISO } from "@/lib/format";
+import { addDaysISO, mad, nights, todayISO } from "@/lib/format";
 import { sourceLabels, t } from "@/lib/i18n";
-import { roomsQuery } from "@/lib/queries";
+import { roomsQuery, nightlyRate, suggestedAccommodationTotal } from "@/lib/queries";
 import { createStay } from "@/lib/mutations";
 import { useOnline } from "@/components/OfflineBanner";
 
@@ -39,6 +39,21 @@ function NewStayPage() {
   const [total, setTotal] = useState("");
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
+  const [totalEdited, setTotalEdited] = useState(false);
+
+  const selectedRoom = (rooms.data ?? []).find((r) => r.id === roomId);
+  const guestCountNum = Number(numGuests);
+  const stayNights = nights(checkIn, checkOut);
+  const suggested =
+    selectedRoom && Number.isFinite(guestCountNum) && guestCountNum >= 1
+      ? suggestedAccommodationTotal(selectedRoom, guestCountNum, stayNights)
+      : null;
+
+  useEffect(() => {
+    if (totalEdited) return;
+    if (suggested === null || suggested <= 0) return;
+    setTotal(String(suggested));
+  }, [suggested, totalEdited]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -48,6 +63,10 @@ function NewStayPage() {
     if (!(checkOut > checkIn)) { toast.error(t("datesInvalid")); return; }
     const guestCount = Number(numGuests);
     if (!Number.isFinite(guestCount) || guestCount < 1) { toast.error(t("guestsMinOne")); return; }
+    if (selectedRoom && guestCount > selectedRoom.capacity) {
+      toast.error(`${t("guestsOverCapacity")} (${selectedRoom.name}: ${selectedRoom.capacity})`);
+      return;
+    }
     const amount = Number(total);
     if (!Number.isFinite(amount) || amount < 0) { toast.error(t("totalNonNegative")); return; }
 
@@ -103,7 +122,35 @@ function NewStayPage() {
               </button>
             ))}
           </div>
+          {selectedRoom ? (
+            <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3 text-sm">
+              <p className="font-semibold">{selectedRoom.name}</p>
+              <p className="mt-1 text-muted-foreground">
+                Up to {selectedRoom.capacity} · {mad(selectedRoom.base_price)} /{" "}
+                {selectedRoom.included_guests} guests
+                {selectedRoom.extra_guest_price > 0
+                  ? ` · +${mad(selectedRoom.extra_guest_price)} per extra guest`
+                  : ""}
+              </p>
+              {selectedRoom.breakfast_included ? (
+                <p className="mt-1 text-muted-foreground">Breakfast included</p>
+              ) : null}
+              {selectedRoom.amenities.length > 0 ? (
+                <ul className="mt-2 flex flex-wrap gap-1.5">
+                  {selectedRoom.amenities.map((a) => (
+                    <li
+                      key={a}
+                      className="rounded-full bg-background px-2.5 py-1 text-[11px] text-muted-foreground"
+                    >
+                      {a}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ) : null}
         </Field>
+
 
         <div className="grid grid-cols-2 gap-3">
           <Field label={t("arrival")}>
@@ -143,11 +190,21 @@ function NewStayPage() {
               min={0}
               className="tap-target text-base"
               value={total}
-              onChange={(e) => setTotal(e.target.value)}
+              onChange={(e) => {
+                setTotalEdited(true);
+                setTotal(e.target.value);
+              }}
               required
             />
           </Field>
         </div>
+        {selectedRoom && suggested !== null && stayNights > 0 ? (
+          <p className="-mt-1 text-xs text-muted-foreground">
+            {stayNights} × {mad(nightlyRate(selectedRoom, guestCountNum))} = {mad(suggested)} ·
+            editable
+          </p>
+        ) : null}
+
 
         <Field label={t("source")}>
           <div className="grid grid-cols-3 gap-2">

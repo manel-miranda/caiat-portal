@@ -8,7 +8,23 @@ export type Room = {
   capacity: number;
   base_price: number;
   sort_order: number;
+  included_guests: number;
+  extra_guest_price: number;
+  breakfast_included: boolean;
+  amenities: string[];
 };
+
+/** Nightly rate for a room at a given occupancy (breakfast is always included). */
+export function nightlyRate(room: Room, guests: number) {
+  const extra = Math.max(0, guests - (room.included_guests ?? 2));
+  return Number(room.base_price) + extra * Number(room.extra_guest_price ?? 0);
+}
+
+/** Suggested accommodation total: nights x nightly rate, stays are [check_in, check_out). */
+export function suggestedAccommodationTotal(room: Room, guests: number, nights: number) {
+  if (nights <= 0) return 0;
+  return nightlyRate(room, guests) * nights;
+}
 
 export type ServiceType = {
   id: string;
