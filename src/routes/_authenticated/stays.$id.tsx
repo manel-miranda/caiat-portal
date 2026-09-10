@@ -43,6 +43,7 @@ function StayDetailPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [sheet, setSheet] = useState<Sheet>(null);
+  const [overrideConfirm, setOverrideConfirm] = useState(false);
 
   const stayQ = useQuery(stayQuery(id));
   const chargesQ = useQuery(stayChargesQuery(id));
@@ -58,10 +59,29 @@ function StayDetailPage() {
     await queryClient.invalidateQueries();
   }
 
-  if (stayQ.isLoading || !stay) {
+  if (stayQ.isPending) {
     return (
       <AppShell title={t("stay")}>
-        <p className="text-sm text-muted-foreground">{t("loading")}</p>
+        <p className="surface-card p-4 text-sm text-muted-foreground">{t("loading")}</p>
+      </AppShell>
+    );
+  }
+
+  if (stayQ.isError || !stay) {
+    return (
+      <AppShell title={t("stay")}>
+        <div className="surface-card space-y-3 p-4">
+          <p className="text-sm text-destructive">
+            {stayQ.error ? (stayQ.error as Error).message : t("stayNotFound")}
+          </p>
+          <Button
+            variant="outline"
+            className="tap-target rounded-xl"
+            onClick={() => navigate({ to: "/home" })}
+          >
+            {t("back")}
+          </Button>
+        </div>
       </AppShell>
     );
   }
@@ -274,10 +294,30 @@ function StayDetailPage() {
               >
                 {t("recordPayment")}
               </Button>
-              {isAdmin ? (
+              {isAdmin && !overrideConfirm ? (
                 <Button
                   variant="outline"
                   className="tap-target w-full rounded-xl"
+                  onClick={() => setOverrideConfirm(true)}
+                >
+                  {t("adminOverride")}
+                </Button>
+              ) : null}
+              {isAdmin && overrideConfirm ? (
+                <div className="space-y-2 rounded-xl border border-destructive/40 p-3">
+                  <p className="text-sm font-semibold">{t("overrideConfirmTitle")}</p>
+                  <p className="text-xs text-muted-foreground">{t("overrideConfirmBody")}</p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      className="tap-target flex-1 rounded-xl"
+                      onClick={() => setOverrideConfirm(false)}
+                    >
+                      {t("cancel")}
+                    </Button>
+                <Button
+                  variant="destructive"
+                  className="tap-target flex-1 rounded-xl"
                   onClick={async () => {
                     if (!online) { toast.error(t("offline")); return; }
                     await checkoutStay({
@@ -287,13 +327,16 @@ function StayDetailPage() {
                       userId: user?.id,
                     });
                     await refresh();
+                    setOverrideConfirm(false);
                     setSheet(null);
                     toast.success(t("checkoutDone"));
                     navigate({ to: "/home" });
                   }}
                 >
-                  {t("adminOverride")}
+                  {t("confirm")}
                 </Button>
+                  </div>
+                </div>
               ) : null}
             </>
           ) : (
@@ -553,15 +596,31 @@ function PaymentForm({
   const [method, setMethod] = useState<"cash" | "card" | "bank_transfer">("cash");
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
+  const [confirmOver, setConfirmOver] = useState(false);
+  const value = Number(amount);
+  const overpaying = Number.isFinite(value) && value > suggested + 0.005;
+
+  async function send() {
+    setBusy(true);
+    await onSubmit({ amount: value, method, notes });
+    setBusy(false);
+    setConfirmOver(false);
+  }
 
   return (
     <form
       className="space-y-4"
       onSubmit={async (e) => {
         e.preventDefault();
-        setBusy(true);
-        await onSubmit({ amount: Number(amount) || 0, method, notes });
-        setBusy(false);
+        if (!Number.isFinite(value) || value <= 0) {
+          toast.error(t("amountPositive"));
+          return;
+        }
+        if (overpaying && !confirmOver) {
+          setConfirmOver(true);
+          return;
+        }
+        await send();
       }}
     >
       <div className="space-y-2">
@@ -603,8 +662,16 @@ function PaymentForm({
         <Label>{`${t("notes")} (${t("optional")})`}</Label>
         <Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
       </div>
+      {confirmOver ? (
+        <div className="space-y-1 rounded-xl border border-destructive/40 p-3">
+          <p className="text-sm font-semibold">{t("overpaymentTitle")}</p>
+          <p className="text-xs text-muted-foreground">
+            {t("overpaymentBody")} ({t("outstanding")}: {mad(suggested)})
+          </p>
+        </div>
+      ) : null}
       <Button type="submit" disabled={busy} className="tap-target w-full rounded-xl text-base">
-        {t("save")}
+        {confirmOver ? t("confirm") : t("save")}
       </Button>
     </form>
   );

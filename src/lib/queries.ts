@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { todayISO } from "./format";
+import { businessDayRange, todayISO } from "./format";
 
 export type Room = {
   id: string;
@@ -209,8 +209,7 @@ export function cashDayQuery(date: string) {
   return {
     queryKey: ["cash", date],
     queryFn: async () => {
-      const from = `${date}T00:00:00.000Z`;
-      const to = `${date}T23:59:59.999Z`;
+      const { fromISO: from, toISO: to } = businessDayRange(date);
       const [{ data: pays, error: e1 }, { data: rec, error: e2 }] = await Promise.all([
         supabase
           .from("payments")
@@ -240,12 +239,12 @@ export function cashDayQuery(date: string) {
 export const todayPaymentsQuery = {
   queryKey: ["payments", "today"],
   queryFn: async (): Promise<PaymentRow[]> => {
-    const date = todayISO();
+    const { fromISO, toISO } = businessDayRange(todayISO());
     const { data, error } = await supabase
       .from("payments")
       .select("id, amount, method, notes, created_at, received_by, stay_id")
-      .gte("created_at", `${date}T00:00:00.000Z`)
-      .lte("created_at", `${date}T23:59:59.999Z`);
+      .gte("created_at", fromISO)
+      .lte("created_at", toISO);
     if (error) throw error;
     return data as unknown as PaymentRow[];
   },
@@ -254,12 +253,12 @@ export const todayPaymentsQuery = {
 export const todayChargesQuery = {
   queryKey: ["charges", "today"],
   queryFn: async (): Promise<ChargeRow[]> => {
-    const date = todayISO();
+    const { fromISO, toISO } = businessDayRange(todayISO());
     const { data, error } = await supabase
       .from("charges")
       .select("id, label, quantity, unit_price, total, notes, created_at, created_by")
-      .gte("created_at", `${date}T00:00:00.000Z`)
-      .lte("created_at", `${date}T23:59:59.999Z`);
+      .gte("created_at", fromISO)
+      .lte("created_at", toISO);
     if (error) throw error;
     return data as unknown as ChargeRow[];
   },
@@ -288,17 +287,24 @@ export const auditQuery = {
 
 export type RoomState = "available" | "occupied" | "arrival_today" | "departure_today";
 
-export function roomState(stay: StayRow | undefined, today = todayISO()): RoomState {
-  if (!stay) return "available";
-  if (stay.check_in === today) return "arrival_today";
-  if (stay.check_out === today) return "departure_today";
-  return "occupied";
+/** Stays are [check_in, check_out): the departure date night is already free. */
+export function isInHouse(stay: StayRow, today = todayISO()): boolean {
+  return stay.status === "active" && stay.check_in <= today && stay.check_out > today;
 }
 
-/** The stay currently tied to a room: in-house today, else arriving today. */
+export function roomState(stay: StayRow | undefined, today = todayISO()): RoomState {
+  if (!stay) return "available";
+  if (isInHouse(stay, today)) return stay.check_in === today ? "arrival_today" : "occupied";
+  if (stay.check_out === today) return "departure_today";
+  return "available";
+}
+
+/**
+ * The stay currently tied to a room: whoever is in house tonight (arrivals
+ * included), otherwise the guest who checks out today so the departure stays
+ * visible until a new arrival takes the room.
+ */
 export function stayForRoom(stays: StayRow[], roomId: string, today = todayISO()) {
-  const candidates = stays.filter(
-    (s) => s.room_id === roomId && s.status === "active" && s.check_in <= today && s.check_out >= today,
-  );
-  return candidates[0];
+  const roomStays = stays.filter((s) => s.room_id === roomId && s.status === "active");
+  return roomStays.find((s) => isInHouse(s, today)) ?? roomStays.find((s) => s.check_out === today);
 }

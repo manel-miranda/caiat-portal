@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { logAudit } from "@/lib/audit";
+import { t } from "@/lib/i18n";
 
 /** Marker written into a charge note so a request can only be billed once. */
 export function requestChargeMarker(requestId: string) {
@@ -44,6 +45,9 @@ export async function addPayment(params: {
   notes?: string | null | undefined;
   userId: string;
 }) {
+  if (!Number.isFinite(params.amount) || params.amount <= 0) {
+    throw new Error(t("amountPositive"));
+  }
   const { data, error } = await supabase
     .from("payments")
     .insert({
@@ -62,6 +66,49 @@ export async function addPayment(params: {
     method: params.method,
   });
   return data;
+}
+
+/** Creates guest + stay atomically with server-side validation and overlap check. */
+export async function createStay(params: {
+  guestName: string;
+  roomId: string;
+  checkIn: string;
+  checkOut: string;
+  numGuests: number;
+  source: string;
+  accommodationTotal: number;
+  notes?: string | null | undefined;
+  userId?: string | undefined;
+}) {
+  const { data, error } = await supabase.rpc("create_stay_with_guest", {
+    p_guest_name: params.guestName.trim(),
+    p_room_id: params.roomId,
+    p_check_in: params.checkIn,
+    p_check_out: params.checkOut,
+    p_num_guests: params.numGuests,
+    p_source: params.source as never,
+    p_accommodation_total: params.accommodationTotal,
+    p_notes: params.notes ?? "",
+  });
+  if (error) throw new Error(stayErrorMessage(error.message));
+  const stayId = data as unknown as string;
+  void logAudit(params.userId, "stay.created", "stay", stayId, {
+    guest: params.guestName.trim(),
+    room_id: params.roomId,
+    check_in: params.checkIn,
+    check_out: params.checkOut,
+  });
+  return stayId;
+}
+
+function stayErrorMessage(raw: string): string {
+  if (raw.includes("ROOM_CONFLICT")) return t("roomConflict");
+  if (raw.includes("CHECKOUT_AFTER_CHECKIN")) return t("datesInvalid");
+  if (raw.includes("GUEST_NAME_REQUIRED")) return t("guestNameRequired");
+  if (raw.includes("ROOM_REQUIRED")) return t("roomRequired");
+  if (raw.includes("GUESTS_MIN_ONE")) return t("guestsMinOne");
+  if (raw.includes("TOTAL_NON_NEGATIVE")) return t("totalNonNegative");
+  return raw;
 }
 
 export async function addRequest(params: {
