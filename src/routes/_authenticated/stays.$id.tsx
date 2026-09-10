@@ -110,7 +110,7 @@ function StayDetailPage() {
               key={c.id}
               label={`${c.label}${Number(c.quantity) !== 1 ? ` ×${c.quantity}` : ""}`}
               value={mad(c.total)}
-              sub={c.notes ?? undefined}
+              sub={c.notes ?? ""}
             />
           ))}
           <div className="!mt-3 border-t border-border pt-3">
@@ -197,7 +197,7 @@ function StayDetailPage() {
         <ChargeForm
           services={services}
           onSubmit={async (values) => {
-            if (!online) return toast.error(t("offline"));
+            if (!online) { toast.error(t("offline")); return; }
             try {
               await addCharge({ stayId: id, userId: user?.id, ...values });
               await refresh();
@@ -215,8 +215,8 @@ function StayDetailPage() {
         <PaymentForm
           suggested={totals.outstanding}
           onSubmit={async (values) => {
-            if (!online) return toast.error(t("offline"));
-            if (!user) return;
+            if (!online) { toast.error(t("offline")); return; }
+            if (!user) { return; }
             try {
               await addPayment({ stayId: id, userId: user.id, ...values });
               await refresh();
@@ -234,7 +234,7 @@ function StayDetailPage() {
         <RequestForm
           services={services.filter((s) => s.requestable)}
           onSubmit={async (values) => {
-            if (!online) return toast.error(t("offline"));
+            if (!online) { toast.error(t("offline")); return; }
             try {
               await addRequest({
                 stayId: id,
@@ -279,7 +279,7 @@ function StayDetailPage() {
                   variant="outline"
                   className="tap-target w-full rounded-xl"
                   onClick={async () => {
-                    if (!online) return toast.error(t("offline"));
+                    if (!online) { toast.error(t("offline")); return; }
                     await checkoutStay({
                       stayId: id,
                       outstanding: totals.outstanding,
@@ -300,7 +300,7 @@ function StayDetailPage() {
             <Button
               className="tap-target w-full rounded-xl"
               onClick={async () => {
-                if (!online) return toast.error(t("offline"));
+                if (!online) { toast.error(t("offline")); return; }
                 await checkoutStay({ stayId: id, outstanding: 0, override: false, userId: user?.id });
                 await refresh();
                 setSheet(null);
@@ -335,7 +335,7 @@ function Line({
 }: {
   label: string;
   value: string;
-  sub?: string;
+  sub?: string | undefined;
   strong?: boolean;
   tone?: "warn" | "ok";
 }) {

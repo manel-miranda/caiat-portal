@@ -12,8 +12,8 @@ export async function addCharge(params: {
   label: string;
   quantity: number;
   unitPrice: number;
-  notes?: string | null;
-  userId?: string;
+  notes?: string | null | undefined;
+  userId?: string | undefined;
 }) {
   const { data, error } = await supabase
     .from("charges")
@@ -41,7 +41,7 @@ export async function addPayment(params: {
   stayId: string;
   amount: number;
   method: "cash" | "card" | "bank_transfer";
-  notes?: string | null;
+  notes?: string | null | undefined;
   userId: string;
 }) {
   const { data, error } = await supabase
@@ -70,8 +70,8 @@ export async function addRequest(params: {
   serviceTypeId: string | null;
   label: string;
   scheduledAt: string | null;
-  notes?: string | null;
-  userId?: string;
+  notes?: string | null | undefined;
+  userId?: string | undefined;
 }) {
   const { data, error } = await supabase
     .from("requests")
@@ -103,7 +103,7 @@ export async function completeRequest(params: {
   serviceTypeId: string | null;
   unitPrice: number;
   withCharge: boolean;
-  userId?: string;
+  userId?: string | undefined;
 }) {
   if (params.withCharge && params.stayId) {
     const marker = requestChargeMarker(params.requestId);
@@ -152,7 +152,7 @@ export async function checkoutStay(params: {
   stayId: string;
   outstanding: number;
   override: boolean;
-  userId?: string;
+  userId?: string | undefined;
 }) {
   const { error } = await supabase
     .from("stays")

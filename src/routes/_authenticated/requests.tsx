@@ -36,7 +36,7 @@ function RequestsPage() {
   }
 
   async function finish(r: RequestRow, withCharge: boolean) {
-    if (!online) return toast.error(t("offline"));
+    if (!online) { toast.error(t("offline")); return; }
     setBusy(true);
     try {
       const svc = serviceFor(r);
@@ -68,7 +68,7 @@ function RequestsPage() {
   }
 
   async function onCancel(r: RequestRow) {
-    if (!online) return toast.error(t("offline"));
+    if (!online) { toast.error(t("offline")); return; }
     try {
       await cancelRequest(r.id, user?.id);
       await queryClient.invalidateQueries();
