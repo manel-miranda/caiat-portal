@@ -19,7 +19,7 @@ export const en = {
   enter: "Enter",
   signOut: "Sign out",
   invalidCredentials: "Wrong username or PIN",
-  demoAccounts: "Demo accounts",
+  loginHelp: "Ask the owner if you need your personal PIN.",
   // nav
   navRooms: "Rooms",
   navRequests: "Requests",
