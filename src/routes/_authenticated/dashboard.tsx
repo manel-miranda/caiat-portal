@@ -4,13 +4,14 @@ import { BedDouble, Users, Wallet, Banknote, AlertCircle, Bell, LogIn, LogOut } 
 import { AppShell } from "@/components/AppShell";
 import { StatCard } from "@/components/ui/stat-card";
 import { requireAdmin } from "@/lib/admin-guard";
-import { mad, shortDate, timeOnly, todayISO } from "@/lib/format";
+import { addDaysISO, mad, shortDate, timeOnly, todayISO } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import {
   activeStaysQuery,
   requestsQuery,
   roomsQuery,
   stayForRoom,
+  isInHouse,
   stayTotals,
   todayChargesQuery,
   todayPaymentsQuery,
@@ -39,7 +40,7 @@ function DashboardPage() {
   const activeStays = stays.data ?? [];
   const occupiedStays = roomList
     .map((r) => stayForRoom(activeStays, r.id, today))
-    .filter((s): s is NonNullable<typeof s> => Boolean(s));
+    .filter((s): s is NonNullable<typeof s> => Boolean(s) && isInHouse(s!, today));
 
   const guestsStaying = occupiedStays.reduce((sum, s) => sum + Number(s.num_guests ?? 0), 0);
   const arrivals = activeStays.filter((s) => s.check_in === today);
@@ -65,9 +66,7 @@ function DashboardPage() {
   const next24Requests = pending.filter(
     (r) => r.scheduled_at && new Date(r.scheduled_at).getTime() <= horizon,
   );
-  const tomorrow = new Date(`${today}T00:00:00`);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowISO = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
+  const tomorrowISO = addDaysISO(today, 1);
   const arrivalsTomorrow = activeStays.filter((s) => s.check_in === tomorrowISO);
   const departuresTomorrow = activeStays.filter((s) => s.check_out === tomorrowISO);
 
