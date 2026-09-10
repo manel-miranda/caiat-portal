@@ -97,12 +97,8 @@ function LoginPage() {
           </Button>
         </form>
 
-        <div className="mt-6 rounded-2xl border border-dashed border-border p-4 text-xs text-muted-foreground">
-          <p className="mb-1 font-medium text-foreground">{t("demoAccounts")}</p>
-          <p>bernardo · 246810 (owner)</p>
-          <p>youssef · 135790 (staff)</p>
-          <p>fatima · 112358 (staff)</p>
-        </div>
+        <p className="mt-6 text-center text-xs text-muted-foreground">{t("loginHelp")}</p>
+
       </div>
     </div>
   );
