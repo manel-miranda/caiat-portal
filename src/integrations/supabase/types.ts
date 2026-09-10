@@ -296,27 +296,39 @@ export type Database = {
       rooms: {
         Row: {
           active: boolean
+          amenities: string[]
           base_price: number
+          breakfast_included: boolean
           capacity: number
+          extra_guest_price: number
           id: string
+          included_guests: number
           name: string
           number: string
           sort_order: number
         }
         Insert: {
           active?: boolean
+          amenities?: string[]
           base_price?: number
+          breakfast_included?: boolean
           capacity?: number
+          extra_guest_price?: number
           id?: string
+          included_guests?: number
           name: string
           number: string
           sort_order?: number
         }
         Update: {
           active?: boolean
+          amenities?: string[]
           base_price?: number
+          breakfast_included?: boolean
           capacity?: number
+          extra_guest_price?: number
           id?: string
+          included_guests?: number
           name?: string
           number?: string
           sort_order?: number
