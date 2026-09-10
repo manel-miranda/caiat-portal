@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
@@ -8,9 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/lib/auth";
-import { addDaysISO, todayISO } from "@/lib/format";
+import { addDaysISO, mad, nights, todayISO } from "@/lib/format";
 import { sourceLabels, t } from "@/lib/i18n";
-import { roomsQuery } from "@/lib/queries";
+import { roomsQuery, nightlyRate, suggestedAccommodationTotal } from "@/lib/queries";
 import { createStay } from "@/lib/mutations";
 import { useOnline } from "@/components/OfflineBanner";
 
