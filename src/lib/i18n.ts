@@ -120,6 +120,7 @@ export const en = {
   roomRequired: "Please choose a room",
   datesInvalid: "Departure must be after arrival",
   guestsMinOne: "At least 1 guest",
+  guestsOverCapacity: "Too many guests for this room",
   totalNonNegative: "Accommodation total cannot be negative",
   roomConflict: "This room is already booked for those dates",
   amountPositive: "Enter an amount greater than zero",
