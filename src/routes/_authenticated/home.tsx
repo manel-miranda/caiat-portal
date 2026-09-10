@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Plus, LogIn, LogOut, Bell } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { activeStaysQuery, requestsQuery, roomsQuery, stayForRoom, roomState } from "@/lib/queries";
-import { firstName, shortDate, todayISO, timeOnly } from "@/lib/format";
+import { firstName, mad, shortDate, todayISO, timeOnly } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -72,10 +72,11 @@ function HomePage() {
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className="text-xl font-semibold leading-none">
-                    {t("room")} {room.number}
+                  <p className="text-xl font-semibold leading-none">{room.name}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t("room")} {room.number} · Up to {room.capacity} ·{" "}
+                    {mad(room.base_price)} / {room.included_guests} guests
                   </p>
-                  <p className="mt-1 text-xs text-muted-foreground">{room.name}</p>
                 </div>
                 <span className="rounded-full bg-background/70 px-2.5 py-1 text-[11px] font-semibold">
                   {STATE_LABELS[state]}
