@@ -7,12 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { logAudit } from "@/lib/audit";
 import { addDaysISO, todayISO } from "@/lib/format";
 import { sourceLabels, t } from "@/lib/i18n";
 import { roomsQuery } from "@/lib/queries";
+import { createStay } from "@/lib/mutations";
 import { useOnline } from "@/components/OfflineBanner";
 
 export const Route = createFileRoute("/_authenticated/stays/new")({
@@ -44,42 +43,35 @@ function NewStayPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!online) { toast.error(t("offline")); return; }
-    if (!roomId) { toast.error(t("room")); return; }
+    if (!guestName.trim()) { toast.error(t("guestNameRequired")); return; }
+    if (!roomId) { toast.error(t("roomRequired")); return; }
+    if (!(checkOut > checkIn)) { toast.error(t("datesInvalid")); return; }
+    const guestCount = Number(numGuests);
+    if (!Number.isFinite(guestCount) || guestCount < 1) { toast.error(t("guestsMinOne")); return; }
+    const amount = Number(total);
+    if (!Number.isFinite(amount) || amount < 0) { toast.error(t("totalNonNegative")); return; }
+
     setBusy(true);
-    const { data: guest, error: gErr } = await supabase
-      .from("guests")
-      .insert({ full_name: guestName.trim() })
-      .select("id")
-      .single();
-    if (gErr || !guest) {
+    try {
+      const stayId = await createStay({
+        guestName,
+        roomId,
+        checkIn,
+        checkOut,
+        numGuests: guestCount,
+        source,
+        accommodationTotal: amount,
+        notes,
+        userId: user?.id,
+      });
+      await queryClient.invalidateQueries();
+      toast.success(t("createStay"));
+      navigate({ to: "/stays/$id", params: { id: stayId } });
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
       setBusy(false);
-      toast.error(gErr?.message ?? "Error");
-      return;
     }
-    const { data: stay, error } = await supabase
-      .from("stays")
-      .insert({
-        guest_id: guest.id,
-        room_id: roomId,
-        check_in: checkIn,
-        check_out: checkOut,
-        num_guests: Number(numGuests) || 1,
-        source: source as never,
-        accommodation_total: Number(total) || 0,
-        notes: notes.trim() || null,
-        created_by: user?.id ?? null,
-      })
-      .select("id")
-      .single();
-    setBusy(false);
-    if (error || !stay) {
-      toast.error(error?.message ?? "Error");
-      return;
-    }
-    void logAudit(user?.id, "stay.created", "stay", stay.id, { guest: guestName, room: roomId });
-    await queryClient.invalidateQueries();
-    toast.success(t("createStay"));
-    navigate({ to: "/stays/$id", params: { id: stay.id } });
   }
 
   return (
