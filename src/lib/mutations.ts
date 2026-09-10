@@ -88,7 +88,7 @@ export async function createStay(params: {
     p_num_guests: params.numGuests,
     p_source: params.source as never,
     p_accommodation_total: params.accommodationTotal,
-    p_notes: params.notes ?? null,
+    p_notes: params.notes ?? "",
   });
   if (error) throw new Error(stayErrorMessage(error.message));
   const stayId = data as unknown as string;
