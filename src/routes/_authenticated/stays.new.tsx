@@ -39,6 +39,21 @@ function NewStayPage() {
   const [total, setTotal] = useState("");
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
+  const [totalEdited, setTotalEdited] = useState(false);
+
+  const selectedRoom = (rooms.data ?? []).find((r) => r.id === roomId);
+  const guestCountNum = Number(numGuests);
+  const stayNights = nights(checkIn, checkOut);
+  const suggested =
+    selectedRoom && Number.isFinite(guestCountNum) && guestCountNum >= 1
+      ? suggestedAccommodationTotal(selectedRoom, guestCountNum, stayNights)
+      : null;
+
+  useEffect(() => {
+    if (totalEdited) return;
+    if (suggested === null || suggested <= 0) return;
+    setTotal(String(suggested));
+  }, [suggested, totalEdited]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
