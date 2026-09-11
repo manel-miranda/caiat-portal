@@ -55,6 +55,7 @@ function NewStayPage() {
   const { user } = useAuth();
   const online = useOnline();
   const rooms = useQuery(roomsQuery);
+  const customers = useQuery(customersQuery);
 
   // Calendar prefill: fall back to the normal defaults for missing/invalid values.
   const initialCheckIn = search.checkIn ?? todayISO();
@@ -105,7 +106,7 @@ function NewStayPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!online) { toast.error(t("offline")); return; }
-    if (!guestName.trim()) { toast.error(t("guestNameRequired")); return; }
+    if (!customer && !guestName.trim()) { toast.error(t("guestNameRequired")); return; }
     if (!roomId) { toast.error(t("roomRequired")); return; }
     if (!(checkOut > checkIn)) { toast.error(t("datesInvalid")); return; }
     const guestCount = Number(numGuests);
