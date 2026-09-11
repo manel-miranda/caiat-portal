@@ -64,7 +64,7 @@ export function AppShell({ title, children }: { title?: string; children: ReactN
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const desktopItems = desktopNavItems().filter((i) => !i.permission || can(i.permission));
-  const mobileItems = mobileNavItems();
+  const mobileItems = mobileNavItems(can("activity_view"));
   // One shared live-updates channel for every authenticated screen.
   useRealtimeSync();
 
