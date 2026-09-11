@@ -26,7 +26,7 @@ type MenuLink = { to: string; label: string; icon: typeof Banknote; permission?:
  * this button, while every secondary destination and preference stays one tap
  * away. Permission checks mirror the routes and the database.
  */
-export function MobileMenu() {
+export function MobileMenu({ variant = "icon" }: { variant?: "icon" | "tab" }) {
   const [open, setOpen] = useState(false);
   const { profile, role, can } = useAuth();
   const { lang, setLang } = useLang();
@@ -52,13 +52,23 @@ export function MobileMenu() {
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        aria-label={t("menuTitle")}
-        className="flex size-11 shrink-0 items-center justify-center rounded-full border border-border bg-card text-muted-foreground active:bg-muted"
-      >
-        <MoreHorizontal className="size-5" />
-      </button>
+      {variant === "tab" ? (
+        <button
+          onClick={() => setOpen(true)}
+          className="flex min-h-[46px] flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 text-[10px] font-medium leading-tight text-muted-foreground"
+        >
+          <MoreHorizontal className="size-[18px]" />
+          <span className="max-w-full truncate">{t("navMore")}</span>
+        </button>
+      ) : (
+        <button
+          onClick={() => setOpen(true)}
+          aria-label={t("menuTitle")}
+          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-border bg-card text-muted-foreground active:bg-muted"
+        >
+          <MoreHorizontal className="size-5" />
+        </button>
+      )}
 
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto rounded-t-2xl p-4">

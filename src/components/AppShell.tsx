@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   Banknote,
   ConciergeBell,
-  MoreHorizontal,
   Users,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -122,7 +121,7 @@ export function AppShell({ title, children }: { title?: string; children: ReactN
             {mobileItems.map((item) => (
               <NavTab key={item.to} item={item} pathname={pathname} />
             ))}
-            <MobileMoreTab />
+            <MobileMenu variant="tab" />
           </div>
 
           {/* Desktop keeps the wider destination row. */}
@@ -153,25 +152,3 @@ function NavTab({ item, pathname }: { item: NavItem; pathname: string }) {
     </Link>
   );
 }
-
-/** Bottom-nav "More" tab: same sheet as the header control, no navigation. */
-function MobileMoreTab() {
-  return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-0.5 py-1 text-[10px] font-medium leading-tight text-muted-foreground [&_button]:size-auto [&_button]:min-h-[46px] [&_button]:w-full [&_button]:flex-col [&_button]:gap-0.5 [&_button]:rounded-xl [&_button]:border-0 [&_button]:bg-transparent">
-      <MobileMenuTabButton />
-    </div>
-  );
-}
-
-function MobileMenuTabButton() {
-  return (
-    <div className="flex w-full flex-col items-center">
-      {/* Reuses MobileMenu so the sheet content stays in one place. */}
-      <MobileMenu />
-      <span className="pointer-events-none -mt-1 truncate text-[10px]">{t("navMore")}</span>
-    </div>
-  );
-}
-
-// Keeps the unused-icon lint quiet while documenting the More affordance.
-void MoreHorizontal;
