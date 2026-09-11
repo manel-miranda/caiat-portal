@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Banknote,
+  CalendarDays,
   ConciergeBell,
   History,
   LayoutDashboard,
