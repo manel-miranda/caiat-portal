@@ -304,11 +304,38 @@ function Portal({ token, data }: { token: string; data: GuestPortalData }) {
         <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           <CreditCard className="size-4" /> {t("payOnline")}
         </h2>
-        {payment.available ? (
-          // Reserved for a server-generated provider checkout (CMI / PayPal).
-          <Button className="tap-target mt-3 w-full rounded-xl" disabled>
-            {t("payOnline")}
-          </Button>
+
+        {payResult ? (
+          <p
+            className={`mt-2 rounded-xl px-3 py-2 text-sm ${
+              payResult === "success"
+                ? "bg-primary/10 font-semibold text-primary"
+                : "bg-muted text-muted-foreground"
+            }`}
+          >
+            {payResult === "success"
+              ? t("paymentSuccess")
+              : payResult === "cancelled"
+                ? t("paymentCancelled")
+                : t("paymentError")}
+          </p>
+        ) : null}
+
+        {payment.available && Number(data.outstanding) > 0 ? (
+          <>
+            <Button
+              className="tap-target mt-3 w-full rounded-xl text-base"
+              disabled={payBusy}
+              onClick={() => void payNow()}
+            >
+              {payBusy ? t("paymentRedirecting") : t("payWithPaypal")}
+            </Button>
+            {payment.environment === "sandbox" ? (
+              <p className="mt-2 text-xs text-muted-foreground">{t("paypalSandboxNote")}</p>
+            ) : null}
+          </>
+        ) : payment.available ? (
+          <p className="mt-2 text-sm text-muted-foreground">{t("paymentNothingDue")}</p>
         ) : (
           <>
             <p className="mt-2 text-sm text-muted-foreground">{t("paymentUnavailable")}</p>
