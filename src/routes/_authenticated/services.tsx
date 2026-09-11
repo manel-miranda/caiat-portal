@@ -216,7 +216,8 @@ function ServicesPage() {
               </ul>
             </section>
           );
-        })
+        })}
+        </>
       )}
     </AppShell>
   );
