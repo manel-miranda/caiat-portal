@@ -993,6 +993,7 @@ const ACTION_KEYS: Record<string, TranslationKey> = {
   "request.completed": "actRequestCompleted",
   "request.cancelled": "actRequestCancelled",
   "stay.created": "actStayCreated",
+  "stay.updated": "actStayUpdated",
   "stay.checked_out": "actCheckout",
   "cash.reconciled": "actCashSaved",
   "reservation.requested": "actReservationRequested",
