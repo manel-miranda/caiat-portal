@@ -19,12 +19,12 @@ const STATE_STYLES: Record<string, string> = {
   departure_today: "border-warning/50 bg-warning/15",
 };
 
-const STATE_LABELS: Record<string, string> = {
-  available: t("available"),
-  occupied: t("occupied"),
-  arrival_today: t("arrivalToday"),
-  departure_today: t("departureToday"),
-};
+function stateLabel(state: string): string {
+  if (state === "occupied") return t("occupied");
+  if (state === "arrival_today") return t("arrivalToday");
+  if (state === "departure_today") return t("departureToday");
+  return t("available");
+}
 
 function HomePage() {
   const today = todayISO();
@@ -74,17 +74,17 @@ function HomePage() {
                 <div>
                   <p className="text-xl font-semibold leading-none">{room.name}</p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    #{room.number} · Up to {room.capacity} ·{" "}
-                    {mad(room.base_price)} / {room.included_guests} guests
+                    #{room.number} · {t("upToGuests", { count: room.capacity })} ·{" "}
+                    {mad(room.base_price)} {t("perGuests", { count: room.included_guests })}
                   </p>
                 </div>
                 <span className="rounded-full bg-background/70 px-2.5 py-1 text-[11px] font-semibold">
-                  {STATE_LABELS[state]}
+                  {stateLabel(state)}
                 </span>
               </div>
               {stay ? (
                 <p className="mt-3 truncate text-sm font-medium">
-                  {firstName(stay.guest?.full_name ?? "")} · {stay.num_guests} pax ·{" "}
+                  {firstName(stay.guest?.full_name ?? "")} · {stay.num_guests} {t("pax")} ·{" "}
                   {shortDate(stay.check_in)}–{shortDate(stay.check_out)}
                 </p>
               ) : (

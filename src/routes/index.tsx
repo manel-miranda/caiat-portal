@@ -6,6 +6,7 @@ import { t } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -97,7 +98,11 @@ function LoginPage() {
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">{t("loginHelp")}</p>
+        <div className="mt-6 flex justify-center">
+          <LanguageSwitcher />
+        </div>
+
+        <p className="mt-4 text-center text-xs text-muted-foreground">{t("loginHelp")}</p>
 
       </div>
     </div>

@@ -1,3 +1,5 @@
+import { t } from "./i18n";
+
 /** Business timezone for the guesthouse. All "today"/day boundaries use it. */
 export const BUSINESS_TZ = "Africa/Casablanca";
 
@@ -125,5 +127,5 @@ export function roomLabel(
   room: { number?: string | null; name?: string | null } | null | undefined,
 ): string {
   if (!room) return "—";
-  return room.name?.trim() || (room.number ? `Room ${room.number}` : "—");
+  return room.name?.trim() || (room.number ? `${t("room")} ${room.number}` : "—");
 }
