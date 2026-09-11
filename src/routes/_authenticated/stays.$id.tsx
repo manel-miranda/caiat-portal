@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { BedDouble, CreditCard, Bell, Plus, LogOut } from "lucide-react";
+import { BedDouble, CreditCard, Bell, Plus, LogOut, Pencil } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -150,6 +150,16 @@ function StayDetailPage() {
         </dl>
         {stay.notes ? (
           <p className="mt-3 rounded-xl bg-muted/60 p-3 text-sm">{stay.notes}</p>
+        ) : null}
+        {isAdmin && stay.status === "active" && !isRejected ? (
+          <Button
+            variant="outline"
+            className="tap-target mt-4 w-full rounded-xl"
+            onClick={() => navigate({ to: "/stays/$id/edit", params: { id } })}
+          >
+            <Pencil className="me-2 size-4" />
+            {t("editStay")}
+          </Button>
         ) : null}
       </section>
 
