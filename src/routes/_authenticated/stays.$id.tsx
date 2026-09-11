@@ -105,7 +105,10 @@ function StayDetailPage() {
   const isRejected = stay.confirmation_status === "rejected";
 
   async function decide(accept: boolean) {
-    if (!online) { toast.error(t("offline")); return; }
+    if (!online) {
+      toast.error(t("offline"));
+      return;
+    }
     try {
       if (accept) await confirmReservation(id, user?.id);
       else await rejectReservation(id, user?.id);
@@ -123,7 +126,8 @@ function StayDetailPage() {
           <div className="min-w-0">
             <h1 className="truncate text-2xl font-semibold">{stay.guest?.full_name}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {stay.guest?.phone ?? ""} {stay.guest?.nationality ? `· ${stay.guest.nationality}` : ""}
+              {stay.guest?.phone ?? ""}{" "}
+              {stay.guest?.nationality ? `· ${stay.guest.nationality}` : ""}
             </p>
             {guestId && customerQ.data ? (
               <Link
@@ -272,10 +276,7 @@ function StayDetailPage() {
           </p>
           {can("reservations_manage") ? (
             <div className="grid grid-cols-2 gap-3">
-              <Button
-                className="tap-target rounded-xl text-base"
-                onClick={() => void decide(true)}
-              >
+              <Button className="tap-target rounded-xl text-base" onClick={() => void decide(true)}>
                 {t("accept")}
               </Button>
               <Button
@@ -295,13 +296,25 @@ function StayDetailPage() {
       ) : stay.status === "active" ? (
         <section className="mt-4 grid grid-cols-2 gap-3">
           {can("payments_manage") ? (
-            <Action icon={<Plus className="size-5" />} label={t("addCharge")} onClick={() => setSheet("charge")} />
+            <Action
+              icon={<Plus className="size-5" />}
+              label={t("addCharge")}
+              onClick={() => setSheet("charge")}
+            />
           ) : null}
           {can("payments_manage") ? (
-            <Action icon={<CreditCard className="size-5" />} label={t("addPayment")} onClick={() => setSheet("payment")} />
+            <Action
+              icon={<CreditCard className="size-5" />}
+              label={t("addPayment")}
+              onClick={() => setSheet("payment")}
+            />
           ) : null}
           {can("requests_manage") ? (
-            <Action icon={<Bell className="size-5" />} label={t("addRequest")} onClick={() => setSheet("request")} />
+            <Action
+              icon={<Bell className="size-5" />}
+              label={t("addRequest")}
+              onClick={() => setSheet("request")}
+            />
           ) : null}
           <Action
             icon={<LogOut className="size-5" />}
@@ -321,7 +334,10 @@ function StayDetailPage() {
         <ChargeForm
           services={services.filter((s) => s.billable)}
           onSubmit={async (values) => {
-            if (!online) { toast.error(t("offline")); return; }
+            if (!online) {
+              toast.error(t("offline"));
+              return;
+            }
             try {
               await addCharge({ stayId: id, userId: user?.id, ...values });
               await refresh();
@@ -335,12 +351,21 @@ function StayDetailPage() {
       </SheetDialog>
 
       {/* ---- Add payment ---- */}
-      <SheetDialog open={sheet === "payment"} onClose={() => setSheet(null)} title={t("addPayment")}>
+      <SheetDialog
+        open={sheet === "payment"}
+        onClose={() => setSheet(null)}
+        title={t("addPayment")}
+      >
         <PaymentForm
           suggested={totals.outstanding}
           onSubmit={async (values) => {
-            if (!online) { toast.error(t("offline")); return; }
-            if (!user) { return; }
+            if (!online) {
+              toast.error(t("offline"));
+              return;
+            }
+            if (!user) {
+              return;
+            }
             try {
               await addPayment({ stayId: id, userId: user.id, ...values });
               await refresh();
@@ -354,11 +379,18 @@ function StayDetailPage() {
       </SheetDialog>
 
       {/* ---- Add request ---- */}
-      <SheetDialog open={sheet === "request"} onClose={() => setSheet(null)} title={t("addRequest")}>
+      <SheetDialog
+        open={sheet === "request"}
+        onClose={() => setSheet(null)}
+        title={t("addRequest")}
+      >
         <RequestForm
           services={services.filter((s) => s.requestable)}
           onSubmit={async (values) => {
-            if (!online) { toast.error(t("offline")); return; }
+            if (!online) {
+              toast.error(t("offline"));
+              return;
+            }
             try {
               await addRequest({
                 stayId: id,
@@ -377,7 +409,11 @@ function StayDetailPage() {
       </SheetDialog>
 
       {/* ---- Checkout ---- */}
-      <SheetDialog open={sheet === "checkout"} onClose={() => setSheet(null)} title={t("checkoutSummary")}>
+      <SheetDialog
+        open={sheet === "checkout"}
+        onClose={() => setSheet(null)}
+        title={t("checkoutSummary")}
+      >
         <div className="space-y-3 text-sm">
           <Line label={t("total")} value={mad(totals.total)} strong />
           <Line label={t("paid")} value={mad(totals.paid)} />
@@ -392,10 +428,7 @@ function StayDetailPage() {
               <p className="rounded-xl bg-warning/20 p-3 font-medium text-foreground">
                 {t("outstandingWarning")}
               </p>
-              <Button
-                className="tap-target w-full rounded-xl"
-                onClick={() => setSheet("payment")}
-              >
+              <Button className="tap-target w-full rounded-xl" onClick={() => setSheet("payment")}>
                 {t("recordPayment")}
               </Button>
               {can("checkout_override") && !overrideConfirm ? (
@@ -419,26 +452,29 @@ function StayDetailPage() {
                     >
                       {t("cancel")}
                     </Button>
-                <Button
-                  variant="destructive"
-                  className="tap-target flex-1 rounded-xl"
-                  onClick={async () => {
-                    if (!online) { toast.error(t("offline")); return; }
-                    await checkoutStay({
-                      stayId: id,
-                      outstanding: totals.outstanding,
-                      override: true,
-                      userId: user?.id,
-                    });
-                    await refresh();
-                    setOverrideConfirm(false);
-                    setSheet(null);
-                    toast.success(t("checkoutDone"));
-                    navigate({ to: "/home" });
-                  }}
-                >
-                  {t("confirm")}
-                </Button>
+                    <Button
+                      variant="destructive"
+                      className="tap-target flex-1 rounded-xl"
+                      onClick={async () => {
+                        if (!online) {
+                          toast.error(t("offline"));
+                          return;
+                        }
+                        await checkoutStay({
+                          stayId: id,
+                          outstanding: totals.outstanding,
+                          override: true,
+                          userId: user?.id,
+                        });
+                        await refresh();
+                        setOverrideConfirm(false);
+                        setSheet(null);
+                        toast.success(t("checkoutDone"));
+                        navigate({ to: "/home" });
+                      }}
+                    >
+                      {t("confirm")}
+                    </Button>
                   </div>
                 </div>
               ) : null}
@@ -447,8 +483,16 @@ function StayDetailPage() {
             <Button
               className="tap-target w-full rounded-xl"
               onClick={async () => {
-                if (!online) { toast.error(t("offline")); return; }
-                await checkoutStay({ stayId: id, outstanding: 0, override: false, userId: user?.id });
+                if (!online) {
+                  toast.error(t("offline"));
+                  return;
+                }
+                await checkoutStay({
+                  stayId: id,
+                  outstanding: 0,
+                  override: false,
+                  userId: user?.id,
+                });
                 await refresh();
                 setSheet(null);
                 toast.success(t("checkoutDone"));
@@ -625,7 +669,9 @@ function ChargeForm({
             type="button"
             onClick={() => setServiceId("")}
             className={`rounded-xl border px-2 py-3 text-sm font-semibold ${
-              serviceId === "" ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card"
+              serviceId === ""
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-card"
             }`}
           >
             {t("custom")}
@@ -837,7 +883,9 @@ function RequestForm({
             type="button"
             onClick={() => setServiceId("")}
             className={`rounded-xl border px-2 py-3 text-sm font-semibold ${
-              serviceId === "" ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card"
+              serviceId === ""
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-card"
             }`}
           >
             {t("custom")}

@@ -38,7 +38,10 @@ function RequestsPage() {
   }
 
   async function finish(r: RequestRow, withCharge: boolean) {
-    if (!online) { toast.error(t("offline")); return; }
+    if (!online) {
+      toast.error(t("offline"));
+      return;
+    }
     setBusy(true);
     try {
       const svc = serviceFor(r);
@@ -70,7 +73,10 @@ function RequestsPage() {
   }
 
   async function onCancel(r: RequestRow) {
-    if (!online) { toast.error(t("offline")); return; }
+    if (!online) {
+      toast.error(t("offline"));
+      return;
+    }
     try {
       await cancelRequest(r.id, user?.id);
       await queryClient.invalidateQueries();
@@ -93,23 +99,23 @@ function RequestsPage() {
             <li key={r.id} className="surface-card p-4">
               <RequestHead r={r} label={serviceLabel(serviceFor(r) ?? { label: r.label })} />
               {canManage ? (
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <Button
-                  onClick={() => void onComplete(r)}
-                  className="tap-target rounded-xl"
-                  disabled={busy}
-                >
-                  <Check className="size-4" /> {t("complete")}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => void onCancel(r)}
-                  className="tap-target rounded-xl"
-                  disabled={busy}
-                >
-                  <X className="size-4" /> {t("cancel")}
-                </Button>
-              </div>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <Button
+                    onClick={() => void onComplete(r)}
+                    className="tap-target rounded-xl"
+                    disabled={busy}
+                  >
+                    <Check className="size-4" /> {t("complete")}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => void onCancel(r)}
+                    className="tap-target rounded-xl"
+                    disabled={busy}
+                  >
+                    <X className="size-4" /> {t("cancel")}
+                  </Button>
+                </div>
               ) : null}
             </li>
           ))}

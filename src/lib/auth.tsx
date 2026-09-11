@@ -38,7 +38,10 @@ const AuthContext = createContext<AuthValue>({
 
 /** Auth credentials need an email; staff sign in with a username + PIN. */
 export function usernameToEmail(username: string) {
-  return `${username.trim().toLowerCase().replace(/[^a-z0-9._-]/g, "")}@caiat.local`;
+  return `${username
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]/g, "")}@caiat.local`;
 }
 
 function pickRole(roles: { role: string }[] | null | undefined): AppRole {
@@ -107,8 +110,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       void loadIdentity(userId);
     };
     channel
-      .on("postgres_changes", { event: "*", schema: "public", table: "profiles", filter: `id=eq.${userId}` }, reload)
-      .on("postgres_changes", { event: "*", schema: "public", table: "user_roles", filter: `user_id=eq.${userId}` }, reload)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "profiles", filter: `id=eq.${userId}` },
+        reload,
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "user_roles", filter: `user_id=eq.${userId}` },
+        reload,
+      )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "user_permissions", filter: `user_id=eq.${userId}` },

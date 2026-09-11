@@ -40,10 +40,22 @@ function HomePage() {
   return (
     <AppShell title={t("appName")}>
       <section className="grid grid-cols-3 gap-3">
-        <SummaryTile icon={<LogIn className="size-4" />} label={t("arrivals")} value={arrivals.length} />
-        <SummaryTile icon={<LogOut className="size-4" />} label={t("departures")} value={departures.length} />
+        <SummaryTile
+          icon={<LogIn className="size-4" />}
+          label={t("arrivals")}
+          value={arrivals.length}
+        />
+        <SummaryTile
+          icon={<LogOut className="size-4" />}
+          label={t("departures")}
+          value={departures.length}
+        />
         <Link to="/requests" className="contents">
-          <SummaryTile icon={<Bell className="size-4" />} label={t("pendingRequests")} value={pending.length} />
+          <SummaryTile
+            icon={<Bell className="size-4" />}
+            label={t("pendingRequests")}
+            value={pending.length}
+          />
         </Link>
       </section>
 
@@ -52,18 +64,18 @@ function HomePage() {
           {t("navRooms")}
         </h2>
         <div className="flex items-center gap-2">
-        <Link
-          to="/calendar"
-          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-semibold active:bg-muted"
-        >
-          <CalendarDays className="size-4" /> {t("calendarTitle")}
-        </Link>
-        <Link
-          to="/stays/new"
-          className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground active:scale-[0.98]"
-        >
-          <Plus className="size-4" /> {t("newStay")}
-        </Link>
+          <Link
+            to="/calendar"
+            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-semibold active:bg-muted"
+          >
+            <CalendarDays className="size-4" /> {t("calendarTitle")}
+          </Link>
+          <Link
+            to="/stays/new"
+            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground active:scale-[0.98]"
+          >
+            <Plus className="size-4" /> {t("newStay")}
+          </Link>
         </div>
       </div>
 
@@ -126,9 +138,7 @@ function HomePage() {
                 className="flex items-center justify-between px-4 py-3 text-sm active:bg-muted"
               >
                 <span className="font-medium">{s.guest?.full_name}</span>
-                <span className="text-muted-foreground">
-                  {roomLabel(s.room)}
-                </span>
+                <span className="text-muted-foreground">{roomLabel(s.room)}</span>
               </Link>
             ))}
           </TodayGroup>
@@ -141,9 +151,7 @@ function HomePage() {
                 className="flex items-center justify-between px-4 py-3 text-sm active:bg-muted"
               >
                 <span className="font-medium">{s.guest?.full_name}</span>
-                <span className="text-muted-foreground">
-                  {roomLabel(s.room)}
-                </span>
+                <span className="text-muted-foreground">{roomLabel(s.room)}</span>
               </Link>
             ))}
           </TodayGroup>
@@ -204,7 +212,11 @@ function TodayGroup({
       <p className="px-4 pt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         {title}
       </p>
-      {empty ? <p className="px-4 py-3 text-sm text-muted-foreground">{t("noResults")}</p> : children}
+      {empty ? (
+        <p className="px-4 py-3 text-sm text-muted-foreground">{t("noResults")}</p>
+      ) : (
+        children
+      )}
     </div>
   );
 }

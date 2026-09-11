@@ -22,7 +22,6 @@ import { TaskBell } from "@/components/TaskBell";
 import { useRealtimeSync } from "@/lib/realtime";
 import type { ReactNode } from "react";
 
-
 type NavItem = { to: string; label: string; icon: typeof BedDouble; permission?: PermissionKey };
 
 // Only routes that exist are listed. Hiding an entry is convenience only — the
@@ -33,7 +32,12 @@ function navItems(): NavItem[] {
     { to: "/requests", label: t("navRequests"), icon: Bell },
     { to: "/customers", label: t("navCustomers"), icon: Users },
     { to: "/services", label: t("navServices"), icon: ConciergeBell },
-    { to: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard, permission: "activity_view" },
+    {
+      to: "/dashboard",
+      label: t("navDashboard"),
+      icon: LayoutDashboard,
+      permission: "activity_view",
+    },
     { to: "/cash", label: t("navCash"), icon: Banknote, permission: "cash_reconcile" },
     // Activity lives behind the Dashboard so the bottom bar stays readable at 390px.
   ];
@@ -48,8 +52,6 @@ export function AppShell({ title, children }: { title?: string; children: ReactN
   // One shared live-updates channel for every authenticated screen.
   useRealtimeSync();
 
-
-
   async function signOut() {
     await queryClient.cancelQueries();
     queryClient.clear();
@@ -63,7 +65,10 @@ export function AppShell({ title, children }: { title?: string; children: ReactN
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3 px-4 py-3">
           <div className="min-w-0">
             <p className="truncate text-lg font-semibold tracking-tight">{title ?? t("appName")}</p>
-            <Link to="/account" className="block truncate text-xs text-muted-foreground underline-offset-2 active:underline">
+            <Link
+              to="/account"
+              className="block truncate text-xs text-muted-foreground underline-offset-2 active:underline"
+            >
               {profile?.full_name ?? ""}
               {profile ? ` · ${roleLabel(profile, role)}` : ""}
             </Link>

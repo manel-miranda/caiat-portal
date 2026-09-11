@@ -333,8 +333,9 @@ export const en = {
   actStayUpdated: "Stay updated",
   // guest access / QR (staff side)
   guestAccess: "Guest access / Guest QR",
-  guestAccessDesc: "Share this QR or link with the guest so they can request services and see their bill.",
-  guestAccessAdminOnly: "Only the owner can create or revoke guest access.",
+  guestAccessDesc:
+    "Share this QR or link with the guest so they can request services and see their bill.",
+  guestAccessAdminOnly: "Only authorised team members can create or revoke guest access.",
   generateGuestAccess: "Generate guest access",
   noGuestAccessYet: "No guest link yet",
   showQr: "Show QR full screen",
@@ -360,14 +361,16 @@ export const en = {
   myRequests: "My requests",
   noRequestsYet: "You have not made any requests yet",
   myBill: "My bill",
-  baseCurrencyNote: "Accounting currency is Moroccan Dirham (DH). Other currencies are approximate.",
+  baseCurrencyNote:
+    "Accounting currency is Moroccan Dirham (DH). Other currencies are approximate.",
   payOnline: "Pay online",
   paymentUnavailable: "Online payment is not configured yet. Please ask reception.",
   askReception: "Ask reception about payment",
   paymentHelpSent: "Reception has been notified",
   payWithPaypal: "Pay with PayPal",
   paypal: "PayPal",
-  paypalSandboxNote: "Test payment (PayPal Sandbox). Charged in € at an approximate rate; your bill stays in DH.",
+  paypalSandboxNote:
+    "Test payment (PayPal Sandbox). Charged in € at an approximate rate; your bill stays in DH.",
   paymentRedirecting: "Opening PayPal…",
   paymentSuccess: "Payment received. Thank you!",
   paymentCancelled: "Payment cancelled — nothing was charged.",
@@ -377,8 +380,6 @@ export const en = {
   requestTooMany: "Please wait a moment before sending another request",
   requestFailed: "Could not send the request. Please ask reception.",
   requestTooLong: "That text is too long",
-
-
 } as const;
 
 export type TranslationKey = keyof typeof en;
@@ -681,7 +682,8 @@ const pt: Dict = {
 
   guestAccess: "Acesso do hóspede / QR",
   guestAccessDesc: "Partilhe este QR ou link com o hóspede para pedir serviços e ver a conta.",
-  guestAccessAdminOnly: "Só o proprietário pode criar ou anular o acesso do hóspede.",
+  guestAccessAdminOnly:
+    "Só membros da equipa autorizados podem criar ou anular o acesso do hóspede.",
   generateGuestAccess: "Gerar acesso do hóspede",
   noGuestAccessYet: "Ainda não existe link do hóspede",
   showQr: "Mostrar QR em ecrã inteiro",
@@ -706,14 +708,16 @@ const pt: Dict = {
   myRequests: "Os meus pedidos",
   noRequestsYet: "Ainda não fez pedidos",
   myBill: "A minha conta",
-  baseCurrencyNote: "A moeda de contabilidade é o dirham marroquino (DH). Outras moedas são aproximadas.",
+  baseCurrencyNote:
+    "A moeda de contabilidade é o dirham marroquino (DH). Outras moedas são aproximadas.",
   payOnline: "Pagar online",
   paymentUnavailable: "O pagamento online ainda não está configurado. Fale com a receção.",
   askReception: "Falar com a receção sobre o pagamento",
   paymentHelpSent: "A receção foi avisada",
   payWithPaypal: "Pagar com PayPal",
   paypal: "PayPal",
-  paypalSandboxNote: "Pagamento de teste (PayPal Sandbox). Cobrado em € a uma taxa aproximada; a sua conta continua em DH.",
+  paypalSandboxNote:
+    "Pagamento de teste (PayPal Sandbox). Cobrado em € a uma taxa aproximada; a sua conta continua em DH.",
   paymentRedirecting: "A abrir o PayPal…",
   paymentSuccess: "Pagamento recebido. Obrigado!",
   paymentCancelled: "Pagamento cancelado — não foi cobrado nada.",
@@ -743,11 +747,13 @@ const fr: Dict = {
   roomNoLongerAvailable: "Cette chambre n'est plus disponible à ces dates",
   adminOnly: "Seul le propriétaire peut le faire",
   notPendingAnymore: "Cette demande a déjà été traitée",
-  pendingNoOperations: "Confirmez cette réservation avant d'ajouter des extras, des paiements ou le départ.",
+  pendingNoOperations:
+    "Confirmez cette réservation avant d'ajouter des extras, des paiements ou le départ.",
   actReservationRequested: "Demande de réservation",
   actReservationConfirmed: "Réservation confirmée",
   actReservationRejected: "Réservation refusée",
-  currencyApproxNote: "Les montants sont enregistrés en DH ; les autres devises sont approximatives.",
+  currencyApproxNote:
+    "Les montants sont enregistrés en DH ; les autres devises sont approximatives.",
   signIn: "Connexion",
   usernameOrPhone: "Identifiant ou téléphone",
   pin: "Code PIN",
@@ -969,7 +975,8 @@ const fr: Dict = {
   stayNotFound: "Ce séjour n'a pas pu être chargé",
   back: "Retour",
   servicesTitle: "Services et activités",
-  servicesIntro: "Les prix indiqués sont provisoires et restent modifiables lors de la facturation.",
+  servicesIntro:
+    "Les prix indiqués sont provisoires et restent modifiables lors de la facturation.",
   catFood: "Restauration",
   catTransport: "Transport",
   catOutdoor: "Activités de plein air",
@@ -1022,7 +1029,8 @@ const fr: Dict = {
 
   guestAccess: "Accès client / QR",
   guestAccessDesc: "Partagez ce QR ou ce lien avec le client pour ses demandes et sa note.",
-  guestAccessAdminOnly: "Seul le propriétaire peut créer ou révoquer l'accès client.",
+  guestAccessAdminOnly:
+    "Seuls les membres autorisés de l'équipe peuvent créer ou révoquer l'accès client.",
   generateGuestAccess: "Générer l'accès client",
   noGuestAccessYet: "Aucun lien client pour l'instant",
   showQr: "Afficher le QR en plein écran",
@@ -1047,14 +1055,17 @@ const fr: Dict = {
   myRequests: "Mes demandes",
   noRequestsYet: "Vous n'avez encore fait aucune demande",
   myBill: "Ma note",
-  baseCurrencyNote: "La monnaie comptable est le dirham marocain (DH). Les autres devises sont approximatives.",
+  baseCurrencyNote:
+    "La monnaie comptable est le dirham marocain (DH). Les autres devises sont approximatives.",
   payOnline: "Payer en ligne",
-  paymentUnavailable: "Le paiement en ligne n'est pas encore configuré. Merci de voir avec la réception.",
+  paymentUnavailable:
+    "Le paiement en ligne n'est pas encore configuré. Merci de voir avec la réception.",
   askReception: "Demander à la réception pour le paiement",
   paymentHelpSent: "La réception a été prévenue",
   payWithPaypal: "Payer avec PayPal",
   paypal: "PayPal",
-  paypalSandboxNote: "Paiement de test (PayPal Sandbox). Débité en € à un taux approximatif ; votre note reste en DH.",
+  paypalSandboxNote:
+    "Paiement de test (PayPal Sandbox). Débité en € à un taux approximatif ; votre note reste en DH.",
   paymentRedirecting: "Ouverture de PayPal…",
   paymentSuccess: "Paiement reçu. Merci !",
   paymentCancelled: "Paiement annulé — rien n'a été débité.",
@@ -1363,7 +1374,7 @@ const ar: Dict = {
 
   guestAccess: "وصول الضيف / رمز QR",
   guestAccessDesc: "شارك رمز QR أو الرابط مع الضيف لطلب الخدمات ومعاينة الفاتورة.",
-  guestAccessAdminOnly: "المالك وحده يمكنه إنشاء وصول الضيف أو إلغاؤه.",
+  guestAccessAdminOnly: "يمكن لأعضاء الفريق المخوّلين فقط إنشاء وصول الضيف أو إلغاؤه.",
   generateGuestAccess: "إنشاء وصول للضيف",
   noGuestAccessYet: "لا يوجد رابط للضيف بعد",
   showQr: "عرض رمز QR بملء الشاشة",
@@ -1395,7 +1406,8 @@ const ar: Dict = {
   paymentHelpSent: "تم إبلاغ الاستقبال",
   payWithPaypal: "الدفع عبر PayPal",
   paypal: "PayPal",
-  paypalSandboxNote: "دفعة تجريبية (PayPal Sandbox). يتم الخصم باليورو بسعر تقريبي؛ فاتورتك تبقى بالدرهم.",
+  paypalSandboxNote:
+    "دفعة تجريبية (PayPal Sandbox). يتم الخصم باليورو بسعر تقريبي؛ فاتورتك تبقى بالدرهم.",
   paymentRedirecting: "جارٍ فتح PayPal…",
   paymentSuccess: "تم استلام الدفع. شكرًا لك!",
   paymentCancelled: "تم إلغاء الدفع — لم يتم خصم أي مبلغ.",
@@ -1494,7 +1506,11 @@ export function useLang(): { lang: Lang; setLang: (l: Lang) => void } {
 export function I18nProvider({ children }: { children: ReactNode }) {
   const { lang } = useLang();
   const { currency } = useCurrency();
-  return <div key={`${lang}:${currency}`} className="contents">{children}</div>;
+  return (
+    <div key={`${lang}:${currency}`} className="contents">
+      {children}
+    </div>
+  );
 }
 
 const SOURCE_KEYS: Record<string, TranslationKey> = {

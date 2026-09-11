@@ -65,9 +65,15 @@ function CashPage() {
   }
 
   async function save() {
-    if (!online) { toast.error(t("offline")); return; }
+    if (!online) {
+      toast.error(t("offline"));
+      return;
+    }
     if (!user?.id) return;
-    if (!countValid) { toast.error(t("countedCashInvalid")); return; }
+    if (!countValid) {
+      toast.error(t("countedCashInvalid"));
+      return;
+    }
     setBusy(true);
     try {
       await saveCashCount({
@@ -101,7 +107,9 @@ function CashPage() {
       </div>
 
       {day.isError ? (
-        <p className="surface-card mt-3 p-4 text-sm text-destructive">{(day.error as Error).message}</p>
+        <p className="surface-card mt-3 p-4 text-sm text-destructive">
+          {(day.error as Error).message}
+        </p>
       ) : day.isLoading ? (
         <p className="surface-card mt-3 p-4 text-sm text-muted-foreground">{t("loading")}</p>
       ) : (
@@ -118,7 +126,8 @@ function CashPage() {
                   <div key={e.id} className="flex items-center justify-between px-4 py-3 text-sm">
                     <span className="truncate font-medium">{employeeName(e.id)}</span>
                     <span className="shrink-0 text-muted-foreground">
-                      {e.count} × · <span className="font-semibold text-foreground">{mad(e.total)}</span>
+                      {e.count} × ·{" "}
+                      <span className="font-semibold text-foreground">{mad(e.total)}</span>
                     </span>
                   </div>
                 ))

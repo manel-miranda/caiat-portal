@@ -75,7 +75,11 @@ export const createStaffUser = createServerFn({ method: "POST" })
     const db = await admin();
     const username = data.username.toLowerCase();
 
-    const { data: existing } = await db.from("profiles").select("id").eq("username", username).maybeSingle();
+    const { data: existing } = await db
+      .from("profiles")
+      .select("id")
+      .eq("username", username)
+      .maybeSingle();
     if (existing) throw new Error("USERNAME_TAKEN");
 
     const { data: created, error } = await db.auth.admin.createUser({
@@ -96,7 +100,9 @@ export const createStaffUser = createServerFn({ method: "POST" })
         active: true,
       });
       if (pErr) throw new Error(pErr.message);
-      const { error: rErr } = await db.from("user_roles").insert({ user_id: userId, role: data.role });
+      const { error: rErr } = await db
+        .from("user_roles")
+        .insert({ user_id: userId, role: data.role });
       if (rErr) throw new Error(rErr.message);
     } catch (e) {
       await db.auth.admin.deleteUser(userId);
@@ -108,7 +114,9 @@ export const createStaffUser = createServerFn({ method: "POST" })
 
 export const setUserActiveFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ userId: z.string().uuid(), active: z.boolean() }).parse(data))
+  .inputValidator((data) =>
+    z.object({ userId: z.string().uuid(), active: z.boolean() }).parse(data),
+  )
   .handler(async ({ data, context }) => {
     await assertAdmin(context as never);
     // The RPC keeps the last-admin and self-deactivation guards plus the audit row.

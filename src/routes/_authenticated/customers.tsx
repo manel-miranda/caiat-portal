@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { customersQuery, matchesCustomer, countedStays, isReturning } from "@/lib/customers";
 import { shortDate } from "@/lib/format";
 import { t } from "@/lib/i18n";
-import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/_authenticated/customers")({
   head: () => ({
@@ -20,7 +19,6 @@ export const Route = createFileRoute("/_authenticated/customers")({
 });
 
 function CustomersPage() {
-  const { can } = useAuth();
   const customers = useQuery(customersQuery);
   const [term, setTerm] = useState("");
 
@@ -56,7 +54,9 @@ function CustomersPage() {
         </Link>
       </div>
 
-      {customers.isLoading ? <p className="mt-6 text-sm text-muted-foreground">{t("loading")}</p> : null}
+      {customers.isLoading ? (
+        <p className="mt-6 text-sm text-muted-foreground">{t("loading")}</p>
+      ) : null}
       {customers.error ? (
         <p className="mt-6 text-sm text-destructive">{(customers.error as Error).message}</p>
       ) : null}
@@ -106,7 +106,9 @@ function CustomersPage() {
   );
 }
 
-export function lastStayDate(stays: { check_in: string; confirmation_status: string }[]): string | null {
+export function lastStayDate(
+  stays: { check_in: string; confirmation_status: string }[],
+): string | null {
   const dates = (stays ?? [])
     .filter((s) => s.confirmation_status !== "rejected")
     .map((s) => s.check_in)

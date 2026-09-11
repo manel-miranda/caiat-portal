@@ -72,7 +72,9 @@ function UsersPage() {
   return (
     <AppShell title={t("usersTitle")}>
       {users.isLoading ? <p className="text-sm text-muted-foreground">{t("loading")}</p> : null}
-      {users.error ? <p className="text-sm text-destructive">{(users.error as Error).message}</p> : null}
+      {users.error ? (
+        <p className="text-sm text-destructive">{(users.error as Error).message}</p>
+      ) : null}
 
       <ul className="space-y-3">
         {(users.data ?? []).map((u) => {
@@ -108,7 +110,7 @@ function UsersPage() {
                 <div className="mt-4 space-y-4 border-t border-border pt-4">
                   <div>
                     <Label className="text-xs text-muted-foreground">{t("role")}</Label>
-                    <div className="mt-1.5 flex gap-2">
+                    <div className="mt-1.5 flex flex-wrap gap-2">
                       {ROLES.map((r) => (
                         <Button
                           key={r}
@@ -248,7 +250,9 @@ function AddUserCard({
             <Input
               className="tap-target text-base"
               value={username}
-              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, ""))}
+              onChange={(e) =>
+                setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, ""))
+              }
             />
           </div>
           <div>
@@ -262,14 +266,23 @@ function AddUserCard({
                 placeholder={t("pinRule")}
                 onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
               />
-              <Button variant="outline" className="tap-target shrink-0" onClick={() => setPin(generatePin())}>
+              <Button
+                variant="outline"
+                className="tap-target shrink-0"
+                onClick={() => setPin(generatePin())}
+              >
                 {t("generatePin")}
               </Button>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {ROLES.map((r) => (
-              <Button key={r} size="sm" variant={role === r ? "default" : "outline"} onClick={() => setRole(r)}>
+              <Button
+                key={r}
+                size="sm"
+                variant={role === r ? "default" : "outline"}
+                onClick={() => setRole(r)}
+              >
                 {roleName(r)}
               </Button>
             ))}
@@ -294,7 +307,7 @@ function AddUserCard({
   );
 }
 
-/** Available to the signed-in admin; the PIN itself is only sent to Auth. */
+/** Self-service PIN change; the PIN itself is only ever sent to Auth. */
 function ChangeMyPinCard({
   busy,
   run,
@@ -341,7 +354,6 @@ function ChangeMyPinCard({
   );
 }
 
-
 function PermissionRow({
   user,
   permission,
@@ -357,7 +369,7 @@ function PermissionRow({
   const effective = effectivePermission(user.role, user.overrides, permission, user.active);
   const disabled = busy || user.role === "admin";
   return (
-    <li className="flex items-center justify-between gap-2 rounded-xl bg-muted/40 px-3 py-2 text-sm">
+    <li className="flex flex-col gap-2 rounded-xl bg-muted/40 px-3 py-2 text-sm sm:flex-row sm:items-center sm:justify-between">
       <span className="min-w-0">
         <span className="block truncate">{t(PERMISSION_LABEL_KEYS[permission])}</span>
         <span className="block text-[11px] text-muted-foreground">
@@ -368,7 +380,7 @@ function PermissionRow({
               : t("notAllowed")}
         </span>
       </span>
-      <span className="flex shrink-0 gap-1">
+      <span className="flex flex-wrap gap-1 sm:shrink-0">
         <Button
           size="sm"
           variant={!isDefault && effective ? "default" : "outline"}
@@ -385,7 +397,12 @@ function PermissionRow({
         >
           {t("notAllowed")}
         </Button>
-        <Button size="sm" variant="ghost" disabled={disabled || isDefault} onClick={() => onChange(null)}>
+        <Button
+          size="sm"
+          variant="ghost"
+          disabled={disabled || isDefault}
+          onClick={() => onChange(null)}
+        >
           {t("roleDefault")}
         </Button>
       </span>
