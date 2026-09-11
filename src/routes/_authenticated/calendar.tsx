@@ -133,29 +133,19 @@ function CalendarPage() {
 
   return (
     <AppShell title={t("calendarTitle")}>
-      <div className="mb-3">
-        <Link
-          to="/stays/new"
-          search={newStaySearch(selected)}
-          className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground active:scale-[0.98]"
-        >
-          <Plus className="size-4" /> {t("addReservation")}
-        </Link>
-      </div>
-
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center gap-2">
         <button
           onClick={() => goMonth(-1)}
           aria-label={t("prevMonth")}
-          className="flex size-11 items-center justify-center rounded-full border border-border bg-card active:bg-muted"
+          className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-border bg-card active:bg-muted sm:size-11 sm:rounded-full"
         >
           <ChevronLeft className="size-5 rtl:rotate-180" />
         </button>
-        <div className="min-w-0 text-center">
-          <p className="truncate text-base font-semibold capitalize">{monthLabel}</p>
+        <div className="min-w-0 flex-1 text-center">
+          <p className="truncate text-sm font-semibold capitalize sm:text-base">{monthLabel}</p>
           <button
             onClick={goToday}
-            className="mt-0.5 text-xs font-medium text-primary underline-offset-2 active:underline"
+            className="text-[11px] font-medium text-primary underline-offset-2 active:underline sm:text-xs"
           >
             {t("today")}
           </button>
@@ -163,13 +153,22 @@ function CalendarPage() {
         <button
           onClick={() => goMonth(1)}
           aria-label={t("nextMonth")}
-          className="flex size-11 items-center justify-center rounded-full border border-border bg-card active:bg-muted"
+          className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-border bg-card active:bg-muted sm:size-11 sm:rounded-full"
         >
           <ChevronRight className="size-5 rtl:rotate-180" />
         </button>
+        <Link
+          to="/stays/new"
+          search={newStaySearch(selected)}
+          aria-label={t("addReservation")}
+          className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground active:scale-[0.98] sm:size-auto sm:gap-1.5 sm:rounded-full sm:px-4 sm:py-2.5 sm:text-sm sm:font-semibold"
+        >
+          <Plus className="size-5 sm:size-4" />
+          <span className="hidden sm:inline">{t("addReservation")}</span>
+        </Link>
       </div>
 
-      <div className="mt-3">
+      <div className="mt-2.5 sm:mt-3">
         <label htmlFor="room-filter" className="sr-only">
           {t("filterRoom")}
         </label>
@@ -177,7 +176,7 @@ function CalendarPage() {
           id="room-filter"
           value={roomFilter}
           onChange={(e) => setRoomFilter(e.target.value)}
-          className="h-11 w-full rounded-xl border border-border bg-card px-3 text-sm"
+          className="h-11 w-full rounded-xl border border-border bg-card px-3 text-[13px] sm:text-sm"
         >
           <option value="all">{t("allRooms")}</option>
           {(rooms.data ?? []).map((r) => (
@@ -188,7 +187,7 @@ function CalendarPage() {
         </select>
       </div>
 
-      <div className="surface-card mt-3 p-2">
+      <div className="surface-card mt-2.5 p-1.5 sm:mt-3 sm:p-2">
         <div className="grid grid-cols-7 gap-1 pb-1">
           {weekdays.map((w) => (
             <div
@@ -211,7 +210,7 @@ function CalendarPage() {
               <div
                 key={iso}
                 className={cn(
-                  "min-h-[68px] rounded-lg border p-1 text-left",
+                  "min-h-[60px] rounded-md border p-1 text-left sm:min-h-[68px] sm:rounded-lg",
                   inMonth ? "border-border bg-background" : "border-transparent bg-muted/40",
                   selected === iso && "ring-2 ring-primary",
                 )}
@@ -271,7 +270,7 @@ function CalendarPage() {
         </div>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
+      <div className="mt-2.5 flex flex-wrap sm:mt-3 items-center gap-3 text-[11px] text-muted-foreground">
         <span className="font-semibold uppercase tracking-wide">{t("legend")}:</span>
         <span className="inline-flex items-center gap-1.5">
           <span className="inline-block h-3 w-5 rounded border border-primary/40 bg-primary/15" />
@@ -283,7 +282,7 @@ function CalendarPage() {
         </span>
       </div>
 
-      <section className="mt-5">
+      <section className="mt-4 sm:mt-5">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
             {shortDate(selected)}
@@ -291,7 +290,7 @@ function CalendarPage() {
           <Link
             to="/stays/new"
             search={newStaySearch(selected)}
-            className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-semibold active:bg-primary/20"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-primary/40 bg-primary/10 px-3 text-[11px] font-semibold active:bg-primary/20 sm:rounded-full sm:text-xs"
           >
             <Plus className="size-3.5" />
             {t("addReservationOn", { date: shortDate(selected) })}
@@ -362,7 +361,7 @@ function AgendaGroup({
             key={s.id}
             to="/stays/$id"
             params={{ id: s.id }}
-            className="flex items-center justify-between gap-3 px-4 py-3 text-sm active:bg-muted"
+            className="flex items-center justify-between gap-3 px-3 py-2.5 text-[13px] active:bg-muted sm:px-4 sm:py-3 sm:text-sm"
           >
             <span className="min-w-0">
               <span className="block truncate font-medium">

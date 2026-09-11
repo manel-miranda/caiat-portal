@@ -39,7 +39,7 @@ function HomePage() {
 
   return (
     <AppShell title={t("appName")}>
-      <section className="grid grid-cols-3 gap-3">
+      <section className="grid grid-cols-3 gap-2 sm:gap-3">
         <SummaryTile
           icon={<LogIn className="size-4" />}
           label={t("arrivals")}
@@ -59,56 +59,59 @@ function HomePage() {
         </Link>
       </section>
 
-      <div className="mt-5 flex items-center justify-between">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+      <div className="mt-4 flex items-center justify-between gap-2 sm:mt-5">
+        <h2 className="min-w-0 truncate text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:text-sm">
           {t("navRooms")}
         </h2>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <Link
             to="/calendar"
-            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-semibold active:bg-muted"
+            aria-label={t("calendarTitle")}
+            className="inline-flex size-11 items-center justify-center rounded-xl border border-border bg-card active:bg-muted sm:size-auto sm:gap-1.5 sm:rounded-full sm:px-4 sm:py-2.5 sm:text-sm sm:font-semibold"
           >
-            <CalendarDays className="size-4" /> {t("calendarTitle")}
+            <CalendarDays className="size-[18px] sm:size-4" />
+            <span className="hidden sm:inline">{t("calendarTitle")}</span>
           </Link>
           <Link
             to="/stays/new"
-            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground active:scale-[0.98]"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-primary px-3 text-sm font-semibold text-primary-foreground active:scale-[0.98] sm:rounded-full sm:px-4 sm:py-2.5"
           >
-            <Plus className="size-4" /> {t("newStay")}
+            <Plus className="size-4" />
+            <span className="truncate">{t("newStay")}</span>
           </Link>
         </div>
       </div>
 
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+      <div className="mt-2.5 grid gap-2 sm:mt-3 sm:grid-cols-2 sm:gap-3">
         {(rooms.data ?? []).map((room) => {
           const stay = stayForRoom(allStays, room.id, today);
           const state = roomState(stay, today);
           const content = (
             <div
               className={cn(
-                "flex min-h-[104px] w-full flex-col justify-between rounded-2xl border p-4 text-left shadow-[var(--shadow-card)] transition-transform active:scale-[0.99]",
+                "flex min-h-[80px] w-full flex-col justify-between rounded-xl border p-3 text-left transition-transform active:scale-[0.99] sm:min-h-[104px] sm:rounded-2xl sm:p-4 sm:shadow-[var(--shadow-card)]",
                 STATE_STYLES[state],
               )}
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className="text-xl font-semibold leading-none">{room.name}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="text-[17px] font-semibold leading-none sm:text-xl">{room.name}</p>
+                  <p className="mt-1 text-[11px] text-muted-foreground sm:text-xs">
                     #{room.number} · {t("upToGuests", { count: room.capacity })} ·{" "}
                     {mad(room.base_price)} {t("perGuests", { count: room.included_guests })}
                   </p>
                 </div>
-                <span className="rounded-full bg-background/70 px-2.5 py-1 text-[11px] font-semibold">
+                <span className="shrink-0 rounded-full bg-background/70 px-2 py-0.5 text-[10px] font-semibold sm:px-2.5 sm:py-1 sm:text-[11px]">
                   {stateLabel(state)}
                 </span>
               </div>
               {stay ? (
-                <p className="mt-3 truncate text-sm font-medium">
+                <p className="mt-2 truncate text-[13px] font-medium sm:mt-3 sm:text-sm">
                   {firstName(stay.guest?.full_name ?? "")} · {stay.num_guests} {t("pax")} ·{" "}
                   {shortDate(stay.check_in)}–{shortDate(stay.check_out)}
                 </p>
               ) : (
-                <p className="mt-3 text-sm text-muted-foreground">{t("available")}</p>
+                <p className="mt-2 text-[13px] text-muted-foreground sm:mt-3 sm:text-sm">{t("available")}</p>
               )}
             </div>
           );
@@ -124,8 +127,8 @@ function HomePage() {
         })}
       </div>
 
-      <section className="mt-6">
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+      <section className="mt-4 sm:mt-6">
+        <h2 className="mb-2 text-xs sm:text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           {t("today")}
         </h2>
         <div className="surface-card divide-y divide-border">
@@ -135,7 +138,7 @@ function HomePage() {
                 key={s.id}
                 to="/stays/$id"
                 params={{ id: s.id }}
-                className="flex items-center justify-between px-4 py-3 text-sm active:bg-muted"
+                className="flex items-center justify-between gap-2 px-3 py-2.5 text-[13px] active:bg-muted sm:px-4 sm:py-3 sm:text-sm"
               >
                 <span className="font-medium">{s.guest?.full_name}</span>
                 <span className="text-muted-foreground">{roomLabel(s.room)}</span>
@@ -148,7 +151,7 @@ function HomePage() {
                 key={s.id}
                 to="/stays/$id"
                 params={{ id: s.id }}
-                className="flex items-center justify-between px-4 py-3 text-sm active:bg-muted"
+                className="flex items-center justify-between gap-2 px-3 py-2.5 text-[13px] active:bg-muted sm:px-4 sm:py-3 sm:text-sm"
               >
                 <span className="font-medium">{s.guest?.full_name}</span>
                 <span className="text-muted-foreground">{roomLabel(s.room)}</span>
@@ -160,7 +163,7 @@ function HomePage() {
               <Link
                 key={r.id}
                 to="/requests"
-                className="flex items-center justify-between px-4 py-3 text-sm active:bg-muted"
+                className="flex items-center justify-between gap-2 px-3 py-2.5 text-[13px] active:bg-muted sm:px-4 sm:py-3 sm:text-sm"
               >
                 <span className="font-medium">
                   {r.label}
@@ -188,12 +191,14 @@ function SummaryTile({
   value: number;
 }) {
   return (
-    <div className="surface-card flex flex-col items-center justify-center gap-1 px-2 py-3">
+    <div className="surface-card flex min-h-[68px] flex-col items-center justify-center gap-0.5 px-1.5 py-2 sm:min-h-0 sm:gap-1 sm:px-2 sm:py-3">
       <span className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
         {icon}
       </span>
-      <span className="text-2xl font-semibold leading-none">{value}</span>
-      <span className="text-center text-[11px] text-muted-foreground">{label}</span>
+      <span className="text-xl font-semibold leading-none sm:text-2xl">{value}</span>
+      <span className="text-center text-[10px] leading-tight text-muted-foreground sm:text-[11px]">
+        {label}
+      </span>
     </div>
   );
 }
@@ -209,11 +214,13 @@ function TodayGroup({
 }) {
   return (
     <div>
-      <p className="px-4 pt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <p className="px-3 pt-2.5 text-[11px] sm:px-4 sm:pt-3 sm:text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         {title}
       </p>
       {empty ? (
-        <p className="px-4 py-3 text-sm text-muted-foreground">{t("noResults")}</p>
+        <p className="px-3 py-2.5 text-[13px] text-muted-foreground sm:px-4 sm:py-3 sm:text-sm">
+          {t("noResults")}
+        </p>
       ) : (
         children
       )}
