@@ -222,6 +222,15 @@ export const en = {
   backOnline: "Back online",
   loading: "Loading…",
   by: "by",
+  tasks: "Tasks",
+  tasksEmpty: "Nothing to do right now",
+  taskApprovals: "Reservation approvals",
+  taskGuestRequests: "Guest requests",
+  taskArrivals: "Arrivals today",
+  taskDepartures: "Departures today",
+  taskOverdue: "Overdue",
+  openTasks: "Open tasks",
+
 } as const;
 
 export type TranslationKey = keyof typeof en;
