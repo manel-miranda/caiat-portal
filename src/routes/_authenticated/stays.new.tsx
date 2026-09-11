@@ -77,6 +77,12 @@ function NewStayPage() {
       ? suggestedAccommodationTotal(selectedRoom, guestCountNum, stayNights)
       : null;
 
+  // Prefill the room only when the search param matches a real, active room.
+  useEffect(() => {
+    if (!presetRoom || roomId) return;
+    if ((rooms.data ?? []).some((r) => r.id === presetRoom)) setRoomId(presetRoom);
+  }, [presetRoom, rooms.data, roomId]);
+
   useEffect(() => {
     if (totalEdited) return;
     if (suggested === null || suggested <= 0) return;
