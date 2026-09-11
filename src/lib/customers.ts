@@ -106,10 +106,11 @@ export async function createCustomer(params: {
 }): Promise<string> {
   const { data, error } = await supabase.rpc("customer_upsert", {
     p_full_name: params.fullName.trim(),
-    p_phone: params.phone ?? null,
-    p_email: params.email ?? null,
-    p_nationality: params.nationality ?? null,
-    p_notes: params.notes ?? null,
+    // Generated arg types are non-nullable, but the SQL parameters accept NULL.
+    p_phone: (params.phone ?? null) as string,
+    p_email: (params.email ?? null) as string,
+    p_nationality: (params.nationality ?? null) as string,
+    p_notes: (params.notes ?? null) as string,
   });
   if (error) throw new Error(customerError(error.message));
   return data as unknown as string;
@@ -127,10 +128,10 @@ export async function updateCustomer(params: {
   const { error } = await supabase.rpc("customer_update_profile", {
     p_guest_id: params.id,
     p_full_name: params.fullName.trim(),
-    p_phone: params.phone ?? null,
-    p_email: params.email ?? null,
-    p_nationality: params.nationality ?? null,
-    p_notes: params.notes ?? null,
+    p_phone: (params.phone ?? null) as string,
+    p_email: (params.email ?? null) as string,
+    p_nationality: (params.nationality ?? null) as string,
+    p_notes: (params.notes ?? null) as string,
   });
   if (error) throw new Error(customerError(error.message));
 }

@@ -70,7 +70,8 @@ export async function setUserPermission(
   const { error } = await supabase.rpc("set_user_permission", {
     p_user_id: userId,
     p_key: key,
-    p_granted: granted,
+    // Omitting the flag clears the override so the role default applies again.
+    ...(granted === null ? {} : { p_granted: granted }),
   });
   if (error) throw new Error(userError(error.message));
 }
