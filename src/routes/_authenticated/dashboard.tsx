@@ -105,7 +105,7 @@ function DashboardPage() {
           icon={<Wallet className="size-4" />}
           label={t("revenueToday")}
           value={mad(revenueToday)}
-          hint={`${mad(chargesToday)} extras`}
+          hint={`${mad(chargesToday)} ${t("extras")}`}
         />
         <StatCard
           icon={<Banknote className="size-4" />}
