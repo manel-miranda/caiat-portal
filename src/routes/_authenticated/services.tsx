@@ -36,6 +36,7 @@ export const Route = createFileRoute("/_authenticated/services")({
 const GROUPS: { key: string; label: string }[] = [
   { key: "food", label: t("catFood") },
   { key: "transport", label: t("catTransport") },
+  { key: "visit", label: t("catVisit") },
   { key: "outdoor", label: t("catOutdoor") },
   { key: "route", label: t("catRoute") },
   { key: "other", label: t("catOther") },
