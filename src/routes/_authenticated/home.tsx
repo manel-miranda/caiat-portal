@@ -84,7 +84,7 @@ function HomePage() {
               </div>
               {stay ? (
                 <p className="mt-3 truncate text-sm font-medium">
-                  {firstName(stay.guest?.full_name ?? "")} · {stay.num_guests} pax ·{" "}
+                  {firstName(stay.guest?.full_name ?? "")} · {stay.num_guests} {t("pax")} ·{" "}
                   {shortDate(stay.check_in)}–{shortDate(stay.check_out)}
                 </p>
               ) : (
