@@ -463,6 +463,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      checkout_stay: {
+        Args: { p_override?: boolean; p_stay_id: string }
+        Returns: number
+      }
       create_stay_with_guest: {
         Args: {
           p_accommodation_total: number

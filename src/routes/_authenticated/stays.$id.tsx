@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/lib/auth";
 import { useOnline } from "@/components/OfflineBanner";
-import { mad, nights, roomLabel, shortDate, shortDateTime } from "@/lib/format";
+import { businessLocalToISO, mad, nights, roomLabel, shortDate, shortDateTime } from "@/lib/format";
 import { methodLabels, sourceLabels, t } from "@/lib/i18n";
 import {
   requestsQuery,
@@ -705,7 +705,7 @@ function RequestForm({
         await onSubmit({
           serviceTypeId: serviceId || null,
           label: (selected?.label ?? customLabel).trim() || "Request",
-          scheduledAt: when ? new Date(when).toISOString() : null,
+          scheduledAt: businessLocalToISO(when),
           notes,
         });
         setBusy(false);
