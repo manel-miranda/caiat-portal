@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { useOnline } from "@/components/OfflineBanner";
 import { mad, roomLabel, shortDateTime } from "@/lib/format";
-import { t } from "@/lib/i18n";
+import { statusLabel, t } from "@/lib/i18n";
 import { requestsQuery, serviceTypesQuery, type RequestRow } from "@/lib/queries";
 import { cancelRequest, completeRequest } from "@/lib/mutations";
 import { SheetDialog } from "./stays.$id";
@@ -172,8 +172,8 @@ function RequestHead({ r }: { r: RequestRow }) {
         {r.notes ? <p className="mt-1 text-sm">{r.notes}</p> : null}
       </div>
       <div className="flex flex-col items-end gap-1">
-        <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold capitalize">
-          {r.status}
+        <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold">
+          {statusLabel(r.status)}
         </span>
         {r.stay_id ? (
           <Link

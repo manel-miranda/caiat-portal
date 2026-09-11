@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/auth";
 import { useOnline } from "@/components/OfflineBanner";
 import { mad, roomLabel } from "@/lib/format";
 import { t } from "@/lib/i18n";
+import { activityModeLabel, difficultyLabel, serviceLabel } from "@/lib/service-i18n";
 import { activeStaysQuery, serviceTypesQuery, type ServiceType } from "@/lib/queries";
 import { addCharge, addRequest } from "@/lib/mutations";
 
@@ -33,14 +34,16 @@ export const Route = createFileRoute("/_authenticated/services")({
   component: ServicesPage,
 });
 
-const GROUPS: { key: string; label: string }[] = [
-  { key: "food", label: t("catFood") },
-  { key: "transport", label: t("catTransport") },
-  { key: "visit", label: t("catVisit") },
-  { key: "outdoor", label: t("catOutdoor") },
-  { key: "route", label: t("catRoute") },
-  { key: "other", label: t("catOther") },
-];
+function groups(): { key: string; label: string }[] {
+  return [
+    { key: "food", label: t("catFood") },
+    { key: "transport", label: t("catTransport") },
+    { key: "visit", label: t("catVisit") },
+    { key: "outdoor", label: t("catOutdoor") },
+    { key: "route", label: t("catRoute") },
+    { key: "other", label: t("catOther") },
+  ];
+}
 
 function ServicesPage() {
   const { user } = useAuth();
@@ -68,7 +71,7 @@ function ServicesPage() {
         userId: user?.id,
       });
       await queryClient.invalidateQueries();
-      toast.success(`${svc.label} · ${mad(svc.default_price)}`);
+      toast.success(`${serviceLabel(svc)} · ${mad(svc.default_price)}`);
     } catch (e) {
       toast.error((e as Error).message);
     }
@@ -90,7 +93,7 @@ function ServicesPage() {
         userId: user?.id,
       });
       await queryClient.invalidateQueries();
-      toast.success(`${t("request")}: ${svc.label}`);
+      toast.success(`${t("request")}: ${serviceLabel(svc)}`);
     } catch (e) {
       toast.error((e as Error).message);
     }
@@ -150,7 +153,7 @@ function ServicesPage() {
                       key={s.id}
                       className="rounded-full bg-muted px-3 py-1.5 text-sm text-muted-foreground"
                     >
-                      {s.label}
+                      {serviceLabel(s)}
                     </li>
                   ))}
                 </ul>
@@ -159,7 +162,7 @@ function ServicesPage() {
             </section>
           );
         })()}
-        {GROUPS.map((g) => {
+        {groups().map((g) => {
           const group = items
             .filter((s) => (s.category ?? "other") === g.key)
             .sort((a, b) => a.sort_order - b.sort_order);
@@ -174,14 +177,14 @@ function ServicesPage() {
                   <li key={s.id} className="p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="truncate text-base font-semibold">{s.label}</p>
+                        <p className="truncate text-base font-semibold">{serviceLabel(s)}</p>
                         <p className="mt-0.5 text-xs text-muted-foreground">
                           {s.default_price > 0 ? mad(s.default_price) : "—"} ·{" "}
                           {s.requestable ? t("requestable") : t("billableOnly")}
                         </p>
                         {s.activity_mode || s.difficulty ? (
                           <p className="mt-0.5 text-xs text-muted-foreground">
-                            {[s.activity_mode, s.difficulty].filter(Boolean).join(" · ")}
+                            {[activityModeLabel(s.activity_mode), difficultyLabel(s.difficulty)].filter(Boolean).join(" · ")}
                           </p>
                         ) : null}
                       </div>
