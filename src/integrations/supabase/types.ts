@@ -491,6 +491,20 @@ export type Database = {
         }
         Returns: string
       }
+      edit_stay: {
+        Args: {
+          p_accommodation_total: number
+          p_check_in: string
+          p_check_out: string
+          p_guest_name: string
+          p_notes: string
+          p_num_guests: number
+          p_room_id: string
+          p_source: Database["public"]["Enums"]["stay_source"]
+          p_stay_id: string
+        }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

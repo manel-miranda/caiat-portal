@@ -112,6 +112,60 @@ export async function createStay(params: {
   return stayId;
 }
 
+export type EditableStayFields = {
+  guestName: string;
+  roomId: string;
+  checkIn: string;
+  checkOut: string;
+  numGuests: number;
+  source: string;
+  accommodationTotal: number;
+  notes: string;
+};
+
+/**
+ * Admin-only correction of a booking. Goes through a vetted SECURITY DEFINER
+ * RPC (direct writes on stays stay revoked) which re-runs every creation rule
+ * and, for confirmed stays only, the room overlap check.
+ */
+export async function updateStay(params: {
+  stayId: string;
+  next: EditableStayFields;
+  before: EditableStayFields;
+  userId?: string | undefined;
+}) {
+  const { next } = params;
+  const { error } = await supabase.rpc("edit_stay", {
+    p_stay_id: params.stayId,
+    p_guest_name: next.guestName.trim(),
+    p_room_id: next.roomId,
+    p_check_in: next.checkIn,
+    p_check_out: next.checkOut,
+    p_num_guests: next.numGuests,
+    p_source: next.source as never,
+    p_accommodation_total: next.accommodationTotal,
+    p_notes: next.notes ?? "",
+  });
+  if (error) throw new Error(editStayErrorMessage(error.message));
+
+  // Only the fields that actually moved go into the history entry.
+  const changed: Record<string, { from: unknown; to: unknown }> = {};
+  for (const key of Object.keys(next) as (keyof EditableStayFields)[]) {
+    if (params.before[key] !== next[key]) {
+      changed[key] = { from: params.before[key], to: next[key] };
+    }
+  }
+  void logAudit(params.userId, "stay.updated", "stay", params.stayId, { changed });
+  return params.stayId;
+}
+
+function editStayErrorMessage(raw: string): string {
+  if (raw.includes("STAY_NOT_EDITABLE")) return t("stayNotEditable");
+  if (raw.includes("ADMIN_REQUIRED")) return t("adminOnly");
+  if (raw.includes("STAY_NOT_FOUND")) return t("stayNotFound");
+  return stayErrorMessage(raw);
+}
+
 /** Owner/admin accepts a pending reservation request (re-checked server-side). */
 export async function confirmReservation(stayId: string, userId?: string) {
   const { error } = await supabase.rpc("confirm_reservation", { p_stay_id: stayId });
