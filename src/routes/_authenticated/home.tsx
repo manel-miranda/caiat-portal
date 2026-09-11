@@ -19,12 +19,12 @@ const STATE_STYLES: Record<string, string> = {
   departure_today: "border-warning/50 bg-warning/15",
 };
 
-const STATE_LABELS: Record<string, string> = {
-  available: t("available"),
-  occupied: t("occupied"),
-  arrival_today: t("arrivalToday"),
-  departure_today: t("departureToday"),
-};
+function stateLabel(state: string): string {
+  if (state === "occupied") return t("occupied");
+  if (state === "arrival_today") return t("arrivalToday");
+  if (state === "departure_today") return t("departureToday");
+  return t("available");
+}
 
 function HomePage() {
   const today = todayISO();
