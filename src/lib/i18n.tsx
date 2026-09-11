@@ -370,6 +370,15 @@ export const en = {
   guestWelcome: "Welcome, {name}",
   myStay: "My stay",
   requestSomething: "Request something",
+  // menu 3D/AR prototype
+  menuSection: "Discover the menu",
+  dishTajine: "Caiat Tajine",
+  dishDemoNote:
+    "A 3D prototype dish, shown to demonstrate the experience. Not a real menu item or price yet.",
+  demoBadge: "3D demo",
+  dragToRotate: "Drag to rotate the dish",
+  viewOnTable: "View on your table",
+  arUnavailable: "Your phone does not support camera view. You can still explore the dish in 3D.",
   otherRequest: "Other request",
   describeRequest: "What do you need?",
   sendRequest: "Send request",
@@ -733,6 +742,16 @@ const pt: Dict = {
   guestWelcome: "Bem-vindo, {name}",
   myStay: "A minha estadia",
   requestSomething: "Pedir algo",
+  // menu 3D/AR prototype
+  menuSection: "Descobrir o menu",
+  dishTajine: "Tajine Caiat",
+  dishDemoNote:
+    "Prato protótipo em 3D, apresentado para demonstrar a experiência. Ainda não é um prato nem um preço reais.",
+  demoBadge: "Demo 3D",
+  dragToRotate: "Arraste para rodar o prato",
+  viewOnTable: "Ver na sua mesa",
+  arUnavailable:
+    "O seu telemóvel não suporta a vista pela câmara. Pode continuar a explorar o prato em 3D.",
   otherRequest: "Outro pedido",
   describeRequest: "Do que precisa?",
   sendRequest: "Enviar pedido",
@@ -1096,6 +1115,16 @@ const fr: Dict = {
   guestWelcome: "Bienvenue, {name}",
   myStay: "Mon séjour",
   requestSomething: "Faire une demande",
+  // menu 3D/AR prototype
+  menuSection: "Découvrir le menu",
+  dishTajine: "Tajine Caiat",
+  dishDemoNote:
+    "Plat prototype en 3D, présenté pour démontrer l'expérience. Ce n'est pas encore un plat ni un prix réels.",
+  demoBadge: "Démo 3D",
+  dragToRotate: "Faites glisser pour tourner le plat",
+  viewOnTable: "Voir sur votre table",
+  arUnavailable:
+    "Votre téléphone ne prend pas en charge la vue caméra. Vous pouvez toujours explorer le plat en 3D.",
   otherRequest: "Autre demande",
   describeRequest: "De quoi avez-vous besoin ?",
   sendRequest: "Envoyer la demande",
@@ -1456,6 +1485,14 @@ const ar: Dict = {
   guestWelcome: "مرحباً، {name}",
   myStay: "إقامتي",
   requestSomething: "اطلب شيئاً",
+  // menu 3D/AR prototype
+  menuSection: "اكتشف القائمة",
+  dishTajine: "طاجين كايات",
+  dishDemoNote: "طبق نموذجي ثلاثي الأبعاد لعرض التجربة فقط. ليس طبقاً أو سعراً حقيقياً بعد.",
+  demoBadge: "عرض ثلاثي الأبعاد",
+  dragToRotate: "اسحب لتدوير الطبق",
+  viewOnTable: "شاهده على طاولتك",
+  arUnavailable: "هاتفك لا يدعم عرض الكاميرا. يمكنك مع ذلك استكشاف الطبق ثلاثي الأبعاد.",
   otherRequest: "طلب آخر",
   describeRequest: "ما الذي تحتاجه؟",
   sendRequest: "إرسال الطلب",

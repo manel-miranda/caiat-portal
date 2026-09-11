@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { DishViewer } from "@/components/DishViewer";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { CurrencySwitcher } from "@/components/CurrencySwitcher";
 import { mad, nights, shortDate } from "@/lib/format";
@@ -189,6 +190,9 @@ function Portal({ token, data }: { token: string; data: GuestPortalData }) {
           </li>
         </ul>
       </section>
+
+      {/* ---- Menu 3D/AR prototype ---- */}
+      <DishViewer />
 
       {/* ---- Request something ---- */}
       <section className="surface-card mt-4 p-3 sm:p-4">
