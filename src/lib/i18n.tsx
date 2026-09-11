@@ -370,6 +370,15 @@ export const en = {
   guestWelcome: "Welcome, {name}",
   myStay: "My stay",
   requestSomething: "Request something",
+  // menu 3D/AR prototype
+  menuSection: "Discover the menu",
+  dishTajine: "Caiat Tajine",
+  dishDemoNote:
+    "A 3D prototype dish, shown to demonstrate the experience. Not a real menu item or price yet.",
+  demoBadge: "3D demo",
+  dragToRotate: "Drag to rotate the dish",
+  viewOnTable: "View on your table",
+  arUnavailable: "Your phone does not support camera view. You can still explore the dish in 3D.",
   otherRequest: "Other request",
   describeRequest: "What do you need?",
   sendRequest: "Send request",
