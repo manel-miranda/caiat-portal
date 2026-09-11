@@ -190,7 +190,10 @@ function NewStayPage() {
 
   return (
     <AppShell title={t("newStay")}>
-      <form onSubmit={submit} className="surface-card space-y-3 p-3 sm:space-y-4 sm:p-4">
+      <form
+        onSubmit={submit}
+        className="space-y-3 sm:space-y-4 sm:rounded-2xl sm:border sm:border-border sm:bg-card sm:p-4 sm:shadow-[var(--shadow-card)]"
+      >
         {customer ? (
           <div className="rounded-xl border border-primary/40 bg-primary/5 p-3">
             <div className="flex items-start justify-between gap-3">
@@ -226,7 +229,7 @@ function NewStayPage() {
           <>
             <Field label={t("searchCustomer")}>
               <Input
-                className="tap-target text-base"
+                className="h-11 text-base sm:h-12"
                 value={customerSearch}
                 placeholder={t("customerSearch")}
                 onChange={(e) => setCustomerSearch(e.target.value)}
@@ -235,17 +238,17 @@ function NewStayPage() {
 
             <Field label={t("guestName")}>
               <Input
-                className="tap-target text-base"
+                className="h-11 text-base sm:h-12"
                 value={guestName}
                 onChange={(e) => setGuestName(e.target.value)}
                 required
               />
             </Field>
 
-            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+            <div className="grid grid-cols-1 gap-2 min-[390px]:grid-cols-2 sm:gap-3">
               <Field label={`${t("phone")} (${t("optional")})`}>
                 <Input
-                  className="tap-target text-base"
+                  className="h-11 text-base sm:h-12"
                   inputMode="tel"
                   value={guestPhone}
                   onChange={(e) => setGuestPhone(e.target.value)}
@@ -253,7 +256,7 @@ function NewStayPage() {
               </Field>
               <Field label={`${t("email")} (${t("optional")})`}>
                 <Input
-                  className="tap-target text-base"
+                  className="h-11 text-base sm:h-12"
                   inputMode="email"
                   value={guestEmail}
                   onChange={(e) => setGuestEmail(e.target.value)}
@@ -311,14 +314,14 @@ function NewStayPage() {
                 type="button"
                 key={r.id}
                 onClick={() => setRoomId(r.id)}
-                className={`rounded-xl border px-2 py-3 text-sm font-semibold ${
+                className={`min-h-[50px] rounded-xl border px-1.5 py-1.5 text-[13px] font-semibold leading-tight sm:min-h-0 sm:px-2 sm:py-3 sm:text-sm ${
                   roomId === r.id
                     ? "border-primary bg-primary text-primary-foreground"
                     : "border-border bg-card"
                 }`}
               >
                 {r.name}
-                <span className="mt-0.5 block text-[10px] font-normal opacity-70">#{r.number}</span>
+                <span className="block text-[10px] font-normal opacity-70">#{r.number}</span>
               </button>
             ))}
           </div>
@@ -351,11 +354,11 @@ function NewStayPage() {
           ) : null}
         </Field>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3">
           <Field label={t("arrival")}>
             <Input
               type="date"
-              className="tap-target text-base"
+              className="h-11 text-base sm:h-12"
               value={checkIn}
               onChange={(e) => setCheckIn(e.target.value)}
               required
@@ -364,7 +367,7 @@ function NewStayPage() {
           <Field label={t("departure")}>
             <Input
               type="date"
-              className="tap-target text-base"
+              className="h-11 text-base sm:h-12"
               value={checkOut}
               onChange={(e) => setCheckOut(e.target.value)}
               required
@@ -372,12 +375,12 @@ function NewStayPage() {
           </Field>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3">
           <Field label={t("guests")}>
             <Input
               type="number"
               min={1}
-              className="tap-target text-base"
+              className="h-11 text-base sm:h-12"
               value={numGuests}
               onChange={(e) => setNumGuests(e.target.value)}
             />
@@ -387,7 +390,7 @@ function NewStayPage() {
               type="number"
               inputMode="decimal"
               min={0}
-              className="tap-target text-base"
+              className="h-11 text-base sm:h-12"
               value={total}
               onChange={(e) => {
                 setTotalEdited(true);
@@ -411,7 +414,7 @@ function NewStayPage() {
                 type="button"
                 key={key}
                 onClick={() => setSource(key)}
-                className={`rounded-xl border px-2 py-3 text-xs font-semibold ${
+                className={`min-h-11 rounded-xl border px-2 text-xs font-semibold ${
                   source === key
                     ? "border-primary bg-primary text-primary-foreground"
                     : "border-border bg-card"
@@ -433,7 +436,7 @@ function NewStayPage() {
                 type="button"
                 key={key}
                 onClick={() => setConfirmationStatus(key)}
-                className={`rounded-xl border px-2 py-3 text-xs font-semibold ${
+                className={`min-h-11 rounded-xl border px-2 text-xs font-semibold ${
                   confirmationStatus === key
                     ? "border-primary bg-primary text-primary-foreground"
                     : "border-border bg-card"
@@ -449,7 +452,7 @@ function NewStayPage() {
           <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
         </Field>
 
-        <Button type="submit" disabled={busy} className="tap-target w-full rounded-xl text-base">
+        <Button type="submit" disabled={busy} className="h-11 w-full rounded-xl text-base sm:h-12">
           {t("createStay")}
         </Button>
       </form>

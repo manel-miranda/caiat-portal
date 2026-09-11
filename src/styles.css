@@ -165,18 +165,19 @@
 @utility surface-card {
   background-color: var(--color-card);
   border: 1px solid var(--color-border);
-  /* Mobile density: slightly tighter corners on phones, unchanged on desktop. */
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
+  /* Phones: flat, small radius, no shadow. Desktop keeps the softer card look. */
+  border-radius: 0.75rem;
+  box-shadow: none;
 
   @media (width >= 40rem) {
     border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-card);
   }
 }
 
 @utility tap-target {
   /* Comfortable on phones (>=44px) without feeling oversized; roomier on desktop. */
-  min-height: 2.875rem;
+  min-height: 2.75rem;
 
   @media (width >= 40rem) {
     min-height: 3.25rem;
