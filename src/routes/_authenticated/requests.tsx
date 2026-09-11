@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/auth";
 import { useOnline } from "@/components/OfflineBanner";
 import { mad, roomLabel, shortDateTime } from "@/lib/format";
 import { statusLabel, t } from "@/lib/i18n";
+import { serviceLabel } from "@/lib/service-i18n";
 import { requestsQuery, serviceTypesQuery, type RequestRow } from "@/lib/queries";
 import { cancelRequest, completeRequest } from "@/lib/mutations";
 import { SheetDialog } from "./stays.$id";
@@ -89,7 +90,7 @@ function RequestsPage() {
         <ul className="mt-2 space-y-3">
           {pending.map((r) => (
             <li key={r.id} className="surface-card p-4">
-              <RequestHead r={r} />
+              <RequestHead r={r} label={serviceLabel(serviceFor(r) ?? { label: r.label })} />
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <Button
                   onClick={() => void onComplete(r)}
@@ -121,7 +122,7 @@ function RequestsPage() {
         <ul className="surface-card mt-2 divide-y divide-border">
           {history.map((r) => (
             <li key={r.id} className="p-4">
-              <RequestHead r={r} />
+              <RequestHead r={r} label={serviceLabel(serviceFor(r) ?? { label: r.label })} />
             </li>
           ))}
         </ul>
@@ -135,7 +136,8 @@ function RequestsPage() {
         {billing ? (
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              {billing.label} · {mad(serviceFor(billing)?.default_price ?? 0)}
+              {serviceLabel(serviceFor(billing) ?? { label: billing.label })} ·{" "}
+              {mad(serviceFor(billing)?.default_price ?? 0)}
             </p>
             <Button
               className="tap-target w-full rounded-xl"
@@ -159,11 +161,11 @@ function RequestsPage() {
   );
 }
 
-function RequestHead({ r }: { r: RequestRow }) {
+function RequestHead({ r, label }: { r: RequestRow; label?: string }) {
   return (
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0">
-        <p className="truncate text-base font-semibold">{r.label}</p>
+        <p className="truncate text-base font-semibold">{label ?? r.label}</p>
         <p className="mt-0.5 text-xs text-muted-foreground">
           {r.room ? roomLabel(r.room) : "—"}
           {r.stay?.guest?.full_name ? ` · ${r.stay.guest.full_name}` : ""}

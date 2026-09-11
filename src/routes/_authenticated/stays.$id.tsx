@@ -453,6 +453,7 @@ export function SheetDialog({
 
 type ServiceLike = {
   id: string;
+  key?: string | null;
   label: string;
   default_price: number;
   billable: boolean;
