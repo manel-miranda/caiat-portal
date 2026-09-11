@@ -123,10 +123,17 @@ export const allStaysQuery = {
 export function stayQuery(id: string) {
   return {
     queryKey: ["stay", id],
-    queryFn: async (): Promise<StayRow> => {
-      const { data, error } = await supabase.from("stays").select(STAY_SELECT).eq("id", id).single();
+    // A missing stay is a normal outcome (bad link, deleted stay), not a
+    // transient failure: return null instead of retrying into a stuck spinner.
+    retry: false,
+    queryFn: async (): Promise<StayRow | null> => {
+      const { data, error } = await supabase
+        .from("stays")
+        .select(STAY_SELECT)
+        .eq("id", id)
+        .maybeSingle();
       if (error) throw error;
-      return data as unknown as StayRow;
+      return (data as unknown as StayRow) ?? null;
     },
   };
 }
