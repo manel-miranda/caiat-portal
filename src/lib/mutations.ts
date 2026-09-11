@@ -78,8 +78,11 @@ export async function createStay(params: {
   source: string;
   accommodationTotal: number;
   notes?: string | null | undefined;
+  /** "confirmed" reserves the room; "pending" is only an enquiry. */
+  confirmationStatus?: "confirmed" | "pending";
   userId?: string | undefined;
 }) {
+  const confirmation = params.confirmationStatus ?? "confirmed";
   const { data, error } = await supabase.rpc("create_stay_with_guest", {
     p_guest_name: params.guestName.trim(),
     p_room_id: params.roomId,
@@ -89,16 +92,46 @@ export async function createStay(params: {
     p_source: params.source as never,
     p_accommodation_total: params.accommodationTotal,
     p_notes: params.notes ?? "",
+    p_confirmation_status: confirmation,
   });
   if (error) throw new Error(stayErrorMessage(error.message));
   const stayId = data as unknown as string;
-  void logAudit(params.userId, "stay.created", "stay", stayId, {
+  void logAudit(
+    params.userId,
+    confirmation === "pending" ? "reservation.requested" : "stay.created",
+    "stay",
+    stayId,
+    {
     guest: params.guestName.trim(),
     room_id: params.roomId,
     check_in: params.checkIn,
     check_out: params.checkOut,
-  });
+    confirmation_status: confirmation,
+    },
+  );
   return stayId;
+}
+
+/** Owner/admin accepts a pending reservation request (re-checked server-side). */
+export async function confirmReservation(stayId: string, userId?: string) {
+  const { error } = await supabase.rpc("confirm_reservation", { p_stay_id: stayId });
+  if (error) throw new Error(reservationErrorMessage(error.message));
+  void logAudit(userId, "reservation.confirmed", "stay", stayId, {});
+}
+
+/** Owner/admin rejects a pending reservation request. */
+export async function rejectReservation(stayId: string, userId?: string) {
+  const { error } = await supabase.rpc("reject_reservation", { p_stay_id: stayId });
+  if (error) throw new Error(reservationErrorMessage(error.message));
+  void logAudit(userId, "reservation.rejected", "stay", stayId, {});
+}
+
+function reservationErrorMessage(raw: string): string {
+  if (raw.includes("ROOM_CONFLICT")) return t("roomNoLongerAvailable");
+  if (raw.includes("ADMIN_REQUIRED")) return t("adminOnly");
+  if (raw.includes("NOT_PENDING")) return t("notPendingAnymore");
+  if (raw.includes("ROOM_CAPACITY")) return t("guestsOverCapacity");
+  return stayErrorMessage(raw);
 }
 
 function stayErrorMessage(raw: string): string {
