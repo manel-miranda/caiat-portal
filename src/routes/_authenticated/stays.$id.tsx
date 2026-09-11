@@ -89,7 +89,7 @@ function StayDetailPage() {
   const totals = stayTotals(stay);
 
   return (
-    <AppShell title={`${t("room")} ${stay.room?.number ?? ""}`}>
+    <AppShell title={roomLabel(stay.room)}>
       <section className="surface-card p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -103,7 +103,7 @@ function StayDetailPage() {
           </span>
         </div>
         <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
-          <Info label={t("room")} value={`${stay.room?.number} · ${stay.room?.name}`} />
+          <Info label={t("room")} value={`${roomLabel(stay.room)} · #${stay.room?.number ?? ""}`} />
           <Info
             label={`${t("arrival")} → ${t("departure")}`}
             value={`${shortDate(stay.check_in)} – ${shortDate(stay.check_out)} (${nights(

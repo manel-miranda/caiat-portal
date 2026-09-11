@@ -7,7 +7,7 @@ import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { useOnline } from "@/components/OfflineBanner";
-import { mad, shortDateTime } from "@/lib/format";
+import { mad, roomLabel, shortDateTime } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { requestsQuery, serviceTypesQuery, type RequestRow } from "@/lib/queries";
 import { cancelRequest, completeRequest } from "@/lib/mutations";
@@ -165,7 +165,7 @@ function RequestHead({ r }: { r: RequestRow }) {
       <div className="min-w-0">
         <p className="truncate text-base font-semibold">{r.label}</p>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          {r.room ? `${t("room")} ${r.room.number}` : "—"}
+          {r.room ? roomLabel(r.room) : "—"}
           {r.stay?.guest?.full_name ? ` · ${r.stay.guest.full_name}` : ""}
           {r.scheduled_at ? ` · ${shortDateTime(r.scheduled_at)}` : ""}
         </p>

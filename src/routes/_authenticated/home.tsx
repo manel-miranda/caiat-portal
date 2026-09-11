@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Plus, LogIn, LogOut, Bell } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { activeStaysQuery, requestsQuery, roomsQuery, stayForRoom, roomState } from "@/lib/queries";
-import { firstName, mad, shortDate, todayISO, timeOnly } from "@/lib/format";
+import { firstName, mad, roomLabel, shortDate, todayISO, timeOnly } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -74,7 +74,7 @@ function HomePage() {
                 <div>
                   <p className="text-xl font-semibold leading-none">{room.name}</p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {t("room")} {room.number} · Up to {room.capacity} ·{" "}
+                    #{room.number} · Up to {room.capacity} ·{" "}
                     {mad(room.base_price)} / {room.included_guests} guests
                   </p>
                 </div>
@@ -119,7 +119,7 @@ function HomePage() {
               >
                 <span className="font-medium">{s.guest?.full_name}</span>
                 <span className="text-muted-foreground">
-                  {t("room")} {s.room?.number}
+                  {roomLabel(s.room)}
                 </span>
               </Link>
             ))}
@@ -134,7 +134,7 @@ function HomePage() {
               >
                 <span className="font-medium">{s.guest?.full_name}</span>
                 <span className="text-muted-foreground">
-                  {t("room")} {s.room?.number}
+                  {roomLabel(s.room)}
                 </span>
               </Link>
             ))}
@@ -148,7 +148,7 @@ function HomePage() {
               >
                 <span className="font-medium">
                   {r.label}
-                  {r.room ? ` · ${t("room")} ${r.room.number}` : ""}
+                  {r.room ? ` · ${roomLabel(r.room)}` : ""}
                 </span>
                 <span className="text-muted-foreground">
                   {r.scheduled_at ? timeOnly(r.scheduled_at) : ""}
