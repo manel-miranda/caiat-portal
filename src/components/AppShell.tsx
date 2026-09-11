@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { BedDouble, Bell, LogOut, LayoutDashboard, Banknote, History } from "lucide-react";
+import { BedDouble, Bell, LogOut, LayoutDashboard, Banknote, History, ConciergeBell } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -15,6 +15,7 @@ type NavItem = { to: string; label: string; icon: typeof BedDouble; adminOnly?: 
 const NAV: NavItem[] = [
   { to: "/home", label: t("navRooms"), icon: BedDouble },
   { to: "/requests", label: t("navRequests"), icon: Bell },
+  { to: "/services", label: t("navServices"), icon: ConciergeBell },
   { to: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard, adminOnly: true },
   { to: "/cash", label: t("navCash"), icon: Banknote, adminOnly: true },
   { to: "/activity", label: t("navActivity"), icon: History, adminOnly: true },
