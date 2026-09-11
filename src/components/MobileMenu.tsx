@@ -3,7 +3,6 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Banknote,
-  CalendarDays,
   ConciergeBell,
   History,
   LayoutDashboard,
@@ -11,6 +10,7 @@ import {
   MoreHorizontal,
   UserCog,
   UserRound,
+  Users,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,16 +34,19 @@ export function MobileMenu({ variant = "icon" }: { variant?: "icon" | "tab" }) {
   const { currency, setCurrency } = useCurrency();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const canDashboard = can("activity_view");
 
   const links: MenuLink[] = ([
-    // Calendar also lives here because Dashboard-capable users lose its bottom-nav slot.
-    { to: "/calendar", label: t("navCalendar"), icon: CalendarDays },
+    // Customers moves into the More sheet for Dashboard-capable users because
+    // Calendar takes its bottom-nav slot. Calendar is always in the bar.
+    canDashboard ? { to: "/customers", label: t("navCustomers"), icon: Users } : null,
     { to: "/services", label: t("navServices"), icon: ConciergeBell },
-    { to: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard, permission: "activity_view" },
+    // Dashboard is already in the bottom bar for Dashboard-capable users.
+    canDashboard ? null : ({ to: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard, permission: "activity_view" } as MenuLink),
     { to: "/cash", label: t("navCash"), icon: Banknote, permission: "cash_reconcile" },
     { to: "/activity", label: t("navActivity"), icon: History, permission: "activity_view" },
     { to: "/users", label: t("navUsers"), icon: UserCog, permission: "users_manage" },
-  ] as MenuLink[]).filter((l) => !l.permission || can(l.permission));
+  ] as (MenuLink | null)[]).filter((l): l is MenuLink => Boolean(l) && (!l!.permission || can(l!.permission)));
 
   async function signOut() {
     setOpen(false);
