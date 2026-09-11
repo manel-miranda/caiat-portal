@@ -166,6 +166,11 @@ function RequestHead({ r, label }: { r: RequestRow; label?: string }) {
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0">
         <p className="truncate text-base font-semibold">{label ?? r.label}</p>
+        {r.created_via === "guest_portal" ? (
+          <span className="mt-1 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+            {t("guestOriginTag")}
+          </span>
+        ) : null}
         <p className="mt-0.5 text-xs text-muted-foreground">
           {r.room ? roomLabel(r.room) : "—"}
           {r.stay?.guest?.full_name ? ` · ${r.stay.guest.full_name}` : ""}

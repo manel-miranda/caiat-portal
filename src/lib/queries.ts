@@ -244,6 +244,7 @@ export type RequestRow = {
   room_id: string | null;
   service_type_id: string | null;
   created_by: string | null;
+  created_via: string;
   completed_by: string | null;
   completed_at: string | null;
   room: { number: string; name: string } | null;
@@ -251,7 +252,7 @@ export type RequestRow = {
 };
 
 const REQUEST_SELECT =
-  "id, label, scheduled_at, notes, status, created_at, stay_id, room_id, service_type_id, created_by, completed_by, completed_at, room:rooms(number, name), stay:stays(id, guest:guests(full_name))";
+  "id, label, scheduled_at, notes, status, created_at, stay_id, room_id, service_type_id, created_by, created_via, completed_by, completed_at, room:rooms(number, name), stay:stays(id, guest:guests(full_name))";
 
 export const requestsQuery = {
   queryKey: ["requests"],
