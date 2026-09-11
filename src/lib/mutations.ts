@@ -215,6 +215,14 @@ export async function checkoutStay(params: {
   });
 }
 
+function checkoutErrorMessage(raw: string): string {
+  if (raw.includes("OUTSTANDING_BALANCE") || raw.includes("OVERRIDE_REQUIRED")) {
+    return t("outstandingBlocked");
+  }
+  if (raw.includes("STAY_NOT_ACTIVE")) return t("checkoutDone");
+  return raw;
+}
+
 /** Insert or update the cash count for a business date (admin only via RLS). */
 export async function saveCashCount(params: {
   date: string;
