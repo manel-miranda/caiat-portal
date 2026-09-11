@@ -199,31 +199,109 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_sessions: {
+        Row: {
+          amount_mad: number
+          capture_id: string | null
+          charged_amount: number
+          charged_currency: string
+          created_at: string
+          environment: string
+          error_code: string | null
+          fx_rate: number
+          guest_token: string
+          id: string
+          order_id: string | null
+          payment_id: string | null
+          provider: string
+          status: string
+          stay_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_mad: number
+          capture_id?: string | null
+          charged_amount: number
+          charged_currency: string
+          created_at?: string
+          environment?: string
+          error_code?: string | null
+          fx_rate: number
+          guest_token: string
+          id?: string
+          order_id?: string | null
+          payment_id?: string | null
+          provider?: string
+          status?: string
+          stay_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_mad?: number
+          capture_id?: string | null
+          charged_amount?: number
+          charged_currency?: string
+          created_at?: string
+          environment?: string
+          error_code?: string | null
+          fx_rate?: number
+          guest_token?: string
+          id?: string
+          order_id?: string | null
+          payment_id?: string | null
+          provider?: string
+          status?: string
+          stay_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_sessions_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_sessions_stay_id_fkey"
+            columns: ["stay_id"]
+            isOneToOne: false
+            referencedRelation: "stays"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
           created_at: string
+          external_reference: string | null
           id: string
           method: Database["public"]["Enums"]["payment_method"]
           notes: string | null
+          provider: string | null
           received_by: string | null
           stay_id: string
         }
         Insert: {
           amount: number
           created_at?: string
+          external_reference?: string | null
           id?: string
           method: Database["public"]["Enums"]["payment_method"]
           notes?: string | null
+          provider?: string | null
           received_by?: string | null
           stay_id: string
         }
         Update: {
           amount?: number
           created_at?: string
+          external_reference?: string | null
           id?: string
           method?: Database["public"]["Enums"]["payment_method"]
           notes?: string | null
+          provider?: string | null
           received_by?: string | null
           stay_id?: string
         }
@@ -571,7 +649,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "staff"
-      payment_method: "cash" | "card" | "bank_transfer"
+      payment_method: "cash" | "card" | "bank_transfer" | "paypal"
       request_status: "pending" | "completed" | "cancelled"
       stay_source:
         | "booking_com"
@@ -709,7 +787,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "staff"],
-      payment_method: ["cash", "card", "bank_transfer"],
+      payment_method: ["cash", "card", "bank_transfer", "paypal"],
       request_status: ["pending", "completed", "cancelled"],
       stay_source: [
         "booking_com",

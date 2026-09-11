@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { BedDouble, CalendarDays, CreditCard, Send, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import { mad, nights, shortDate } from "@/lib/format";
 import { statusLabel, t } from "@/lib/i18n";
 import { serviceLabel } from "@/lib/service-i18n";
 import { guestCreateRequest, guestPortalQuery, type GuestPortalData } from "@/lib/guest";
-import { paymentConfig } from "@/lib/payments";
+import { paymentStatusQuery, startCheckout, type PaymentConfig } from "@/lib/payments";
 
 export const Route = createFileRoute("/guest/$token")({
   head: () => ({
@@ -67,14 +67,41 @@ function Centered({ children }: { children: React.ReactNode }) {
 
 function Portal({ token, data }: { token: string; data: GuestPortalData }) {
   const queryClient = useQueryClient();
-  const payment = paymentConfig();
+  const paymentStatus = useQuery(paymentStatusQuery());
+  const payment: PaymentConfig = paymentStatus.data ?? { available: false };
   const [serviceId, setServiceId] = useState<string>("");
   const [customLabel, setCustomLabel] = useState("");
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
+  const [payBusy, setPayBusy] = useState(false);
+  const [payResult, setPayResult] = useState<"success" | "cancelled" | "error" | null>(null);
 
   async function refresh() {
     await queryClient.invalidateQueries({ queryKey: ["guest-portal", token] });
+  }
+
+  // Outcome of a PayPal redirect: read once, then clean the URL.
+  useEffect(() => {
+    const state = new URLSearchParams(window.location.search).get("payment");
+    if (state === "success" || state === "cancelled" || state === "error") {
+      setPayResult(state);
+      window.history.replaceState({}, "", window.location.pathname);
+      if (state === "success") void refresh();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function payNow() {
+    setPayBusy(true);
+    try {
+      // The server decides the amount; the browser never sends one.
+      const approveUrl = await startCheckout(token);
+      window.location.href = approveUrl;
+    } catch (e) {
+      const code = (e as Error).message;
+      toast.error(code === "NOTHING_DUE" ? t("paymentNothingDue") : t("paymentError"));
+      setPayBusy(false);
+    }
   }
 
   function errorText(code: string) {
@@ -277,11 +304,38 @@ function Portal({ token, data }: { token: string; data: GuestPortalData }) {
         <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           <CreditCard className="size-4" /> {t("payOnline")}
         </h2>
-        {payment.available ? (
-          // Reserved for a server-generated provider checkout (CMI / PayPal).
-          <Button className="tap-target mt-3 w-full rounded-xl" disabled>
-            {t("payOnline")}
-          </Button>
+
+        {payResult ? (
+          <p
+            className={`mt-2 rounded-xl px-3 py-2 text-sm ${
+              payResult === "success"
+                ? "bg-primary/10 font-semibold text-primary"
+                : "bg-muted text-muted-foreground"
+            }`}
+          >
+            {payResult === "success"
+              ? t("paymentSuccess")
+              : payResult === "cancelled"
+                ? t("paymentCancelled")
+                : t("paymentError")}
+          </p>
+        ) : null}
+
+        {payment.available && Number(data.outstanding) > 0 ? (
+          <>
+            <Button
+              className="tap-target mt-3 w-full rounded-xl text-base"
+              disabled={payBusy}
+              onClick={() => void payNow()}
+            >
+              {payBusy ? t("paymentRedirecting") : t("payWithPaypal")}
+            </Button>
+            {payment.environment === "sandbox" ? (
+              <p className="mt-2 text-xs text-muted-foreground">{t("paypalSandboxNote")}</p>
+            ) : null}
+          </>
+        ) : payment.available ? (
+          <p className="mt-2 text-sm text-muted-foreground">{t("paymentNothingDue")}</p>
         ) : (
           <>
             <p className="mt-2 text-sm text-muted-foreground">{t("paymentUnavailable")}</p>
