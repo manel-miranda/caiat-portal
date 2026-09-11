@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { t } from "@/lib/i18n";
 import type { ModelViewerElement } from "@/types/model-viewer";
 
-const MODEL_SRC = "/models/caiat-tajine.glb";
+const MODEL_SRC = "/models/caiat-tajine.gltf";
 
 export function DishViewer() {
   const [ready, setReady] = useState(false);
@@ -74,8 +74,8 @@ export function DishViewer() {
             shadow-intensity={1}
             shadow-softness={0.8}
             touch-action="pan-y"
-            exposure={1}
-            camera-orbit="35deg 68deg 1.1m"
+            exposure={0.75}
+            camera-orbit="25deg 60deg 0.75m"
             style={{ width: "100%", height: "260px", backgroundColor: "transparent" }}
           />
         ) : (
