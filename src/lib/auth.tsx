@@ -97,6 +97,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // A role or permission change by an admin must take effect immediately, with
+  // no sign-out: watch only the rows that describe the signed-in user.
+  const userId = session?.user?.id;
+  useEffect(() => {
+    if (!userId) return;
+    const channel = supabase.channel(`identity-${userId}`);
+    const reload = () => {
+      void loadIdentity(userId);
+    };
+    channel
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles", filter: `id=eq.${userId}` }, reload)
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_roles", filter: `user_id=eq.${userId}` }, reload)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "user_permissions", filter: `user_id=eq.${userId}` },
+        reload,
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [userId]);
+
   const isActive = profile?.active !== false;
   const value: AuthValue = {
     loading,
