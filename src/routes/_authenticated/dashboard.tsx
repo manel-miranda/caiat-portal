@@ -1,6 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { BedDouble, Users, Wallet, Banknote, AlertCircle, Bell, LogIn, LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth";
+import { confirmReservation, rejectReservation } from "@/lib/mutations";
+import { sourceLabel } from "@/lib/i18n";
 import { AppShell } from "@/components/AppShell";
 import { StatCard } from "@/components/ui/stat-card";
 import { requireAdmin } from "@/lib/admin-guard";
@@ -8,6 +13,7 @@ import { addDaysISO, mad, roomLabel, shortDate, timeOnly, todayISO } from "@/lib
 import { t } from "@/lib/i18n";
 import {
   activeStaysQuery,
+  pendingReservationsQuery,
   requestsQuery,
   roomsQuery,
   stayForRoom,
@@ -29,6 +35,20 @@ function DashboardPage() {
   const rooms = useQuery(roomsQuery);
   const stays = useQuery(activeStaysQuery);
   const requests = useQuery(requestsQuery);
+  const pendingReservations = useQuery(pendingReservationsQuery);
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  async function decide(stayId: string, accept: boolean) {
+    try {
+      if (accept) await confirmReservation(stayId, user?.id);
+      else await rejectReservation(stayId, user?.id);
+      await queryClient.invalidateQueries();
+      toast.success(accept ? t("reservationConfirmed") : t("reservationRejected"));
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
   const payments = useQuery(todayPaymentsQuery);
   const charges = useQuery(todayChargesQuery);
 
@@ -132,6 +152,41 @@ function DashboardPage() {
           hint={`${outstandingStays.length} ${t("stay").toLowerCase()}`}
         />
       </div>
+
+      <Section title={`${t("pendingReservations")} (${(pendingReservations.data ?? []).length})`}>
+        <Group title={t("reservationRequest")} icon={<Bell className="size-4" />} empty={(pendingReservations.data ?? []).length === 0}>
+          {(pendingReservations.data ?? []).map((s) => (
+            <div key={s.id} className="px-4 py-3 text-sm">
+              <Link
+                to="/stays/$id"
+                params={{ id: s.id }}
+                className="block active:opacity-70"
+              >
+                <p className="font-medium">
+                  {s.guest?.full_name ?? "—"} · {roomLabel(s.room)}
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {shortDate(s.check_in)} – {shortDate(s.check_out)} · {s.num_guests} {t("pax")} ·{" "}
+                  {sourceLabel(s.source)} · {mad(s.accommodation_total)}
+                </p>
+              </Link>
+              <div className="mt-2 flex gap-2">
+                <Button size="sm" className="rounded-lg" onClick={() => void decide(s.id, true)}>
+                  {t("accept")}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="rounded-lg"
+                  onClick={() => void decide(s.id, false)}
+                >
+                  {t("reject")}
+                </Button>
+              </div>
+            </div>
+          ))}
+        </Group>
+      </Section>
 
       <Section title={t("today")}>
         <Group title={t("arrivals")} icon={<LogIn className="size-4" />} empty={arrivals.length === 0}>

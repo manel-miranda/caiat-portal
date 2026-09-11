@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.create_stay_with_guest(text, uuid, date, date, integer, stay_source, numeric, text);

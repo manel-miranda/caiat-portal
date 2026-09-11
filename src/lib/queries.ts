@@ -48,6 +48,8 @@ export type StayRow = {
   accommodation_total: number;
   notes: string | null;
   status: string;
+  confirmation_status: string;
+  confirmed_at: string | null;
   checked_out_at: string | null;
   created_at: string;
   room_id: string;
@@ -59,7 +61,7 @@ export type StayRow = {
 };
 
 const STAY_SELECT =
-  "id, check_in, check_out, num_guests, source, accommodation_total, notes, status, checked_out_at, created_at, room_id, guest_id, guest:guests(id, full_name, phone, nationality), room:rooms(id, number, name), charges(total), payments(amount)";
+  "id, check_in, check_out, num_guests, source, accommodation_total, notes, status, confirmation_status, confirmed_at, checked_out_at, created_at, room_id, guest_id, guest:guests(id, full_name, phone, nationality), room:rooms(id, number, name), charges(total), payments(amount)";
 
 export function stayTotals(stay: {
   accommodation_total: number;
@@ -101,6 +103,8 @@ export const activeStaysQuery = {
       .from("stays")
       .select(STAY_SELECT)
       .eq("status", "active")
+      // Pending/rejected enquiries never take part in operations.
+      .eq("confirmation_status", "confirmed")
       .order("check_in");
     if (error) throw error;
     return data as unknown as StayRow[];
@@ -115,6 +119,21 @@ export const allStaysQuery = {
       .select(STAY_SELECT)
       .order("check_in", { ascending: false })
       .limit(100);
+    if (error) throw error;
+    return data as unknown as StayRow[];
+  },
+};
+
+/** Reservation requests awaiting an owner decision, soonest arrival first. */
+export const pendingReservationsQuery = {
+  queryKey: ["stays", "pending"],
+  queryFn: async (): Promise<StayRow[]> => {
+    const { data, error } = await supabase
+      .from("stays")
+      .select(STAY_SELECT)
+      .eq("confirmation_status", "pending")
+      .order("check_in", { ascending: true })
+      .order("created_at", { ascending: true });
     if (error) throw error;
     return data as unknown as StayRow[];
   },
@@ -315,7 +334,12 @@ export type RoomState = "available" | "occupied" | "arrival_today" | "departure_
 
 /** Stays are [check_in, check_out): the departure date night is already free. */
 export function isInHouse(stay: StayRow, today = todayISO()): boolean {
-  return stay.status === "active" && stay.check_in <= today && stay.check_out > today;
+  return (
+    stay.status === "active" &&
+    stay.confirmation_status === "confirmed" &&
+    stay.check_in <= today &&
+    stay.check_out > today
+  );
 }
 
 export function roomState(stay: StayRow | undefined, today = todayISO()): RoomState {
@@ -331,6 +355,8 @@ export function roomState(stay: StayRow | undefined, today = todayISO()): RoomSt
  * visible until a new arrival takes the room.
  */
 export function stayForRoom(stays: StayRow[], roomId: string, today = todayISO()) {
-  const roomStays = stays.filter((s) => s.room_id === roomId && s.status === "active");
+  const roomStays = stays.filter(
+    (s) => s.room_id === roomId && s.status === "active" && s.confirmation_status === "confirmed",
+  );
   return roomStays.find((s) => isInHouse(s, today)) ?? roomStays.find((s) => s.check_out === today);
 }

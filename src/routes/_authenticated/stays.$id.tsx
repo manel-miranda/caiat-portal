@@ -28,7 +28,14 @@ import {
   stayQuery,
   stayTotals,
 } from "@/lib/queries";
-import { addCharge, addPayment, addRequest, checkoutStay } from "@/lib/mutations";
+import {
+  addCharge,
+  addPayment,
+  addRequest,
+  checkoutStay,
+  confirmReservation,
+  rejectReservation,
+} from "@/lib/mutations";
 
 export const Route = createFileRoute("/_authenticated/stays/$id")({
   head: () => ({ meta: [{ title: "Stay — Caiat Operations" }] }),
@@ -88,6 +95,20 @@ function StayDetailPage() {
   }
 
   const totals = stayTotals(stay);
+  const isPendingRequest = stay.confirmation_status === "pending";
+  const isRejected = stay.confirmation_status === "rejected";
+
+  async function decide(accept: boolean) {
+    if (!online) { toast.error(t("offline")); return; }
+    try {
+      if (accept) await confirmReservation(id, user?.id);
+      else await rejectReservation(id, user?.id);
+      await refresh();
+      toast.success(accept ? t("reservationConfirmed") : t("reservationRejected"));
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
 
   return (
     <AppShell title={roomLabel(stay.room)}>
@@ -99,8 +120,20 @@ function StayDetailPage() {
               {stay.guest?.phone ?? ""} {stay.guest?.nationality ? `· ${stay.guest.nationality}` : ""}
             </p>
           </div>
-          <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold">
-            {statusLabel(stay.status)}
+          <span
+            className={`rounded-full px-3 py-1 text-xs font-semibold ${
+              isPendingRequest
+                ? "bg-warning/15 text-warning-foreground"
+                : isRejected
+                  ? "bg-destructive/10 text-destructive"
+                  : "bg-muted"
+            }`}
+          >
+            {isPendingRequest
+              ? t("pending")
+              : isRejected
+                ? t("rejectedLabel")
+                : statusLabel(stay.status)}
           </span>
         </div>
         <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
@@ -195,7 +228,34 @@ function StayDetailPage() {
         )}
       </section>
 
-      {stay.status === "active" ? (
+      {isPendingRequest ? (
+        <section className="mt-4 space-y-3">
+          <p className="rounded-2xl border border-border p-4 text-sm text-muted-foreground">
+            {t("pendingNoOperations")}
+          </p>
+          {isAdmin ? (
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                className="tap-target rounded-xl text-base"
+                onClick={() => void decide(true)}
+              >
+                {t("accept")}
+              </Button>
+              <Button
+                variant="outline"
+                className="tap-target rounded-xl text-base"
+                onClick={() => void decide(false)}
+              >
+                {t("reject")}
+              </Button>
+            </div>
+          ) : null}
+        </section>
+      ) : isRejected ? (
+        <p className="mt-4 rounded-2xl border border-border p-4 text-sm text-muted-foreground">
+          {t("rejectedLabel")}
+        </p>
+      ) : stay.status === "active" ? (
         <section className="mt-4 grid grid-cols-2 gap-3">
           <Action icon={<Plus className="size-5" />} label={t("addCharge")} onClick={() => setSheet("charge")} />
           <Action icon={<CreditCard className="size-5" />} label={t("addPayment")} onClick={() => setSheet("payment")} />

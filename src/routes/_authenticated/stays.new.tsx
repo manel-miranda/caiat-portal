@@ -40,6 +40,8 @@ function NewStayPage() {
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
   const [totalEdited, setTotalEdited] = useState(false);
+  // Direct manual bookings stay confirmed by default; enquiries come in pending.
+  const [confirmationStatus, setConfirmationStatus] = useState<"confirmed" | "pending">("confirmed");
 
   const selectedRoom = (rooms.data ?? []).find((r) => r.id === roomId);
   const guestCountNum = Number(numGuests);
@@ -81,10 +83,11 @@ function NewStayPage() {
         source,
         accommodationTotal: amount,
         notes,
+        confirmationStatus,
         userId: user?.id,
       });
       await queryClient.invalidateQueries();
-      toast.success(t("stayCreated"));
+      toast.success(confirmationStatus === "pending" ? t("reservationRequest") : t("stayCreated"));
       navigate({ to: "/stays/$id", params: { id: stayId } });
     } catch (err) {
       toast.error((err as Error).message);
@@ -219,6 +222,28 @@ function NewStayPage() {
                 onClick={() => setSource(key)}
                 className={`rounded-xl border px-2 py-3 text-xs font-semibold ${
                   source === key
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-card"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </Field>
+
+        <Field label={t("bookingStatus")}>
+          <div className="grid grid-cols-2 gap-2">
+            {([
+              { key: "confirmed" as const, label: t("confirmedReservation") },
+              { key: "pending" as const, label: t("pendingRequestOption") },
+            ]).map(({ key, label }) => (
+              <button
+                type="button"
+                key={key}
+                onClick={() => setConfirmationStatus(key)}
+                className={`rounded-xl border px-2 py-3 text-xs font-semibold ${
+                  confirmationStatus === key
                     ? "border-primary bg-primary text-primary-foreground"
                     : "border-border bg-card"
                 }`}
