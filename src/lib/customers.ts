@@ -145,7 +145,70 @@ export async function updateCustomer(params: {
 export function customerError(message: string): string {
   if (message.includes("PERMISSION_DENIED")) return t("permissionDenied");
   if (message.includes("GUEST_NAME_REQUIRED")) return t("guestNameRequired");
+  if (message.includes("MERGE_INVALID_TARGET")) return t("mergeConfirmTitle");
+  if (message.includes("CUSTOMER_NOT_FOUND")) return t("noCustomers");
   return message;
 }
 
+/* ---------------------------------------------------------------- duplicates */
+
+/** Case/spacing-insensitive comparison key for names and emails. */
+export function normalizeText(value: string | null | undefined): string {
+  return (value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+/** Digits-only comparison key so "+212 6 12" and "0612" can still match. */
+export function normalizePhone(value: string | null | undefined): string {
+  const digits = (value ?? "").replace(/\D/g, "");
+  return digits.length > 6 ? digits.slice(-9) : digits;
+}
+
+export type MatchReason = "email" | "phone" | "name";
+
+export type DuplicateCandidate = { customer: CustomerRow; reason: MatchReason };
+
+/**
+ * Finds records that look like the same person. Exact contact matches rank
+ * first; a name-only match is a hint, never grounds for an automatic merge.
+ */
+export function findDuplicateCandidates(
+  all: CustomerRow[],
+  probe: { id?: string; full_name?: string | null; phone?: string | null; email?: string | null },
+): DuplicateCandidate[] {
+  const name = normalizeText(probe.full_name);
+  const email = normalizeText(probe.email);
+  const phone = normalizePhone(probe.phone);
+  const out: DuplicateCandidate[] = [];
+  for (const c of all) {
+    if (probe.id && c.id === probe.id) continue;
+    let reason: MatchReason | null = null;
+    if (email && normalizeText(c.email) === email) reason = "email";
+    else if (phone && normalizePhone(c.phone) === phone) reason = "phone";
+    else if (name && name.length >= 3 && normalizeText(c.full_name) === name) reason = "name";
+    if (reason) out.push({ customer: c, reason });
+  }
+  const rank: Record<MatchReason, number> = { email: 0, phone: 1, name: 2 };
+  return out.sort((a, b) => rank[a.reason] - rank[b.reason]);
+}
+
+export function matchReasonKey(reason: MatchReason) {
+  return reason === "email" ? "matchByEmail" : reason === "phone" ? "matchByPhone" : "matchByName";
+}
+
+/** Atomic server-side merge; the kept record absorbs stays and blank fields. */
+export async function mergeCustomers(keepId: string, mergeId: string): Promise<string> {
+  const { data, error } = await supabase.rpc("merge_customers", {
+    p_keep_id: keepId,
+    p_merge_id: mergeId,
+  });
+  if (error) throw new Error(customerError(error.message));
+  return data as unknown as string;
+}
+
 export { logAudit };
+
