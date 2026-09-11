@@ -282,9 +282,20 @@ function CalendarPage() {
       </div>
 
       <section className="mt-5">
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          {shortDate(selected)}
-        </h2>
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            {shortDate(selected)}
+          </h2>
+          <Link
+            to="/stays/new"
+            search={newStaySearch(selected)}
+            className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-semibold active:bg-primary/20"
+          >
+            <Plus className="size-3.5" />
+            {t("addReservationOn", { date: shortDate(selected) })}
+          </Link>
+        </div>
+
         {stays.isLoading ? (
           <p className="surface-card px-4 py-6 text-center text-sm text-muted-foreground">…</p>
         ) : stays.isError ? (
