@@ -268,6 +268,97 @@ function CustomerDetailPage() {
         </section>
       ) : null}
 
+      {can("customers_manage") && duplicates.length > 0 ? (
+        <section className="surface-card mt-3 p-3 sm:mt-4 sm:p-4">
+          <h2 className="text-sm font-semibold">{t("possibleDuplicates")}</h2>
+          <p className="mt-1 text-xs text-muted-foreground">{t("possibleDuplicatesHint")}</p>
+          <ul className="mt-2 space-y-1.5">
+            {duplicates.map(({ customer: d, reason }) => (
+              <li
+                key={d.id}
+                className="flex items-center justify-between gap-2 rounded-xl border border-border bg-muted/30 px-3 py-2"
+              >
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-medium">{d.full_name}</span>
+                  <span className="block truncate text-[11px] text-muted-foreground">
+                    {t(matchReasonKey(reason))}
+                    {d.phone || d.email ? ` · ${d.phone ?? d.email}` : ""} ·{" "}
+                    {t("stayCount", { count: countedStays(d).length })}
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    // Default to keeping the older record.
+                    setKeepThis(c.created_at <= d.created_at);
+                    setMergeTargetId(d.id);
+                  }}
+                  className="min-h-11 shrink-0 rounded-full border border-border bg-card px-3 text-xs font-semibold"
+                >
+                  {t("mergeCustomers")}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      <Dialog open={!!mergeTarget} onOpenChange={(o) => !o && setMergeTargetId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("mergeConfirmTitle")}</DialogTitle>
+            <DialogDescription>{t("mergeConfirmBody")}</DialogDescription>
+          </DialogHeader>
+          {mergeTarget ? (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-muted-foreground">{t("recordToKeep")}</p>
+              {[
+                { keep: true, row: c },
+                { keep: false, row: mergeTarget },
+              ].map(({ keep, row }) => (
+                <button
+                  key={row.id}
+                  type="button"
+                  onClick={() => setKeepThis(keep)}
+                  className={`flex w-full items-center justify-between gap-2 rounded-xl border px-3 py-2 text-start ${
+                    keepThis === keep ? "border-primary bg-primary/5" : "border-border bg-card"
+                  }`}
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-medium">{row.full_name}</span>
+                    <span className="block truncate text-[11px] text-muted-foreground">
+                      {[row.phone, row.email].filter(Boolean).join(" · ") || "—"} ·{" "}
+                      {t("stayCount", { count: countedStays(row).length })} ·{" "}
+                      {shortDate(row.created_at.slice(0, 10))}
+                    </span>
+                  </span>
+                  {row.created_at <= (keep ? mergeTarget.created_at : c.created_at) ? (
+                    <span className="shrink-0 text-[10px] font-semibold uppercase text-muted-foreground">
+                      {t("oldestRecord")}
+                    </span>
+                  ) : null}
+                </button>
+              ))}
+            </div>
+          ) : null}
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              className="tap-target"
+              onClick={() => setMergeTargetId(null)}
+              disabled={merging}
+            >
+              {t("cancel")}
+            </Button>
+            <Button className="tap-target" onClick={confirmMerge} disabled={merging}>
+              {t("mergeCustomers")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
+
       <section className="mt-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           {t("stayHistory")}
