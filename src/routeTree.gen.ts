@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as ArTestRouteImport } from './routes/ar-test'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
@@ -37,6 +38,11 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArTestRoute = ArTestRouteImport.update({
+  id: '/ar-test',
+  path: '/ar-test',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
@@ -135,6 +141,7 @@ const ApiPublicPaypalStatusRoute = ApiPublicPaypalStatusRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/ar-test': typeof ArTestRoute
   '/account': typeof AuthenticatedAccountRoute
   '/activity': typeof AuthenticatedActivityRoute
   '/calendar': typeof AuthenticatedCalendarRoute
@@ -156,6 +163,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/ar-test': typeof ArTestRoute
   '/account': typeof AuthenticatedAccountRoute
   '/activity': typeof AuthenticatedActivityRoute
   '/calendar': typeof AuthenticatedCalendarRoute
@@ -179,6 +187,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/ar-test': typeof ArTestRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
@@ -202,6 +211,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/ar-test'
     | '/account'
     | '/activity'
     | '/calendar'
@@ -223,6 +233,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/ar-test'
     | '/account'
     | '/activity'
     | '/calendar'
@@ -245,6 +256,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/ar-test'
     | '/_authenticated/account'
     | '/_authenticated/activity'
     | '/_authenticated/calendar'
@@ -268,6 +280,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  ArTestRoute: typeof ArTestRoute
   GuestTokenRoute: typeof GuestTokenRoute
   ApiPublicPaypalCreateOrderRoute: typeof ApiPublicPaypalCreateOrderRoute
   ApiPublicPaypalReturnRoute: typeof ApiPublicPaypalReturnRoute
@@ -288,6 +301,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ar-test': {
+      id: '/ar-test'
+      path: '/ar-test'
+      fullPath: '/ar-test'
+      preLoaderRoute: typeof ArTestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/account': {
@@ -459,6 +479,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  ArTestRoute: ArTestRoute,
   GuestTokenRoute: GuestTokenRoute,
   ApiPublicPaypalCreateOrderRoute: ApiPublicPaypalCreateOrderRoute,
   ApiPublicPaypalReturnRoute: ApiPublicPaypalReturnRoute,
