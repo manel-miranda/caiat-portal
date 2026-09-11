@@ -601,6 +601,15 @@ const fr: Dict = {
   backOnline: "Connexion rétablie",
   loading: "Chargement…",
   by: "par",
+  tasks: "Tâches",
+  tasksEmpty: "Aucune tâche pour le moment",
+  taskApprovals: "Demandes de réservation",
+  taskGuestRequests: "Demandes des clients",
+  taskArrivals: "Arrivées du jour",
+  taskDepartures: "Départs du jour",
+  taskOverdue: "En retard",
+  openTasks: "Ouvrir les tâches",
+
 };
 
 const ar: Dict = {
