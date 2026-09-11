@@ -1,11 +1,15 @@
 import { t } from "./i18n";
+import { formatDisplay } from "./currency";
 
 /** Business timezone for the guesthouse. All "today"/day boundaries use it. */
 export const BUSINESS_TZ = "Africa/Casablanca";
 
+/**
+ * Render a stored MAD amount in the user's chosen DISPLAY currency.
+ * Stored values are always MAD; this only changes what is shown.
+ */
 export function mad(value: number | string | null | undefined): string {
-  const n = Number(value ?? 0);
-  return `${n.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })} MAD`;
+  return formatDisplay(value);
 }
 
 /** Today's calendar date in Africa/Casablanca (YYYY-MM-DD). */

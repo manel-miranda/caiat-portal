@@ -95,3 +95,21 @@ export function formatDisplay(value: number | string | null | undefined): string
   });
   return `≈ ${currencySymbol(code)}${amount}`;
 }
+
+import { useCallback, useEffect, useState } from "react";
+
+/** Reactive access to the active display currency. */
+export function useCurrency(): { currency: Currency; setCurrency: (c: Currency) => void } {
+  const [currency, setLocal] = useState<Currency>(currentCurrency);
+
+  useEffect(() => {
+    const stored = storedCurrency();
+    if (stored && stored !== currentCurrency) setCurrency(stored);
+    const listener = () => setLocal(getCurrency());
+    listener();
+    return subscribeCurrency(listener);
+  }, []);
+
+  const change = useCallback((next: Currency) => setCurrency(next), []);
+  return { currency, setCurrency: change };
+}
