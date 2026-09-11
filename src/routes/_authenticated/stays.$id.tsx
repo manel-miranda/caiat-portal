@@ -60,6 +60,10 @@ function StayDetailPage() {
   const paymentsQ = useQuery(stayPaymentsQuery(id));
   const servicesQ = useQuery(serviceTypesQuery);
   const requestsQ = useQuery(requestsQuery);
+  // Customer history behind this booking: new face or someone coming back?
+  const guestId = stayQ.data?.guest_id;
+  const customerQ = useQuery({ ...customerQuery(guestId ?? ""), enabled: Boolean(guestId) });
+  const customerStayCount = customerQ.data ? countedStays(customerQ.data).length : 0;
 
   const stay = stayQ.data;
   const services = servicesQ.data ?? [];
