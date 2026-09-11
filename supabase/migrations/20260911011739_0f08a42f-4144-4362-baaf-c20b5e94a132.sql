@@ -1,0 +1,1 @@
+ALTER PUBLICATION supabase_realtime ADD TABLE public.stays, public.charges, public.payments, public.requests, public.cash_reconciliations;
