@@ -34,13 +34,13 @@ export function MobileMenu({ variant = "icon" }: { variant?: "icon" | "tab" }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const links: MenuLink[] = [
+  const links: MenuLink[] = ([
     { to: "/services", label: t("navServices"), icon: ConciergeBell },
     { to: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard, permission: "activity_view" },
     { to: "/cash", label: t("navCash"), icon: Banknote, permission: "cash_reconcile" },
     { to: "/activity", label: t("navActivity"), icon: History, permission: "activity_view" },
     { to: "/users", label: t("navUsers"), icon: UserCog, permission: "users_manage" },
-  ].filter((l) => !l.permission || can(l.permission));
+  ] as MenuLink[]).filter((l) => !l.permission || can(l.permission));
 
   async function signOut() {
     setOpen(false);
