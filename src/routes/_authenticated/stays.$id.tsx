@@ -215,7 +215,7 @@ function StayDetailPage() {
       {/* ---- Add charge ---- */}
       <SheetDialog open={sheet === "charge"} onClose={() => setSheet(null)} title={t("addCharge")}>
         <ChargeForm
-          services={services}
+          services={services.filter((s) => s.billable)}
           onSubmit={async (values) => {
             if (!online) { toast.error(t("offline")); return; }
             try {
