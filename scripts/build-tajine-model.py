@@ -85,7 +85,7 @@ def body():
     for li in range(len(levels) - 1):
         for si in range(SEG):
             a = li * row + si; b = a + 1; c = a + row; d = c + 1
-            idx += [a, c, b, b, c, d]
+            idx += [a, b, c, b, d, c]
     centre = len(pos)
     pos.append((0.0, 0.0, 0.0))
     base = (len(levels) - 1) * row
