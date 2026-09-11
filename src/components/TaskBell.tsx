@@ -19,17 +19,18 @@ import { buildTasks, taskCount } from "@/lib/tasks";
  * the underlying record is handled (here or in another tab).
  */
 export function TaskBell() {
-  const { isAdmin } = useAuth();
+  const { can } = useAuth();
+  const canApprove = can("reservations_manage");
   const [open, setOpen] = useState(false);
   const stays = useQuery(activeStaysQuery);
   const requests = useQuery(requestsQuery);
-  const pending = useQuery({ ...pendingReservationsQuery, enabled: isAdmin });
+  const pending = useQuery({ ...pendingReservationsQuery, enabled: canApprove });
 
   const groups = buildTasks({
-    isAdmin,
+    canApprove,
     stays: stays.data ?? [],
     requests: requests.data ?? [],
-    pendingReservations: isAdmin ? (pending.data ?? []) : [],
+    pendingReservations: canApprove ? (pending.data ?? []) : [],
   });
   const count = taskCount(groups);
 

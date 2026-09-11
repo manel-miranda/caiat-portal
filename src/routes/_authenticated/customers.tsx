@@ -46,14 +46,14 @@ function CustomersPage() {
             aria-label={t("customerSearch")}
           />
         </div>
-        {can("reservations_manage") ? (
-          <Link
-            to="/stays/new"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"
-          >
-            <UserPlus className="size-4" />
-          </Link>
-        ) : null}
+        {/* Creating a booking stays open to every operational user. */}
+        <Link
+          to="/stays/new"
+          aria-label={t("newStay")}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"
+        >
+          <UserPlus className="size-4" />
+        </Link>
       </div>
 
       {customers.isLoading ? <p className="mt-6 text-sm text-muted-foreground">{t("loading")}</p> : null}

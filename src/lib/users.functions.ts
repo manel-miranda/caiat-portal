@@ -86,13 +86,22 @@ export const createStaffUser = createServerFn({ method: "POST" })
     if (error || !created.user) throw new Error(error?.message ?? "USER_CREATE_FAILED");
 
     const userId = created.user.id;
-    await db.from("profiles").insert({
-      id: userId,
-      username,
-      full_name: data.fullName,
-      active: true,
-    });
-    await db.from("user_roles").insert({ user_id: userId, role: data.role });
+    // If the profile or role row fails, the Auth account must not survive as an
+    // orphan that could sign in with no profile and no role.
+    try {
+      const { error: pErr } = await db.from("profiles").insert({
+        id: userId,
+        username,
+        full_name: data.fullName,
+        active: true,
+      });
+      if (pErr) throw new Error(pErr.message);
+      const { error: rErr } = await db.from("user_roles").insert({ user_id: userId, role: data.role });
+      if (rErr) throw new Error(rErr.message);
+    } catch (e) {
+      await db.auth.admin.deleteUser(userId);
+      throw e instanceof Error ? e : new Error("USER_CREATE_FAILED");
+    }
     await audit(context.userId, "user.created", userId, { username, role: data.role });
     return { id: userId };
   });
@@ -109,9 +118,17 @@ export const setUserActiveFn = createServerFn({ method: "POST" })
     });
     if (error) throw new Error(error.message);
     const db = await admin();
-    // Blocking the Auth account is what actually stops a sign-in.
-    await db.auth.admin.updateUserById(data.userId, {
+    // Blocking the Auth account is what actually stops a sign-in. If that fails,
+    // revert the profile flag so the app never shows a state the login contradicts.
+    const { error: banError } = await db.auth.admin.updateUserById(data.userId, {
       ban_duration: data.active ? "none" : "876000h",
     });
+    if (banError) {
+      await context.supabase.rpc("set_user_active", {
+        p_user_id: data.userId,
+        p_active: !data.active,
+      });
+      throw new Error(banError.message);
+    }
     return { ok: true };
   });

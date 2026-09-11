@@ -9,14 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/lib/auth";
 import { useOnline } from "@/components/OfflineBanner";
-import { requireAdmin } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 import { mad, nights } from "@/lib/format";
 import { sourceOptions, t } from "@/lib/i18n";
 import { nightlyRate, roomsQuery, stayQuery, suggestedAccommodationTotal } from "@/lib/queries";
 import { updateStay, type EditableStayFields } from "@/lib/mutations";
 
 export const Route = createFileRoute("/_authenticated/stays/$id_/edit")({
-  beforeLoad: requireAdmin,
+  beforeLoad: requirePermission("reservations_manage"),
   head: () => ({ meta: [{ title: "Edit stay — Caiat Operations" }] }),
   component: EditStayPage,
 });

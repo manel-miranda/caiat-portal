@@ -10,14 +10,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/lib/auth";
 import { useOnline } from "@/components/OfflineBanner";
-import { requireAdmin } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 import { saveCashCount } from "@/lib/mutations";
 import { mad, shortDateTime, todayISO } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { cashDayQuery, profilesQuery } from "@/lib/queries";
 
 export const Route = createFileRoute("/_authenticated/cash")({
-  beforeLoad: requireAdmin,
+  beforeLoad: requirePermission("cash_reconcile"),
   head: () => ({ meta: [{ title: "Cash control — Caiat Operations" }] }),
   component: CashPage,
 });

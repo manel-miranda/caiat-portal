@@ -20,7 +20,8 @@ import {
  * admin-only — the token is a bearer credential for the whole stay.
  */
 export function GuestAccessCard({ stayId }: { stayId: string }) {
-  const { isAdmin } = useAuth();
+  const { can } = useAuth();
+  const canManage = can("guest_access_manage");
   const queryClient = useQueryClient();
   const tokenQ = useQuery(guestTokenQuery(stayId));
   const [busy, setBusy] = useState(false);
@@ -65,7 +66,7 @@ export function GuestAccessCard({ stayId }: { stayId: string }) {
       ) : !token ? (
         <div className="mt-3 space-y-2">
           <p className="text-sm text-muted-foreground">{t("noGuestAccessYet")}</p>
-          {isAdmin ? (
+          {canManage ? (
             <Button
               className="tap-target w-full rounded-xl"
               disabled={busy}
@@ -106,7 +107,7 @@ export function GuestAccessCard({ stayId }: { stayId: string }) {
             </a>
           </div>
 
-          {isAdmin ? (
+          {canManage ? (
             confirmRegen ? (
               <div className="space-y-2 rounded-xl border border-destructive/40 p-3">
                 <p className="text-sm font-medium">{t("regenerateWarning")}</p>
