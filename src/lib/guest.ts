@@ -65,7 +65,8 @@ export async function guestCreateRequest(params: {
 }) {
   const { data, error } = await supabase.rpc("guest_create_request", {
     p_token: params.token,
-    p_service_type_id: params.serviceTypeId,
+    // The SQL argument is nullable; the generated types omit that.
+    p_service_type_id: params.serviceTypeId as string,
     p_custom_label: params.customLabel,
     p_notes: params.notes,
     p_kind: params.kind ?? "service",
