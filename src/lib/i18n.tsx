@@ -789,6 +789,15 @@ const ar: Dict = {
   backOnline: "عاد الاتصال",
   loading: "جارٍ التحميل…",
   by: "بواسطة",
+  tasks: "المهام",
+  tasksEmpty: "لا توجد مهام الآن",
+  taskApprovals: "طلبات الحجز",
+  taskGuestRequests: "طلبات النزلاء",
+  taskArrivals: "وصول اليوم",
+  taskDepartures: "مغادرة اليوم",
+  taskOverdue: "متأخر",
+  openTasks: "فتح المهام",
+
 };
 
 const dictionaries: Record<Lang, Dict> = { pt, en, fr, ar };
