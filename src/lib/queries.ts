@@ -35,6 +35,8 @@ export type ServiceType = {
   requestable: boolean;
   sort_order: number;
   category: string;
+  activity_mode: string | null;
+  difficulty: string | null;
 };
 
 export type StayRow = {
