@@ -179,6 +179,11 @@ function ServicesPage() {
                           {s.default_price > 0 ? mad(s.default_price) : "—"} ·{" "}
                           {s.requestable ? t("requestable") : t("billableOnly")}
                         </p>
+                        {s.activity_mode || s.difficulty ? (
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            {[s.activity_mode, s.difficulty].filter(Boolean).join(" · ")}
+                          </p>
+                        ) : null}
                       </div>
                       {stayId ? (
                         <div className="flex shrink-0 gap-2">
