@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -16,6 +16,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { GuestAccessCard } from "@/components/GuestAccessCard";
+import { countedStays, customerQuery } from "@/lib/customers";
 import { useAuth } from "@/lib/auth";
 import { useOnline } from "@/components/OfflineBanner";
 import { businessLocalToISO, mad, nights, roomLabel, shortDate, shortDateTime } from "@/lib/format";
