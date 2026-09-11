@@ -7,6 +7,19 @@ import * as THREE from "three";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
 import { mkdirSync, writeFileSync } from "node:fs";
 
+// Minimal FileReader shim: GLTFExporter's binary path uses it to read a Blob.
+class NodeFileReader {
+  result: ArrayBuffer | null = null;
+  onloadend: (() => void) | null = null;
+  readAsArrayBuffer(blob: Blob) {
+    void blob.arrayBuffer().then((buf) => {
+      this.result = buf;
+      this.onloadend?.();
+    });
+  }
+}
+(globalThis as unknown as { FileReader: unknown }).FileReader = NodeFileReader;
+
 const scene = new THREE.Scene();
 const root = new THREE.Group();
 scene.add(root);
