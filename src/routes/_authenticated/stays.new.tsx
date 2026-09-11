@@ -192,7 +192,7 @@ function NewStayPage() {
     <AppShell title={t("newStay")}>
       <form
         onSubmit={submit}
-        className="space-y-3 rounded-none border-0 bg-transparent p-0 sm:surface-card sm:space-y-4 sm:p-4"
+        className="space-y-3 sm:space-y-4 sm:rounded-2xl sm:border sm:border-border sm:bg-card sm:p-4 sm:shadow-[var(--shadow-card)]"
       >
         {customer ? (
           <div className="rounded-xl border border-primary/40 bg-primary/5 p-3">
