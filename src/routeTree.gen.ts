@@ -16,6 +16,7 @@ import { Route as AuthenticatedCashRouteImport } from './routes/_authenticated/c
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedRequestsRouteImport } from './routes/_authenticated/requests'
+import { Route as AuthenticatedServicesRouteImport } from './routes/_authenticated/services'
 import { Route as AuthenticatedStaysIdRouteImport } from './routes/_authenticated/stays.$id'
 import { Route as AuthenticatedStaysNewRouteImport } from './routes/_authenticated/stays.new'
 
@@ -53,6 +54,11 @@ const AuthenticatedRequestsRoute = AuthenticatedRequestsRouteImport.update({
   path: '/requests',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedServicesRoute = AuthenticatedServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedStaysIdRoute = AuthenticatedStaysIdRouteImport.update({
   id: '/stays/$id',
   path: '/stays/$id',
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/home': typeof AuthenticatedHomeRoute
   '/requests': typeof AuthenticatedRequestsRoute
+  '/services': typeof AuthenticatedServicesRoute
   '/stays/$id': typeof AuthenticatedStaysIdRoute
   '/stays/new': typeof AuthenticatedStaysNewRoute
 }
@@ -81,6 +88,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/home': typeof AuthenticatedHomeRoute
   '/requests': typeof AuthenticatedRequestsRoute
+  '/services': typeof AuthenticatedServicesRoute
   '/stays/$id': typeof AuthenticatedStaysIdRoute
   '/stays/new': typeof AuthenticatedStaysNewRoute
 }
@@ -93,6 +101,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/requests': typeof AuthenticatedRequestsRoute
+  '/_authenticated/services': typeof AuthenticatedServicesRoute
   '/_authenticated/stays/$id': typeof AuthenticatedStaysIdRoute
   '/_authenticated/stays/new': typeof AuthenticatedStaysNewRoute
 }
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/home'
     | '/requests'
+    | '/services'
     | '/stays/$id'
     | '/stays/new'
   fileRoutesByTo: FileRoutesByTo
@@ -115,6 +125,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/home'
     | '/requests'
+    | '/services'
     | '/stays/$id'
     | '/stays/new'
   id:
@@ -126,6 +137,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/home'
     | '/_authenticated/requests'
+    | '/_authenticated/services'
     | '/_authenticated/stays/$id'
     | '/_authenticated/stays/new'
   fileRoutesById: FileRoutesById
@@ -186,6 +198,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRequestsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/services': {
+      id: '/_authenticated/services'
+      path: '/services'
+      fullPath: '/services'
+      preLoaderRoute: typeof AuthenticatedServicesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/stays/$id': {
       id: '/_authenticated/stays/$id'
       path: '/stays/$id'
@@ -209,6 +228,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedRequestsRoute: typeof AuthenticatedRequestsRoute
+  AuthenticatedServicesRoute: typeof AuthenticatedServicesRoute
   AuthenticatedStaysIdRoute: typeof AuthenticatedStaysIdRoute
   AuthenticatedStaysNewRoute: typeof AuthenticatedStaysNewRoute
 }
@@ -219,6 +239,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedRequestsRoute: AuthenticatedRequestsRoute,
+  AuthenticatedServicesRoute: AuthenticatedServicesRoute,
   AuthenticatedStaysIdRoute: AuthenticatedStaysIdRoute,
   AuthenticatedStaysNewRoute: AuthenticatedStaysNewRoute,
 }
