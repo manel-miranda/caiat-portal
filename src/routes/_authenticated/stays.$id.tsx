@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { GuestAccessCard } from "@/components/GuestAccessCard";
 import { useAuth } from "@/lib/auth";
 import { useOnline } from "@/components/OfflineBanner";
 import { businessLocalToISO, mad, nights, roomLabel, shortDate, shortDateTime } from "@/lib/format";
