@@ -338,9 +338,11 @@ export type Database = {
       service_types: {
         Row: {
           active: boolean
+          activity_mode: string | null
           billable: boolean
           category: string
           default_price: number
+          difficulty: string | null
           id: string
           key: string
           label: string
@@ -349,9 +351,11 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          activity_mode?: string | null
           billable?: boolean
           category?: string
           default_price?: number
+          difficulty?: string | null
           id?: string
           key: string
           label: string
@@ -360,9 +364,11 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          activity_mode?: string | null
           billable?: boolean
           category?: string
           default_price?: number
+          difficulty?: string | null
           id?: string
           key?: string
           label?: string
