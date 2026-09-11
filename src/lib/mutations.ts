@@ -102,6 +102,7 @@ export async function createStay(params: {
 }
 
 function stayErrorMessage(raw: string): string {
+  if (raw.includes("ROOM_CAPACITY")) return t("guestsOverCapacity");
   if (raw.includes("ROOM_CONFLICT")) return t("roomConflict");
   if (raw.includes("CHECKOUT_AFTER_CHECKIN")) return t("datesInvalid");
   if (raw.includes("GUEST_NAME_REQUIRED")) return t("guestNameRequired");
@@ -201,11 +202,13 @@ export async function checkoutStay(params: {
   override: boolean;
   userId?: string | undefined;
 }) {
-  const { error } = await supabase
-    .from("stays")
-    .update({ status: "completed", checked_out_at: new Date().toISOString() })
-    .eq("id", params.stayId);
-  if (error) throw error;
+  // Server recomputes the balance: staff can only close a fully paid stay,
+  // an admin needs an explicit override to close one with a balance.
+  const { error } = await supabase.rpc("checkout_stay", {
+    p_stay_id: params.stayId,
+    p_override: params.override,
+  });
+  if (error) throw new Error(checkoutErrorMessage(error.message));
   void logAudit(params.userId, "stay.checked_out", "stay", params.stayId, {
     outstanding: params.outstanding,
     admin_override: params.override,
