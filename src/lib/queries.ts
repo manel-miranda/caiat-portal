@@ -124,6 +124,31 @@ export const allStaysQuery = {
   },
 };
 
+/**
+ * Every live reservation touching a date window, used by the calendar.
+ * Confirmed and pending are both returned (pending is shown distinctly and
+ * never consumes inventory); cancelled/completed history is left out.
+ * Overlap uses [check_in, check_out) plus the checkout date itself so a
+ * departure is still visible on the day the room frees up.
+ */
+export function staysRangeQuery(from: string, to: string) {
+  return {
+    queryKey: ["stays", "range", from, to],
+    queryFn: async (): Promise<StayRow[]> => {
+      const { data, error } = await supabase
+        .from("stays")
+        .select(STAY_SELECT)
+        .eq("status", "active")
+        .in("confirmation_status", ["confirmed", "pending"])
+        .lte("check_in", to)
+        .gte("check_out", from)
+        .order("check_in", { ascending: true });
+      if (error) throw error;
+      return data as unknown as StayRow[];
+    },
+  };
+}
+
 /** Reservation requests awaiting an owner decision, soonest arrival first. */
 export const pendingReservationsQuery = {
   queryKey: ["stays", "pending"],
