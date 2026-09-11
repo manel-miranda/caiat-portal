@@ -18,6 +18,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedRequestsRouteImport } from './routes/_authenticated/requests'
 import { Route as AuthenticatedServicesRouteImport } from './routes/_authenticated/services'
+import { Route as GuestTokenRouteImport } from './routes/guest.$token'
 import { Route as AuthenticatedStaysIdRouteImport } from './routes/_authenticated/stays.$id'
 import { Route as AuthenticatedStaysNewRouteImport } from './routes/_authenticated/stays.new'
 import { Route as AuthenticatedStaysIdEditRouteImport } from './routes/_authenticated/stays.$id_.edit'
@@ -66,6 +67,11 @@ const AuthenticatedServicesRoute = AuthenticatedServicesRouteImport.update({
   path: '/services',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const GuestTokenRoute = GuestTokenRouteImport.update({
+  id: '/guest/$token',
+  path: '/guest/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedStaysIdRoute = AuthenticatedStaysIdRouteImport.update({
   id: '/stays/$id',
   path: '/stays/$id',
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/home': typeof AuthenticatedHomeRoute
   '/requests': typeof AuthenticatedRequestsRoute
   '/services': typeof AuthenticatedServicesRoute
+  '/guest/$token': typeof GuestTokenRoute
   '/stays/$id': typeof AuthenticatedStaysIdRoute
   '/stays/new': typeof AuthenticatedStaysNewRoute
   '/stays/$id/edit': typeof AuthenticatedStaysIdEditRoute
@@ -105,6 +112,7 @@ export interface FileRoutesByTo {
   '/home': typeof AuthenticatedHomeRoute
   '/requests': typeof AuthenticatedRequestsRoute
   '/services': typeof AuthenticatedServicesRoute
+  '/guest/$token': typeof GuestTokenRoute
   '/stays/$id': typeof AuthenticatedStaysIdRoute
   '/stays/new': typeof AuthenticatedStaysNewRoute
   '/stays/$id/edit': typeof AuthenticatedStaysIdEditRoute
@@ -120,6 +128,7 @@ export interface FileRoutesById {
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/requests': typeof AuthenticatedRequestsRoute
   '/_authenticated/services': typeof AuthenticatedServicesRoute
+  '/guest/$token': typeof GuestTokenRoute
   '/_authenticated/stays/$id': typeof AuthenticatedStaysIdRoute
   '/_authenticated/stays/new': typeof AuthenticatedStaysNewRoute
   '/_authenticated/stays/$id_/edit': typeof AuthenticatedStaysIdEditRoute
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/requests'
     | '/services'
+    | '/guest/$token'
     | '/stays/$id'
     | '/stays/new'
     | '/stays/$id/edit'
@@ -148,6 +158,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/requests'
     | '/services'
+    | '/guest/$token'
     | '/stays/$id'
     | '/stays/new'
     | '/stays/$id/edit'
@@ -162,6 +173,7 @@ export interface FileRouteTypes {
     | '/_authenticated/home'
     | '/_authenticated/requests'
     | '/_authenticated/services'
+    | '/guest/$token'
     | '/_authenticated/stays/$id'
     | '/_authenticated/stays/new'
     | '/_authenticated/stays/$id_/edit'
@@ -170,6 +182,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  GuestTokenRoute: typeof GuestTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -237,6 +250,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedServicesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/guest/$token': {
+      id: '/guest/$token'
+      path: '/guest/$token'
+      fullPath: '/guest/$token'
+      preLoaderRoute: typeof GuestTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/stays/$id': {
       id: '/_authenticated/stays/$id'
       path: '/stays/$id'
@@ -293,6 +313,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  GuestTokenRoute: GuestTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
