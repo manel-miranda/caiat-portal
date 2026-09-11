@@ -80,6 +80,10 @@ export async function createStay(params: {
   notes?: string | null | undefined;
   /** "confirmed" reserves the room; "pending" is only an enquiry. */
   confirmationStatus?: "confirmed" | "pending";
+  /** Existing customer row to attach to; when set no new customer is created. */
+  guestId?: string | null | undefined;
+  phone?: string | null | undefined;
+  email?: string | null | undefined;
   userId?: string | undefined;
 }) {
   const confirmation = params.confirmationStatus ?? "confirmed";
@@ -93,6 +97,9 @@ export async function createStay(params: {
     p_accommodation_total: params.accommodationTotal,
     p_notes: params.notes ?? "",
     p_confirmation_status: confirmation,
+    ...(params.guestId ? { p_guest_id: params.guestId } : {}),
+    ...(params.phone ? { p_phone: params.phone } : {}),
+    ...(params.email ? { p_email: params.email } : {}),
   });
   if (error) throw new Error(stayErrorMessage(error.message));
   const stayId = data as unknown as string;

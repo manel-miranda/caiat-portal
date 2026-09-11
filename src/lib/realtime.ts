@@ -14,7 +14,11 @@ const TABLE_KEYS: Record<string, string[][]> = {
   requests: [["requests"], ["audit"]],
   cash_reconciliations: [["cash"], ["audit"]],
   // A guest rename changes what every stay card shows, so it must refresh too.
-  guests: [["stays"], ["stay"], ["requests"]],
+  guests: [["stays"], ["stay"], ["requests"], ["customers"], ["customer"]],
+  // Team management screens and the signed-in user's own permissions.
+  profiles: [["managed-users"]],
+  user_roles: [["managed-users"]],
+  user_permissions: [["managed-users"]],
 };
 
 /**
