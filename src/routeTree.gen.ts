@@ -20,6 +20,7 @@ import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/h
 import { Route as AuthenticatedRequestsRouteImport } from './routes/_authenticated/requests'
 import { Route as AuthenticatedServicesRouteImport } from './routes/_authenticated/services'
 import { Route as GuestTokenRouteImport } from './routes/guest.$token'
+import { Route as AuthenticatedCustomersIdRouteImport } from './routes/_authenticated/customers.$id'
 import { Route as AuthenticatedStaysIdRouteImport } from './routes/_authenticated/stays.$id'
 import { Route as AuthenticatedStaysNewRouteImport } from './routes/_authenticated/stays.new'
 import { Route as AuthenticatedStaysIdEditRouteImport } from './routes/_authenticated/stays.$id_.edit'
@@ -81,6 +82,12 @@ const GuestTokenRoute = GuestTokenRouteImport.update({
   path: '/guest/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCustomersIdRoute =
+  AuthenticatedCustomersIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedCustomersRoute,
+  } as any)
 const AuthenticatedStaysIdRoute = AuthenticatedStaysIdRouteImport.update({
   id: '/stays/$id',
   path: '/stays/$id',
@@ -119,12 +126,13 @@ export interface FileRoutesByFullPath {
   '/activity': typeof AuthenticatedActivityRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/cash': typeof AuthenticatedCashRoute
-  '/customers': typeof AuthenticatedCustomersRoute
+  '/customers': typeof AuthenticatedCustomersRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/home': typeof AuthenticatedHomeRoute
   '/requests': typeof AuthenticatedRequestsRoute
   '/services': typeof AuthenticatedServicesRoute
   '/guest/$token': typeof GuestTokenRoute
+  '/customers/$id': typeof AuthenticatedCustomersIdRoute
   '/stays/$id': typeof AuthenticatedStaysIdRoute
   '/stays/new': typeof AuthenticatedStaysNewRoute
   '/stays/$id/edit': typeof AuthenticatedStaysIdEditRoute
@@ -137,12 +145,13 @@ export interface FileRoutesByTo {
   '/activity': typeof AuthenticatedActivityRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/cash': typeof AuthenticatedCashRoute
-  '/customers': typeof AuthenticatedCustomersRoute
+  '/customers': typeof AuthenticatedCustomersRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/home': typeof AuthenticatedHomeRoute
   '/requests': typeof AuthenticatedRequestsRoute
   '/services': typeof AuthenticatedServicesRoute
   '/guest/$token': typeof GuestTokenRoute
+  '/customers/$id': typeof AuthenticatedCustomersIdRoute
   '/stays/$id': typeof AuthenticatedStaysIdRoute
   '/stays/new': typeof AuthenticatedStaysNewRoute
   '/stays/$id/edit': typeof AuthenticatedStaysIdEditRoute
@@ -157,12 +166,13 @@ export interface FileRoutesById {
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/cash': typeof AuthenticatedCashRoute
-  '/_authenticated/customers': typeof AuthenticatedCustomersRoute
+  '/_authenticated/customers': typeof AuthenticatedCustomersRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/requests': typeof AuthenticatedRequestsRoute
   '/_authenticated/services': typeof AuthenticatedServicesRoute
   '/guest/$token': typeof GuestTokenRoute
+  '/_authenticated/customers/$id': typeof AuthenticatedCustomersIdRoute
   '/_authenticated/stays/$id': typeof AuthenticatedStaysIdRoute
   '/_authenticated/stays/new': typeof AuthenticatedStaysNewRoute
   '/_authenticated/stays/$id_/edit': typeof AuthenticatedStaysIdEditRoute
@@ -183,6 +193,7 @@ export interface FileRouteTypes {
     | '/requests'
     | '/services'
     | '/guest/$token'
+    | '/customers/$id'
     | '/stays/$id'
     | '/stays/new'
     | '/stays/$id/edit'
@@ -201,6 +212,7 @@ export interface FileRouteTypes {
     | '/requests'
     | '/services'
     | '/guest/$token'
+    | '/customers/$id'
     | '/stays/$id'
     | '/stays/new'
     | '/stays/$id/edit'
@@ -220,6 +232,7 @@ export interface FileRouteTypes {
     | '/_authenticated/requests'
     | '/_authenticated/services'
     | '/guest/$token'
+    | '/_authenticated/customers/$id'
     | '/_authenticated/stays/$id'
     | '/_authenticated/stays/new'
     | '/_authenticated/stays/$id_/edit'
@@ -316,6 +329,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GuestTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/customers/$id': {
+      id: '/_authenticated/customers/$id'
+      path: '/$id'
+      fullPath: '/customers/$id'
+      preLoaderRoute: typeof AuthenticatedCustomersIdRouteImport
+      parentRoute: typeof AuthenticatedCustomersRoute
+    }
     '/_authenticated/stays/$id': {
       id: '/_authenticated/stays/$id'
       path: '/stays/$id'
@@ -361,11 +381,25 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedCustomersRouteChildren {
+  AuthenticatedCustomersIdRoute: typeof AuthenticatedCustomersIdRoute
+}
+
+const AuthenticatedCustomersRouteChildren: AuthenticatedCustomersRouteChildren =
+  {
+    AuthenticatedCustomersIdRoute: AuthenticatedCustomersIdRoute,
+  }
+
+const AuthenticatedCustomersRouteWithChildren =
+  AuthenticatedCustomersRoute._addFileChildren(
+    AuthenticatedCustomersRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedCashRoute: typeof AuthenticatedCashRoute
-  AuthenticatedCustomersRoute: typeof AuthenticatedCustomersRoute
+  AuthenticatedCustomersRoute: typeof AuthenticatedCustomersRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedRequestsRoute: typeof AuthenticatedRequestsRoute
@@ -379,7 +413,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedActivityRoute: AuthenticatedActivityRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedCashRoute: AuthenticatedCashRoute,
-  AuthenticatedCustomersRoute: AuthenticatedCustomersRoute,
+  AuthenticatedCustomersRoute: AuthenticatedCustomersRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedRequestsRoute: AuthenticatedRequestsRoute,
