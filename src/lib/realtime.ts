@@ -13,6 +13,8 @@ const TABLE_KEYS: Record<string, string[][]> = {
   payments: [["payments"], ["cash"], ["stay"], ["stays"], ["audit"]],
   requests: [["requests"], ["audit"]],
   cash_reconciliations: [["cash"], ["audit"]],
+  // A guest rename changes what every stay card shows, so it must refresh too.
+  guests: [["stays"], ["stay"], ["requests"]],
 };
 
 /**

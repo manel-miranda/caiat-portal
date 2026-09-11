@@ -230,6 +230,13 @@ export const en = {
   taskDepartures: "Departures today",
   taskOverdue: "Overdue",
   openTasks: "Open tasks",
+  editStay: "Edit stay",
+  saveChanges: "Save changes",
+  stayUpdated: "Stay updated",
+  suggestedTotal: "Suggested total",
+  useSuggested: "Use suggested",
+  stayNotEditable: "This stay can no longer be edited",
+  actStayUpdated: "Stay updated",
 
 } as const;
 
@@ -430,6 +437,13 @@ const pt: Dict = {
   taskDepartures: "Partidas de hoje",
   taskOverdue: "Atrasado",
   openTasks: "Abrir tarefas",
+  editStay: "Editar estadia",
+  saveChanges: "Guardar alterações",
+  stayUpdated: "Estadia atualizada",
+  suggestedTotal: "Total sugerido",
+  useSuggested: "Usar sugerido",
+  stayNotEditable: "Esta estadia já não pode ser editada",
+  actStayUpdated: "Estadia atualizada",
 
 };
 
@@ -627,6 +641,13 @@ const fr: Dict = {
   taskDepartures: "Départs du jour",
   taskOverdue: "En retard",
   openTasks: "Ouvrir les tâches",
+  editStay: "Modifier le séjour",
+  saveChanges: "Enregistrer les modifications",
+  stayUpdated: "Séjour mis à jour",
+  suggestedTotal: "Total suggéré",
+  useSuggested: "Utiliser le suggéré",
+  stayNotEditable: "Ce séjour ne peut plus être modifié",
+  actStayUpdated: "Séjour mis à jour",
 
 };
 
@@ -824,6 +845,13 @@ const ar: Dict = {
   taskDepartures: "مغادرة اليوم",
   taskOverdue: "متأخر",
   openTasks: "فتح المهام",
+  editStay: "تعديل الإقامة",
+  saveChanges: "حفظ التغييرات",
+  stayUpdated: "تم تحديث الإقامة",
+  suggestedTotal: "المبلغ المقترح",
+  useSuggested: "استخدام المقترح",
+  stayNotEditable: "لم يعد بالإمكان تعديل هذه الإقامة",
+  actStayUpdated: "تحديث الإقامة",
 
 };
 
