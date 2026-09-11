@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { logAudit } from "@/lib/audit";
+import { t } from "@/lib/i18n";
 
 /**
  * Customers are the existing `guests` rows: every historical stay keeps its
