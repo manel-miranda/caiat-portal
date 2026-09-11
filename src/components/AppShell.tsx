@@ -43,7 +43,7 @@ export function AppShell({ title, children }: { title?: string; children: ReactN
             <p className="truncate text-lg font-semibold tracking-tight">{title ?? t("appName")}</p>
             <p className="truncate text-xs text-muted-foreground">
               {profile?.full_name ?? ""}
-              {isAdmin ? " · Owner" : profile ? " · Staff" : ""}
+              {profile ? ` · ${roleLabel(profile, isAdmin)}` : ""}
             </p>
           </div>
           <button
