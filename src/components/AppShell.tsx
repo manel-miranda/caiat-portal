@@ -2,10 +2,12 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   BedDouble,
   Bell,
+  CalendarDays,
   LogOut,
   LayoutDashboard,
   Banknote,
   ConciergeBell,
+  MoreHorizontal,
   Users,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -19,6 +21,7 @@ import { OfflineBanner } from "@/components/OfflineBanner";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { CurrencySwitcher } from "@/components/CurrencySwitcher";
 import { TaskBell } from "@/components/TaskBell";
+import { MobileMenu } from "@/components/MobileMenu";
 import { useRealtimeSync } from "@/lib/realtime";
 import type { ReactNode } from "react";
 
@@ -26,7 +29,7 @@ type NavItem = { to: string; label: string; icon: typeof BedDouble; permission?:
 
 // Only routes that exist are listed. Hiding an entry is convenience only — the
 // routes and the database both re-check the permission.
-function navItems(): NavItem[] {
+function desktopNavItems(): NavItem[] {
   return [
     { to: "/home", label: t("navRooms"), icon: BedDouble },
     { to: "/requests", label: t("navRequests"), icon: Bell },
@@ -39,7 +42,16 @@ function navItems(): NavItem[] {
       permission: "activity_view",
     },
     { to: "/cash", label: t("navCash"), icon: Banknote, permission: "cash_reconcile" },
-    // Activity lives behind the Dashboard so the bottom bar stays readable at 390px.
+  ];
+}
+
+// Phones keep five slots only; everything else moves into the More sheet.
+function mobileNavItems(): NavItem[] {
+  return [
+    { to: "/home", label: t("navRooms"), icon: BedDouble },
+    { to: "/requests", label: t("navRequests"), icon: Bell },
+    { to: "/customers", label: t("navCustomers"), icon: Users },
+    { to: "/calendar", label: t("navCalendar"), icon: CalendarDays },
   ];
 }
 
@@ -48,7 +60,8 @@ export function AppShell({ title, children }: { title?: string; children: ReactN
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const items = navItems().filter((i) => !i.permission || can(i.permission));
+  const desktopItems = desktopNavItems().filter((i) => !i.permission || can(i.permission));
+  const mobileItems = mobileNavItems();
   // One shared live-updates channel for every authenticated screen.
   useRealtimeSync();
 
@@ -60,28 +73,37 @@ export function AppShell({ title, children }: { title?: string; children: ReactN
   }
 
   return (
-    <div className="min-h-dvh bg-background pb-20 sm:pb-24">
+    <div className="min-h-dvh bg-background pb-[4.5rem] sm:pb-24">
       <header className="sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur">
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-2 px-3 py-2 sm:gap-3 sm:px-4 sm:py-3">
-          <div className="min-w-0">
-            <p className="truncate text-base font-semibold tracking-tight sm:text-lg">{title ?? t("appName")}</p>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-base font-semibold tracking-tight sm:text-lg">
+              {title ?? t("appName")}
+            </p>
             <Link
               to="/account"
-              className="block truncate text-xs text-muted-foreground underline-offset-2 active:underline"
+              className="hidden truncate text-xs text-muted-foreground underline-offset-2 active:underline sm:block"
             >
               {profile?.full_name ?? ""}
               {profile ? ` · ${roleLabel(profile, role)}` : ""}
             </Link>
           </div>
-          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+
+          {/* Phone: tasks + one overflow control, so the title keeps its width. */}
+          <div className="flex shrink-0 items-center gap-1.5 sm:hidden">
+            <TaskBell />
+            <MobileMenu />
+          </div>
+
+          {/* Desktop keeps the full control row. */}
+          <div className="hidden shrink-0 items-center gap-2 sm:flex">
             <LanguageSwitcher />
             <CurrencySwitcher />
             <TaskBell />
-
             <button
               onClick={signOut}
               aria-label={t("signOut")}
-              className="flex size-10 shrink-0 items-center justify-center rounded-full sm:size-11 border border-border bg-card text-muted-foreground transition-colors active:bg-muted"
+              className="flex size-11 shrink-0 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors active:bg-muted"
             >
               <LogOut className="size-5" />
             </button>
@@ -95,25 +117,61 @@ export function AppShell({ title, children }: { title?: string; children: ReactN
 
       <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-card/95 backdrop-blur">
         <div className="mx-auto flex w-full max-w-3xl items-stretch justify-around px-2 pb-[env(safe-area-inset-bottom)]">
-          {items.map((item) => {
-            const active = pathname.startsWith(item.to);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  "flex min-h-[52px] flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] font-medium leading-tight transition-colors sm:min-h-[56px] sm:gap-1 sm:py-2.5 sm:text-[11px]",
-                  active ? "text-primary" : "text-muted-foreground",
-                )}
-              >
-                <Icon className={cn("size-5 sm:size-6", active && "stroke-[2.4]")} />
-                {item.label}
-              </Link>
-            );
-          })}
+          {/* Mobile: four destinations + More. */}
+          <div className="flex flex-1 items-stretch justify-around sm:hidden">
+            {mobileItems.map((item) => (
+              <NavTab key={item.to} item={item} pathname={pathname} />
+            ))}
+            <MobileMoreTab />
+          </div>
+
+          {/* Desktop keeps the wider destination row. */}
+          <div className="hidden flex-1 items-stretch justify-around sm:flex">
+            {desktopItems.map((item) => (
+              <NavTab key={item.to} item={item} pathname={pathname} />
+            ))}
+          </div>
         </div>
       </nav>
     </div>
   );
 }
+
+function NavTab({ item, pathname }: { item: NavItem; pathname: string }) {
+  const active = pathname.startsWith(item.to);
+  const Icon = item.icon;
+  return (
+    <Link
+      to={item.to}
+      className={cn(
+        "flex min-h-[46px] flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 text-[10px] font-medium leading-tight transition-colors sm:min-h-[56px] sm:gap-1 sm:py-2.5 sm:text-[11px]",
+        active ? "text-primary" : "text-muted-foreground",
+      )}
+    >
+      <Icon className={cn("size-[18px] sm:size-6", active && "stroke-[2.4]")} />
+      <span className="max-w-full truncate">{item.label}</span>
+    </Link>
+  );
+}
+
+/** Bottom-nav "More" tab: same sheet as the header control, no navigation. */
+function MobileMoreTab() {
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-0.5 py-1 text-[10px] font-medium leading-tight text-muted-foreground [&_button]:size-auto [&_button]:min-h-[46px] [&_button]:w-full [&_button]:flex-col [&_button]:gap-0.5 [&_button]:rounded-xl [&_button]:border-0 [&_button]:bg-transparent">
+      <MobileMenuTabButton />
+    </div>
+  );
+}
+
+function MobileMenuTabButton() {
+  return (
+    <div className="flex w-full flex-col items-center">
+      {/* Reuses MobileMenu so the sheet content stays in one place. */}
+      <MobileMenu />
+      <span className="pointer-events-none -mt-1 truncate text-[10px]">{t("navMore")}</span>
+    </div>
+  );
+}
+
+// Keeps the unused-icon lint quiet while documenting the More affordance.
+void MoreHorizontal;
