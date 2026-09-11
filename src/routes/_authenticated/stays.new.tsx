@@ -14,10 +14,29 @@ import { roomsQuery, nightlyRate, suggestedAccommodationTotal } from "@/lib/quer
 import { createStay } from "@/lib/mutations";
 import { useOnline } from "@/components/OfflineBanner";
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Accepts a strict YYYY-MM-DD string that is also a real calendar date. */
+function validDate(value: unknown): string | undefined {
+  if (typeof value !== "string" || !ISO_DATE.test(value)) return undefined;
+  const d = new Date(`${value}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return undefined;
+  return d.toISOString().slice(0, 10) === value ? value : undefined;
+}
+
 export const Route = createFileRoute("/_authenticated/stays/new")({
   head: () => ({ meta: [{ title: "New stay — Caiat Operations" }] }),
-  validateSearch: (search: Record<string, unknown>): { room?: string } =>
-    typeof search['room'] === "string" ? { room: search['room'] } : {},
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { room?: string; checkIn?: string; checkOut?: string } => {
+    const out: { room?: string; checkIn?: string; checkOut?: string } = {};
+    if (typeof search['room'] === "string") out.room = search['room'];
+    const checkIn = validDate(search['checkIn']);
+    if (checkIn) out.checkIn = checkIn;
+    const checkOut = validDate(search['checkOut']);
+    if (checkOut) out.checkOut = checkOut;
+    return out;
+  },
   component: NewStayPage,
 });
 
@@ -30,10 +49,17 @@ function NewStayPage() {
   const online = useOnline();
   const rooms = useQuery(roomsQuery);
 
+  // Calendar prefill: fall back to the normal defaults for missing/invalid values.
+  const initialCheckIn = search.checkIn ?? todayISO();
+  const initialCheckOut =
+    search.checkOut && search.checkOut > initialCheckIn
+      ? search.checkOut
+      : addDaysISO(initialCheckIn, 1);
+
   const [guestName, setGuestName] = useState("");
-  const [roomId, setRoomId] = useState(presetRoom ?? "");
-  const [checkIn, setCheckIn] = useState(todayISO());
-  const [checkOut, setCheckOut] = useState(addDaysISO(todayISO(), 1));
+  const [roomId, setRoomId] = useState("");
+  const [checkIn, setCheckIn] = useState(initialCheckIn);
+  const [checkOut, setCheckOut] = useState(initialCheckOut);
   const [numGuests, setNumGuests] = useState("2");
   const [source, setSource] = useState("walk_in");
   const [total, setTotal] = useState("");
@@ -50,6 +76,12 @@ function NewStayPage() {
     selectedRoom && Number.isFinite(guestCountNum) && guestCountNum >= 1
       ? suggestedAccommodationTotal(selectedRoom, guestCountNum, stayNights)
       : null;
+
+  // Prefill the room only when the search param matches a real, active room.
+  useEffect(() => {
+    if (!presetRoom || roomId) return;
+    if ((rooms.data ?? []).some((r) => r.id === presetRoom)) setRoomId(presetRoom);
+  }, [presetRoom, rooms.data, roomId]);
 
   useEffect(() => {
     if (totalEdited) return;
