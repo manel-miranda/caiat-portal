@@ -125,7 +125,7 @@ def pack(prims):
             attrs["TEXCOORD_0"] = add(struct.pack(f"<{len(flat)}f", *flat), "f", 34962, 5126, "VEC2", len(uv), None, None)
         a_idx = add(struct.pack(f"<{len(idx)}I", *idx), "I", 34963, 5125, "SCALAR", len(idx), None, None)
         out.append({"attributes": attrs, "indices": a_idx, "material": p["material"]})
-    return out, bytes(buf)
+    return out, bytes(buf), views, accs
 
 
 def main():
@@ -140,7 +140,7 @@ def main():
 
     tp, tuv, tidx = top_surface()
     bp, bidx = body()
-    prims, bin_data = pack([
+    prims, bin_data, views, accs = pack([
         {"pos": tp, "nor": add_normals(tp, tidx), "uv": tuv, "idx": tidx, "material": 0},
         {"pos": bp, "nor": add_normals(bp, bidx), "idx": bidx, "material": 1},
     ])
@@ -176,9 +176,8 @@ def main():
         "bufferViews": [],
         "accessors": [],
     }
-    # bufferViews/accessors were collected inside pack(); rebuild references
-    gltf["bufferViews"] = PACK_VIEWS
-    gltf["accessors"] = PACK_ACCS
+    gltf["bufferViews"] = views
+    gltf["accessors"] = accs
 
     with open(os.path.join(OUT_DIR, f"{NAME}.bin"), "wb") as f:
         f.write(bin_data)
