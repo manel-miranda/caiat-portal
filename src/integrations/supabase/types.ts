@@ -703,6 +703,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      merge_customers: {
+        Args: { p_keep_id: string; p_merge_id: string }
+        Returns: string
+      }
       reject_reservation: { Args: { p_stay_id: string }; Returns: string }
       role_default_permission: {
         Args: { _key: string; _role: Database["public"]["Enums"]["app_role"] }
