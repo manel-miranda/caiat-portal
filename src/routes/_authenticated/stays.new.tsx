@@ -13,6 +13,13 @@ import { sourceOptions, t } from "@/lib/i18n";
 import { roomsQuery, nightlyRate, suggestedAccommodationTotal } from "@/lib/queries";
 import { createStay } from "@/lib/mutations";
 import { useOnline } from "@/components/OfflineBanner";
+import {
+  countedStays,
+  customersQuery,
+  matchesCustomer,
+  type CustomerRow,
+} from "@/lib/customers";
+import { shortDate } from "@/lib/format";
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
