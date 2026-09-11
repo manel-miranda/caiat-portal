@@ -105,6 +105,7 @@ export const en = {
   countedCash: "Counted cash (MAD)",
   difference: "Difference",
   saveCount: "Save cash count",
+  cashCountSaved: "Cash count saved",
   discrepancy: "Discrepancy — please investigate",
   balanced: "Balanced",
   // dashboard
