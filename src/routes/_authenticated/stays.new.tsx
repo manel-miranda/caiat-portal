@@ -64,6 +64,12 @@ function NewStayPage() {
       : addDaysISO(initialCheckIn, 1);
 
   const [guestName, setGuestName] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
+  // Picking an existing customer links the booking to that exact row; leaving it
+  // empty creates a new customer. Same-name people are never merged.
+  const [customer, setCustomer] = useState<CustomerRow | null>(null);
+  const [customerSearch, setCustomerSearch] = useState("");
   const [roomId, setRoomId] = useState("");
   const [checkIn, setCheckIn] = useState(initialCheckIn);
   const [checkOut, setCheckOut] = useState(initialCheckOut);
