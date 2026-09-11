@@ -9,7 +9,10 @@ import { cn } from "@/lib/utils";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { CurrencySwitcher } from "@/components/CurrencySwitcher";
+import { TaskBell } from "@/components/TaskBell";
+import { useRealtimeSync } from "@/lib/realtime";
 import type { ReactNode } from "react";
+
 
 type NavItem = { to: string; label: string; icon: typeof BedDouble; adminOnly?: boolean };
 
