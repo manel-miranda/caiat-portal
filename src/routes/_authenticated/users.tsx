@@ -80,7 +80,7 @@ function UsersPage() {
         {(users.data ?? []).map((u) => {
           const open = openId === u.id;
           return (
-            <li key={u.id} className="surface-card p-4">
+            <li key={u.id} className="surface-card p-3 sm:p-4">
               <button
                 className="flex w-full items-center justify-between gap-3 text-start"
                 onClick={() => {
@@ -231,7 +231,7 @@ function AddUserCard({
   const [role, setRole] = useState<AppRole>("staff");
 
   return (
-    <section className="surface-card mt-4 p-4">
+    <section className="surface-card mt-4 p-3 sm:p-4">
       <button className="w-full text-start font-semibold" onClick={() => setOpen(!open)}>
         {t("addUser")}
       </button>
@@ -318,7 +318,7 @@ function ChangeMyPinCard({
   const [pin, setPin] = useState("");
   const [confirm, setConfirm] = useState("");
   return (
-    <section className="surface-card mt-4 space-y-3 p-4">
+    <section className="surface-card mt-4 space-y-3 p-3 sm:p-4">
       <p className="font-semibold">{t("changeMyPin")}</p>
       <Input
         className="tap-target text-base"

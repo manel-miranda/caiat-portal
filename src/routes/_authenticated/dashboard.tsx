@@ -115,7 +115,7 @@ function DashboardPage() {
   if (error) {
     return (
       <AppShell title={t("navDashboard")}>
-        <p className="surface-card p-4 text-sm text-destructive">{(error as Error).message}</p>
+        <p className="surface-card p-3 sm:p-4 text-sm text-destructive">{(error as Error).message}</p>
       </AppShell>
     );
   }
@@ -123,7 +123,7 @@ function DashboardPage() {
   if (loading) {
     return (
       <AppShell title={t("navDashboard")}>
-        <p className="surface-card p-4 text-sm text-muted-foreground">{t("loading")}</p>
+        <p className="surface-card p-3 sm:p-4 text-sm text-muted-foreground">{t("loading")}</p>
       </AppShell>
     );
   }

@@ -110,7 +110,7 @@ function ServicesPage() {
   if (services.isError) {
     return (
       <AppShell title={t("servicesTitle")}>
-        <p className="surface-card p-4 text-sm text-muted-foreground">
+        <p className="surface-card p-3 sm:p-4 text-sm text-muted-foreground">
           {(services.error as Error).message}
         </p>
       </AppShell>
@@ -121,7 +121,7 @@ function ServicesPage() {
     <AppShell title={t("servicesTitle")}>
       <p className="text-sm text-muted-foreground">{t("servicesIntro")}</p>
 
-      <div className="surface-card mt-4 space-y-2 p-4">
+      <div className="surface-card mt-4 space-y-2 p-3 sm:p-4">
         <Label className="text-sm">{t("stay")}</Label>
         <select
           value={stayId}
@@ -138,9 +138,9 @@ function ServicesPage() {
       </div>
 
       {services.isLoading ? (
-        <p className="surface-card mt-4 p-4 text-sm text-muted-foreground">{t("loading")}</p>
+        <p className="surface-card mt-4 p-3 sm:p-4 text-sm text-muted-foreground">{t("loading")}</p>
       ) : items.length === 0 ? (
-        <p className="surface-card mt-4 p-4 text-sm text-muted-foreground">{t("noResults")}</p>
+        <p className="surface-card mt-4 p-3 sm:p-4 text-sm text-muted-foreground">{t("noResults")}</p>
       ) : (
         <>
           {(() => {
@@ -153,7 +153,7 @@ function ServicesPage() {
                 <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                   {t("catIncluded")}
                 </h2>
-                <div className="surface-card p-4">
+                <div className="surface-card p-3 sm:p-4">
                   <ul className="flex flex-wrap gap-2">
                     {facilities.map((s) => (
                       <li

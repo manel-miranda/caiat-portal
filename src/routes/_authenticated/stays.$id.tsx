@@ -76,7 +76,7 @@ function StayDetailPage() {
   if (stayQ.isPending) {
     return (
       <AppShell title={t("stay")}>
-        <p className="surface-card p-4 text-sm text-muted-foreground">{t("loading")}</p>
+        <p className="surface-card p-3 sm:p-4 text-sm text-muted-foreground">{t("loading")}</p>
       </AppShell>
     );
   }
@@ -84,7 +84,7 @@ function StayDetailPage() {
   if (stayQ.isError || !stay) {
     return (
       <AppShell title={t("stay")}>
-        <div className="surface-card space-y-3 p-4">
+        <div className="surface-card space-y-3 p-3 sm:p-4">
           <p className="text-sm text-destructive">
             {stayQ.error ? (stayQ.error as Error).message : t("stayNotFound")}
           </p>
@@ -121,10 +121,10 @@ function StayDetailPage() {
 
   return (
     <AppShell title={roomLabel(stay.room)}>
-      <section className="surface-card p-4">
+      <section className="surface-card p-3 sm:p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="truncate text-2xl font-semibold">{stay.guest?.full_name}</h1>
+            <h1 className="truncate text-xl font-semibold sm:text-2xl">{stay.guest?.full_name}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {stay.guest?.phone ?? ""}{" "}
               {stay.guest?.nationality ? `· ${stay.guest.nationality}` : ""}
@@ -185,7 +185,7 @@ function StayDetailPage() {
         ) : null}
       </section>
 
-      <section className="surface-card mt-4 p-4">
+      <section className="surface-card mt-4 p-3 sm:p-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           {t("bill")}
         </h2>
@@ -212,7 +212,7 @@ function StayDetailPage() {
         </div>
       </section>
 
-      <section className="surface-card mt-4 p-4">
+      <section className="surface-card mt-4 p-3 sm:p-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           {t("payment")}
         </h2>
@@ -235,7 +235,7 @@ function StayDetailPage() {
         )}
       </section>
 
-      <section className="surface-card mt-4 p-4">
+      <section className="surface-card mt-4 p-3 sm:p-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           {t("navRequests")}
         </h2>

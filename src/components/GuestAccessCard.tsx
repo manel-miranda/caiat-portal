@@ -51,7 +51,7 @@ export function GuestAccessCard({ stayId }: { stayId: string }) {
   }
 
   return (
-    <section className="surface-card mt-4 p-4">
+    <section className="surface-card mt-4 p-3 sm:p-4">
       <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
         <QrCode className="size-4" /> {t("guestAccess")}
       </h2>

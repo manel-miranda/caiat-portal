@@ -156,10 +156,10 @@ function CustomerDetailPage() {
 
   return (
     <AppShell title={c.full_name}>
-      <section className="surface-card p-4">
+      <section className="surface-card p-3 sm:p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="truncate text-2xl font-semibold">{c.full_name}</h1>
+            <h1 className="truncate text-xl font-semibold sm:text-2xl">{c.full_name}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {[c.phone, c.email, c.nationality].filter(Boolean).join(" · ") || "—"}
             </p>
@@ -207,7 +207,7 @@ function CustomerDetailPage() {
       </section>
 
       {editing ? (
-        <section className="surface-card mt-4 space-y-3 p-4">
+        <section className="surface-card mt-4 space-y-3 p-3 sm:p-4">
           <Field label={t("guestName")}>
             <Input
               className="tap-target text-base"
@@ -262,14 +262,14 @@ function CustomerDetailPage() {
           </div>
         </section>
       ) : c.notes ? (
-        <section className="surface-card mt-4 p-4">
+        <section className="surface-card mt-4 p-3 sm:p-4">
           <h2 className="text-sm font-semibold">{t("customerNotes")}</h2>
           <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">{c.notes}</p>
         </section>
       ) : null}
 
       {can("customers_manage") && duplicates.length > 0 ? (
-        <section className="surface-card mt-3 p-3 sm:mt-4 sm:p-4">
+        <section className="surface-card mt-3 p-3 sm:mt-4 sm:p-3 sm:p-4">
           <h2 className="text-sm font-semibold">{t("possibleDuplicates")}</h2>
           <p className="mt-1 text-xs text-muted-foreground">{t("possibleDuplicatesHint")}</p>
           <ul className="mt-2 space-y-1.5">

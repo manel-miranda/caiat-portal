@@ -166,7 +166,7 @@ function Portal({ token, data }: { token: string; data: GuestPortalData }) {
       </header>
 
       {/* ---- My stay ---- */}
-      <section className="surface-card mt-6 p-4">
+      <section className="surface-card mt-6 p-3 sm:p-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           {t("myStay")}
         </h2>
@@ -191,7 +191,7 @@ function Portal({ token, data }: { token: string; data: GuestPortalData }) {
       </section>
 
       {/* ---- Request something ---- */}
-      <section className="surface-card mt-4 p-4">
+      <section className="surface-card mt-4 p-3 sm:p-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           {t("requestSomething")}
         </h2>
@@ -256,7 +256,7 @@ function Portal({ token, data }: { token: string; data: GuestPortalData }) {
       </section>
 
       {/* ---- My requests ---- */}
-      <section className="surface-card mt-4 p-4">
+      <section className="surface-card mt-4 p-3 sm:p-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           {t("myRequests")}
         </h2>
@@ -277,7 +277,7 @@ function Portal({ token, data }: { token: string; data: GuestPortalData }) {
       </section>
 
       {/* ---- My bill ---- */}
-      <section className="surface-card mt-4 p-4">
+      <section className="surface-card mt-4 p-3 sm:p-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           {t("myBill")}
         </h2>
@@ -300,7 +300,7 @@ function Portal({ token, data }: { token: string; data: GuestPortalData }) {
       </section>
 
       {/* ---- Pay ---- */}
-      <section className="surface-card mt-4 p-4">
+      <section className="surface-card mt-4 p-3 sm:p-4">
         <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           <CreditCard className="size-4" /> {t("payOnline")}
         </h2>
