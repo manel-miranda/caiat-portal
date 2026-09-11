@@ -45,12 +45,16 @@ function desktopNavItems(): NavItem[] {
 }
 
 // Phones keep five slots only; everything else moves into the More sheet.
-function mobileNavItems(): NavItem[] {
+// Dashboard-capable users get Dashboard in the middle slot (Calendar moves to
+// the More sheet); everyone else keeps Calendar there.
+function mobileNavItems(canDashboard: boolean): NavItem[] {
   return [
     { to: "/home", label: t("navRooms"), icon: BedDouble },
     { to: "/requests", label: t("navRequests"), icon: Bell },
+    canDashboard
+      ? { to: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard }
+      : { to: "/calendar", label: t("navCalendar"), icon: CalendarDays },
     { to: "/customers", label: t("navCustomers"), icon: Users },
-    { to: "/calendar", label: t("navCalendar"), icon: CalendarDays },
   ];
 }
 
@@ -60,7 +64,7 @@ export function AppShell({ title, children }: { title?: string; children: ReactN
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const desktopItems = desktopNavItems().filter((i) => !i.permission || can(i.permission));
-  const mobileItems = mobileNavItems();
+  const mobileItems = mobileNavItems(can("activity_view"));
   // One shared live-updates channel for every authenticated screen.
   useRealtimeSync();
 
