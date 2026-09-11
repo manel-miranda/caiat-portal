@@ -13,21 +13,23 @@ type NavItem = { to: string; label: string; icon: typeof BedDouble; adminOnly?: 
 
 // Only routes that exist are listed; management screens are owner-only and the
 // routes themselves re-check the role, so hiding here is convenience, not security.
-const NAV: NavItem[] = [
-  { to: "/home", label: t("navRooms"), icon: BedDouble },
-  { to: "/requests", label: t("navRequests"), icon: Bell },
-  { to: "/services", label: t("navServices"), icon: ConciergeBell },
-  { to: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard, adminOnly: true },
-  { to: "/cash", label: t("navCash"), icon: Banknote, adminOnly: true },
-  { to: "/activity", label: t("navActivity"), icon: History, adminOnly: true },
-];
+function navItems(): NavItem[] {
+  return [
+    { to: "/home", label: t("navRooms"), icon: BedDouble },
+    { to: "/requests", label: t("navRequests"), icon: Bell },
+    { to: "/services", label: t("navServices"), icon: ConciergeBell },
+    { to: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard, adminOnly: true },
+    { to: "/cash", label: t("navCash"), icon: Banknote, adminOnly: true },
+    { to: "/activity", label: t("navActivity"), icon: History, adminOnly: true },
+  ];
+}
 
 export function AppShell({ title, children }: { title?: string; children: ReactNode }) {
   const { profile, isAdmin } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const items = NAV.filter((i) => !i.adminOnly || isAdmin);
+  const items = navItems().filter((i) => !i.adminOnly || isAdmin);
 
   async function signOut() {
     await queryClient.cancelQueries();
