@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { t } from "@/lib/i18n";
 import type { ModelViewerElement } from "@/types/model-viewer";
 
-const MODEL_SRC = "/models/caiat-tajine.glb";
+const MODEL_SRC = "/models/caiat-tajine.gltf";
 
 export function DishViewer() {
   const [ready, setReady] = useState(false);
