@@ -190,7 +190,7 @@ function NewStayPage() {
 
   return (
     <AppShell title={t("newStay")}>
-      <form onSubmit={submit} className="surface-card space-y-4 p-3 sm:p-4">
+      <form onSubmit={submit} className="surface-card space-y-3 p-3 sm:space-y-4 sm:p-4">
         {customer ? (
           <div className="rounded-xl border border-primary/40 bg-primary/5 p-3">
             <div className="flex items-start justify-between gap-3">

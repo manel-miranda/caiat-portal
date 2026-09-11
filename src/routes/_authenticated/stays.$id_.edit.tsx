@@ -149,7 +149,7 @@ function EditStayPage() {
 
   return (
     <AppShell title={t("editStay")}>
-      <form onSubmit={submit} className="surface-card space-y-4 p-3 sm:p-4">
+      <form onSubmit={submit} className="surface-card space-y-3 p-3 sm:space-y-4 sm:p-4">
         <Field label={t("guestName")}>
           <Input
             className="tap-target text-base"

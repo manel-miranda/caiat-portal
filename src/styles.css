@@ -165,8 +165,13 @@
 @utility surface-card {
   background-color: var(--color-card);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-2xl);
+  /* Mobile density: slightly tighter corners on phones, unchanged on desktop. */
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
+
+  @media (width >= 40rem) {
+    border-radius: var(--radius-2xl);
+  }
 }
 
 @utility tap-target {
