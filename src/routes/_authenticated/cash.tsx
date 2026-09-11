@@ -94,7 +94,7 @@ function CashPage() {
 
   return (
     <AppShell title={t("cashControl")}>
-      <div className="surface-card p-4">
+      <div className="surface-card p-3 sm:p-4">
         <Label htmlFor="cash-date">{t("date")}</Label>
         <Input
           id="cash-date"
@@ -107,11 +107,11 @@ function CashPage() {
       </div>
 
       {day.isError ? (
-        <p className="surface-card mt-3 p-4 text-sm text-destructive">
+        <p className="surface-card mt-3 p-3 sm:p-4 text-sm text-destructive">
           {(day.error as Error).message}
         </p>
       ) : day.isLoading ? (
-        <p className="surface-card mt-3 p-4 text-sm text-muted-foreground">{t("loading")}</p>
+        <p className="surface-card mt-3 p-3 sm:p-4 text-sm text-muted-foreground">{t("loading")}</p>
       ) : (
         <>
           <section className="mt-4">
@@ -139,7 +139,7 @@ function CashPage() {
             </div>
           </section>
 
-          <section className="surface-card mt-4 space-y-3 p-4">
+          <section className="surface-card mt-4 space-y-3 p-3 sm:p-4">
             <div>
               <Label htmlFor="counted">{t("countedCash")}</Label>
               <Input

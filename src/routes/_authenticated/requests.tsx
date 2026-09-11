@@ -92,11 +92,11 @@ function RequestsPage() {
         {t("pendingRequests")}
       </h2>
       {pending.length === 0 ? (
-        <p className="surface-card mt-2 p-4 text-sm text-muted-foreground">{t("noResults")}</p>
+        <p className="surface-card mt-2 p-3 sm:p-4 text-sm text-muted-foreground">{t("noResults")}</p>
       ) : (
         <ul className="mt-2 space-y-3">
           {pending.map((r) => (
-            <li key={r.id} className="surface-card p-4">
+            <li key={r.id} className="surface-card p-3 sm:p-4">
               <RequestHead r={r} label={serviceLabel(serviceFor(r) ?? { label: r.label })} />
               {canManage ? (
                 <div className="mt-3 grid grid-cols-2 gap-2">
@@ -126,7 +126,7 @@ function RequestsPage() {
         {t("activity")}
       </h2>
       {history.length === 0 ? (
-        <p className="surface-card mt-2 p-4 text-sm text-muted-foreground">{t("noResults")}</p>
+        <p className="surface-card mt-2 p-3 sm:p-4 text-sm text-muted-foreground">{t("noResults")}</p>
       ) : (
         <ul className="surface-card mt-2 divide-y divide-border">
           {history.map((r) => (

@@ -37,7 +37,7 @@ function EditStayPage() {
   if (stayQ.isPending) {
     return (
       <AppShell title={t("editStay")}>
-        <p className="surface-card p-4 text-sm text-muted-foreground">{t("loading")}</p>
+        <p className="surface-card p-3 sm:p-4 text-sm text-muted-foreground">{t("loading")}</p>
       </AppShell>
     );
   }
@@ -45,7 +45,7 @@ function EditStayPage() {
   if (stayQ.isError || !stay) {
     return (
       <AppShell title={t("editStay")}>
-        <div className="surface-card space-y-3 p-4">
+        <div className="surface-card space-y-3 p-3 sm:p-4">
           <p className="text-sm text-destructive">
             {stayQ.error ? (stayQ.error as Error).message : t("stayNotFound")}
           </p>
@@ -77,7 +77,7 @@ function EditStayPage() {
   if (!editable) {
     return (
       <AppShell title={t("editStay")}>
-        <div className="surface-card space-y-3 p-4">
+        <div className="surface-card space-y-3 p-3 sm:p-4">
           <p className="text-sm text-muted-foreground">{t("stayNotEditable")}</p>
           <Button
             variant="outline"
@@ -149,7 +149,7 @@ function EditStayPage() {
 
   return (
     <AppShell title={t("editStay")}>
-      <form onSubmit={submit} className="surface-card space-y-4 p-4">
+      <form onSubmit={submit} className="surface-card space-y-3 p-3 sm:space-y-4 sm:p-4">
         <Field label={t("guestName")}>
           <Input
             className="tap-target text-base"

@@ -70,7 +70,7 @@ function CustomersPage() {
               <Link
                 to="/customers/$id"
                 params={{ id: c.id }}
-                className="surface-card flex items-center justify-between gap-3 p-4 active:bg-muted"
+                className="surface-card flex items-center justify-between gap-3 p-3 sm:p-4 active:bg-muted"
               >
                 <div className="min-w-0">
                   <p className="truncate font-semibold">{c.full_name}</p>

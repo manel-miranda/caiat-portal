@@ -46,7 +46,7 @@ function ActivityPage() {
   if (audit.isError) {
     return (
       <AppShell title={t("activity")}>
-        <p className="surface-card p-4 text-sm text-destructive">
+        <p className="surface-card p-3 sm:p-4 text-sm text-destructive">
           {(audit.error as Error).message}
         </p>
       </AppShell>
@@ -56,7 +56,7 @@ function ActivityPage() {
   if (audit.isLoading) {
     return (
       <AppShell title={t("activity")}>
-        <p className="surface-card p-4 text-sm text-muted-foreground">{t("loading")}</p>
+        <p className="surface-card p-3 sm:p-4 text-sm text-muted-foreground">{t("loading")}</p>
       </AppShell>
     );
   }

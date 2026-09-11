@@ -47,14 +47,14 @@ function AccountPage() {
 
   return (
     <AppShell title={t("changeMyPin")}>
-      <section className="surface-card p-4">
+      <section className="surface-card p-3 sm:p-4">
         <h1 className="text-lg font-semibold">{profile?.full_name ?? ""}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {profile?.username ?? ""} · {roleLabel(profile, role)}
         </p>
       </section>
 
-      <section className="surface-card mt-4 space-y-3 p-4">
+      <section className="surface-card mt-4 space-y-3 p-3 sm:p-4">
         <p className="font-semibold">{t("changeMyPin")}</p>
         <p className="text-xs text-muted-foreground">{t("pinRule")}</p>
         <Input
