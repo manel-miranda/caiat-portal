@@ -18,7 +18,7 @@ function detailLine(details: Record<string, unknown>): string {
   if (typeof details['label'] === "string") parts.push(details['label']);
   if (details['amount'] != null) parts.push(mad(Number(details['amount'])));
   if (details['total'] != null) parts.push(mad(Number(details['total'])));
-  if (typeof details['method'] === "string") parts.push(String(details['method']).replace("_", " "));
+  if (typeof details['method'] === "string") parts.push(methodLabel(String(details['method'])));
   if (details['difference'] != null) parts.push(`${t("difference")} ${mad(Number(details['difference']))}`);
   if (details['business_date'] != null) parts.push(String(details['business_date']));
   return parts.join(" · ");
@@ -70,7 +70,7 @@ function ActivityPage() {
               <div className="flex items-start justify-between gap-3 px-4 py-3">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">
-                    {ACTION_LABELS[row.action] ?? row.action}
+                    {actionLabel(row.action)}
                   </p>
                   <p className="truncate text-xs text-muted-foreground">
                     {name(row.user_id)}
