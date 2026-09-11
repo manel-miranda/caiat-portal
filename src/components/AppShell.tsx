@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { t } from "@/lib/i18n";
+import { roleLabel } from "@/lib/roles";
 import { cn } from "@/lib/utils";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import type { ReactNode } from "react";

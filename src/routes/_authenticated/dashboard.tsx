@@ -62,10 +62,15 @@ function DashboardPage() {
     .sort((a, b) => b.outstanding - a.outstanding);
 
   const pending = (requests.data ?? []).filter((r) => r.status === "pending");
-  const horizon = Date.now() + 24 * 3600 * 1000;
-  const next24Requests = pending.filter(
-    (r) => r.scheduled_at && new Date(r.scheduled_at).getTime() <= horizon,
-  );
+  // Only what is still ahead of us, within the next 24 hours. Overdue items
+  // stay on the Requests screen instead.
+  const now = Date.now();
+  const horizon = now + 24 * 3600 * 1000;
+  const next24Requests = pending.filter((r) => {
+    if (!r.scheduled_at) return false;
+    const at = new Date(r.scheduled_at).getTime();
+    return at >= now && at <= horizon;
+  });
   const tomorrowISO = addDaysISO(today, 1);
   const arrivalsTomorrow = activeStays.filter((s) => s.check_in === tomorrowISO);
   const departuresTomorrow = activeStays.filter((s) => s.check_out === tomorrowISO);
