@@ -413,6 +413,15 @@ const pt: Dict = {
   backOnline: "Ligação reposta",
   loading: "A carregar…",
   by: "por",
+  tasks: "Tarefas",
+  tasksEmpty: "Sem tarefas de momento",
+  taskApprovals: "Pedidos de reserva",
+  taskGuestRequests: "Pedidos de hóspedes",
+  taskArrivals: "Chegadas de hoje",
+  taskDepartures: "Partidas de hoje",
+  taskOverdue: "Atrasado",
+  openTasks: "Abrir tarefas",
+
 };
 
 const fr: Dict = {
