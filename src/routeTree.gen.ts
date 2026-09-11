@@ -22,6 +22,7 @@ import { Route as GuestTokenRouteImport } from './routes/guest.$token'
 import { Route as AuthenticatedStaysIdRouteImport } from './routes/_authenticated/stays.$id'
 import { Route as AuthenticatedStaysNewRouteImport } from './routes/_authenticated/stays.new'
 import { Route as AuthenticatedStaysIdEditRouteImport } from './routes/_authenticated/stays.$id_.edit'
+import { Route as ApiPublicPaypalCreateOrderRouteImport } from './routes/api/public/paypal.create-order'
 import { Route as ApiPublicPaypalStatusRouteImport } from './routes/api/public/paypal.status'
 
 const IndexRoute = IndexRouteImport.update({
@@ -89,6 +90,12 @@ const AuthenticatedStaysIdEditRoute =
     path: '/stays/$id/edit',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicPaypalCreateOrderRoute =
+  ApiPublicPaypalCreateOrderRouteImport.update({
+    id: '/api/public/paypal/create-order',
+    path: '/api/public/paypal/create-order',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPaypalStatusRoute = ApiPublicPaypalStatusRouteImport.update({
   id: '/api/public/paypal/status',
   path: '/api/public/paypal/status',
@@ -108,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/stays/$id': typeof AuthenticatedStaysIdRoute
   '/stays/new': typeof AuthenticatedStaysNewRoute
   '/stays/$id/edit': typeof AuthenticatedStaysIdEditRoute
+  '/api/public/paypal/create-order': typeof ApiPublicPaypalCreateOrderRoute
   '/api/public/paypal/status': typeof ApiPublicPaypalStatusRoute
 }
 export interface FileRoutesByTo {
@@ -123,6 +131,7 @@ export interface FileRoutesByTo {
   '/stays/$id': typeof AuthenticatedStaysIdRoute
   '/stays/new': typeof AuthenticatedStaysNewRoute
   '/stays/$id/edit': typeof AuthenticatedStaysIdEditRoute
+  '/api/public/paypal/create-order': typeof ApiPublicPaypalCreateOrderRoute
   '/api/public/paypal/status': typeof ApiPublicPaypalStatusRoute
 }
 export interface FileRoutesById {
@@ -140,6 +149,7 @@ export interface FileRoutesById {
   '/_authenticated/stays/$id': typeof AuthenticatedStaysIdRoute
   '/_authenticated/stays/new': typeof AuthenticatedStaysNewRoute
   '/_authenticated/stays/$id_/edit': typeof AuthenticatedStaysIdEditRoute
+  '/api/public/paypal/create-order': typeof ApiPublicPaypalCreateOrderRoute
   '/api/public/paypal/status': typeof ApiPublicPaypalStatusRoute
 }
 export interface FileRouteTypes {
@@ -157,6 +167,7 @@ export interface FileRouteTypes {
     | '/stays/$id'
     | '/stays/new'
     | '/stays/$id/edit'
+    | '/api/public/paypal/create-order'
     | '/api/public/paypal/status'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -172,6 +183,7 @@ export interface FileRouteTypes {
     | '/stays/$id'
     | '/stays/new'
     | '/stays/$id/edit'
+    | '/api/public/paypal/create-order'
     | '/api/public/paypal/status'
   id:
     | '__root__'
@@ -188,6 +200,7 @@ export interface FileRouteTypes {
     | '/_authenticated/stays/$id'
     | '/_authenticated/stays/new'
     | '/_authenticated/stays/$id_/edit'
+    | '/api/public/paypal/create-order'
     | '/api/public/paypal/status'
   fileRoutesById: FileRoutesById
 }
@@ -195,6 +208,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   GuestTokenRoute: typeof GuestTokenRoute
+  ApiPublicPaypalCreateOrderRoute: typeof ApiPublicPaypalCreateOrderRoute
   ApiPublicPaypalStatusRoute: typeof ApiPublicPaypalStatusRoute
 }
 
@@ -291,6 +305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStaysIdEditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/paypal/create-order': {
+      id: '/api/public/paypal/create-order'
+      path: '/api/public/paypal/create-order'
+      fullPath: '/api/public/paypal/create-order'
+      preLoaderRoute: typeof ApiPublicPaypalCreateOrderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/paypal/status': {
       id: '/api/public/paypal/status'
       path: '/api/public/paypal/status'
@@ -334,6 +355,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   GuestTokenRoute: GuestTokenRoute,
+  ApiPublicPaypalCreateOrderRoute: ApiPublicPaypalCreateOrderRoute,
   ApiPublicPaypalStatusRoute: ApiPublicPaypalStatusRoute,
 }
 export const routeTree = rootRouteImport
