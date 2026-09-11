@@ -203,37 +203,6 @@ function NewStayPage() {
                 placeholder={t("customerSearch")}
                 onChange={(e) => setCustomerSearch(e.target.value)}
               />
-              {customerSearch.trim().length >= 2 ? (
-                <ul className="mt-2 max-h-56 space-y-1.5 overflow-y-auto">
-                  {(customers.data ?? [])
-                    .filter((c) => matchesCustomer(c, customerSearch))
-                    .slice(0, 8)
-                    .map((c) => (
-                      <li key={c.id}>
-                        <button
-                          type="button"
-                          onClick={() => setCustomer(c)}
-                          className="flex w-full items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2 text-start text-sm active:bg-muted"
-                        >
-                          <span className="min-w-0">
-                            <span className="block truncate font-medium">{c.full_name}</span>
-                            <span className="block truncate text-[11px] text-muted-foreground">
-                              {c.phone ?? c.email ?? ""} ·{" "}
-                              {t("stayCount", { count: countedStays(c).length })}
-                            </span>
-                          </span>
-                          <span className="shrink-0 text-[11px] font-semibold text-primary">
-                            {t("useThisCustomer")}
-                          </span>
-                        </button>
-                      </li>
-                    ))}
-                  {(customers.data ?? []).filter((c) => matchesCustomer(c, customerSearch))
-                    .length === 0 ? (
-                    <li className="px-1 text-xs text-muted-foreground">{t("noCustomers")}</li>
-                  ) : null}
-                </ul>
-              ) : null}
             </Field>
 
             <Field label={t("guestName")}>
@@ -245,7 +214,7 @@ function NewStayPage() {
               />
             </Field>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               <Field label={`${t("phone")} (${t("optional")})`}>
                 <Input
                   className="tap-target text-base"
@@ -263,8 +232,49 @@ function NewStayPage() {
                 />
               </Field>
             </div>
+
+            {/* Duplicate discovery: exact contact matches are shown as a warning,
+                name matches only as a suggestion. Nothing is ever auto-merged. */}
+            {suggestions.length > 0 ? (
+              <div
+                className={`rounded-xl border p-3 ${
+                  hasContactMatch
+                    ? "border-warning/50 bg-warning/10"
+                    : "border-border bg-muted/40"
+                }`}
+              >
+                <p className="text-xs font-semibold">
+                  {hasContactMatch ? t("duplicateWarning") : t("suggestedMatches")}
+                </p>
+                <ul className="mt-2 space-y-1.5">
+                  {suggestions.map(({ customer: c, reason }) => (
+                    <li key={c.id}>
+                      <button
+                        type="button"
+                        onClick={() => setCustomer(c)}
+                        className="flex w-full items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2 text-start text-sm active:bg-muted"
+                      >
+                        <span className="min-w-0">
+                          <span className="block truncate font-medium">{c.full_name}</span>
+                          <span className="block truncate text-[11px] text-muted-foreground">
+                            {t(matchReasonKey(reason))}
+                            {c.phone || c.email ? ` · ${c.phone ?? c.email}` : ""} ·{" "}
+                            {t("stayCount", { count: countedStays(c).length })}
+                            {lastStayOf(c) ? ` · ${shortDate(lastStayOf(c)!)}` : ""}
+                          </span>
+                        </span>
+                        <span className="shrink-0 text-[11px] font-semibold text-primary">
+                          {t("useThisCustomer")}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </>
         )}
+
 
         <Field label={t("room")}>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
