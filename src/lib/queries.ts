@@ -337,8 +337,9 @@ export function isInHouse(stay: StayRow, today = todayISO()): boolean {
   return (
     stay.status === "active" &&
     stay.confirmation_status === "confirmed" &&
-    stay.check_in <= today
-  ) && (stay.check_in <= today && stay.check_out > today);
+    stay.check_in <= today &&
+    stay.check_out > today
+  );
 }
 
 export function roomState(stay: StayRow | undefined, today = todayISO()): RoomState {
