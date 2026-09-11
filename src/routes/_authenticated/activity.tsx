@@ -4,7 +4,7 @@ import { AppShell } from "@/components/AppShell";
 import { requireAdmin } from "@/lib/admin-guard";
 import { auditQuery, profilesQuery } from "@/lib/queries";
 import { mad, shortDateTime } from "@/lib/format";
-import { t } from "@/lib/i18n";
+import { actionLabel, methodLabel, t } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/activity")({
   beforeLoad: requireAdmin,
