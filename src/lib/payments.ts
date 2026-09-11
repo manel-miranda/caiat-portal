@@ -1,37 +1,63 @@
 /**
- * Online payment provider abstraction.
+ * Online payment provider layer (guest portal).
  *
- * Morocco-friendly providers (CMI, PayPal) are configured through build-time
- * env values. No provider credentials exist today, so the portal must never
- * claim a payment succeeded nor create a payment record from the browser.
+ * Everything sensitive stays on the server: the browser only asks whether a
+ * provider is configured and, when the guest presses Pay, receives a PayPal
+ * approval URL generated server-side from a server-authoritative amount.
  *
- * When a provider is connected later, a server function should create the
- * checkout session with a SERVER-authoritative amount in MAD and return its
- * URL through `createCheckout`; the guest portal UI does not need to change.
+ * The owner adds these secrets in Project Settings -> Secrets:
+ *   PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_ENVIRONMENT=sandbox
+ * Until then every endpoint reports "not configured" and the portal keeps the
+ * existing "ask reception" behaviour.
  */
 
 export type PaymentProvider = "cmi" | "paypal";
 
 export type PaymentConfig =
   | { available: false }
-  | { available: true; provider: PaymentProvider };
+  | { available: true; provider: PaymentProvider; environment: string | null };
 
-function readProvider(): PaymentProvider | null {
-  const raw = (import.meta.env['VITE_PAYMENT_PROVIDER'] as string | undefined)?.trim().toLowerCase();
-  if (raw === "cmi" || raw === "paypal") return raw;
-  return null;
-}
-
-export function paymentConfig(): PaymentConfig {
-  const provider = readProvider();
-  return provider ? { available: true, provider } : { available: false };
+/** Server-checked provider availability. Never exposes any credential. */
+export function paymentStatusQuery() {
+  return {
+    queryKey: ["payment-status"],
+    staleTime: 60_000,
+    retry: false,
+    queryFn: async (): Promise<PaymentConfig> => {
+      try {
+        const res = await fetch("/api/public/paypal/status", { headers: { Accept: "application/json" } });
+        if (!res.ok) return { available: false };
+        const json = (await res.json()) as {
+          available?: boolean;
+          provider?: PaymentProvider;
+          environment?: string | null;
+        };
+        return json.available
+          ? {
+              available: true,
+              provider: json.provider ?? "paypal",
+              environment: json.environment ?? null,
+            }
+          : { available: false };
+      } catch {
+        return { available: false };
+      }
+    },
+  };
 }
 
 /**
- * Placeholder for the future server-generated checkout URL. Intentionally
- * throws while no provider is configured: nothing client-side may ever mark a
- * bill as paid. Card data is never handled or stored by this app.
+ * Asks the server to create a PayPal order for the stay's outstanding MAD
+ * balance and returns the approval URL the guest must be redirected to.
+ * Throws a stable error code the UI translates.
  */
-export async function createCheckout(_token: string): Promise<string> {
-  throw new Error("PAYMENT_NOT_CONFIGURED");
+export async function startCheckout(token: string): Promise<string> {
+  const res = await fetch("/api/public/paypal/create-order", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token }),
+  });
+  const json = (await res.json().catch(() => ({}))) as { approveUrl?: string; error?: string };
+  if (!res.ok || !json.approveUrl) throw new Error(json.error ?? "PAYMENT_FAILED");
+  return json.approveUrl;
 }
