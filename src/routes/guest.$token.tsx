@@ -190,6 +190,9 @@ function Portal({ token, data }: { token: string; data: GuestPortalData }) {
         </ul>
       </section>
 
+      {/* ---- Menu 3D/AR prototype ---- */}
+      <DishViewer />
+
       {/* ---- Request something ---- */}
       <section className="surface-card mt-4 p-3 sm:p-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
