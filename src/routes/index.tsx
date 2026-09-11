@@ -97,7 +97,11 @@ function LoginPage() {
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">{t("loginHelp")}</p>
+        <div className="mt-6 flex justify-center">
+          <LanguageSwitcher />
+        </div>
+
+        <p className="mt-4 text-center text-xs text-muted-foreground">{t("loginHelp")}</p>
 
       </div>
     </div>
