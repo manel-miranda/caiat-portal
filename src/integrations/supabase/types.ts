@@ -568,6 +568,36 @@ export type Database = {
           },
         ]
       }
+      user_permissions: {
+        Row: {
+          created_at: string
+          granted: boolean
+          id: string
+          permission: string
+          updated_at: string
+          updated_by: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted: boolean
+          id?: string
+          permission: string
+          updated_at?: string
+          updated_by?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted?: boolean
+          id?: string
+          permission?: string
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -602,11 +632,35 @@ export type Database = {
           p_check_in: string
           p_check_out: string
           p_confirmation_status?: string
+          p_email?: string
+          p_guest_id?: string
           p_guest_name: string
           p_notes: string
           p_num_guests: number
+          p_phone?: string
           p_room_id: string
           p_source: Database["public"]["Enums"]["stay_source"]
+        }
+        Returns: string
+      }
+      customer_update_profile: {
+        Args: {
+          p_email: string
+          p_full_name: string
+          p_guest_id: string
+          p_nationality: string
+          p_notes: string
+          p_phone: string
+        }
+        Returns: string
+      }
+      customer_upsert: {
+        Args: {
+          p_email: string
+          p_full_name: string
+          p_nationality: string
+          p_notes: string
+          p_phone: string
         }
         Returns: string
       }
@@ -638,6 +692,10 @@ export type Database = {
       guest_stay_for_token: { Args: { p_token: string }; Returns: string }
       guest_token_generate: { Args: { p_stay_id: string }; Returns: string }
       guest_token_revoke: { Args: { p_stay_id: string }; Returns: undefined }
+      has_permission: {
+        Args: { _key: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -646,9 +704,28 @@ export type Database = {
         Returns: boolean
       }
       reject_reservation: { Args: { p_stay_id: string }; Returns: string }
+      role_default_permission: {
+        Args: { _key: string; _role: Database["public"]["Enums"]["app_role"] }
+        Returns: boolean
+      }
+      set_user_active: {
+        Args: { p_active: boolean; p_user_id: string }
+        Returns: undefined
+      }
+      set_user_permission: {
+        Args: { p_granted?: boolean; p_key: string; p_user_id: string }
+        Returns: undefined
+      }
+      set_user_role: {
+        Args: {
+          p_role: Database["public"]["Enums"]["app_role"]
+          p_user_id: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
-      app_role: "admin" | "staff"
+      app_role: "admin" | "staff" | "supervisor"
       payment_method: "cash" | "card" | "bank_transfer" | "paypal"
       request_status: "pending" | "completed" | "cancelled"
       stay_source:
@@ -786,7 +863,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "staff"],
+      app_role: ["admin", "staff", "supervisor"],
       payment_method: ["cash", "card", "bank_transfer", "paypal"],
       request_status: ["pending", "completed", "cancelled"],
       stay_source: [
