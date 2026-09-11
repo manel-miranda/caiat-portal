@@ -4,7 +4,7 @@ import { BedDouble, Users, Wallet, Banknote, AlertCircle, Bell, LogIn, LogOut } 
 import { AppShell } from "@/components/AppShell";
 import { StatCard } from "@/components/ui/stat-card";
 import { requireAdmin } from "@/lib/admin-guard";
-import { addDaysISO, mad, shortDate, timeOnly, todayISO } from "@/lib/format";
+import { addDaysISO, mad, roomLabel, shortDate, timeOnly, todayISO } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import {
   activeStaysQuery,
