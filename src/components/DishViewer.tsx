@@ -74,7 +74,7 @@ export function DishViewer() {
             shadow-intensity={1}
             shadow-softness={0.8}
             touch-action="pan-y"
-            exposure={1}
+            exposure={0.75}
             camera-orbit="25deg 60deg 0.75m"
             style={{ width: "100%", height: "260px", backgroundColor: "transparent" }}
           />
