@@ -16,8 +16,9 @@ import {
 
 /**
  * Staff-facing guest access panel. Any signed-in staff member can see and show
- * an existing QR at check-in, but creating, regenerating and revoking a link is
- * admin-only — the token is a bearer credential for the whole stay.
+ * an existing QR at check-in, but creating, regenerating and revoking a link
+ * requires the `guest_access_manage` permission — the token is a bearer
+ * credential for the whole stay.
  */
 export function GuestAccessCard({ stayId }: { stayId: string }) {
   const { can } = useAuth();

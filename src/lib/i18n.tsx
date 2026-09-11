@@ -334,7 +334,7 @@ export const en = {
   // guest access / QR (staff side)
   guestAccess: "Guest access / Guest QR",
   guestAccessDesc: "Share this QR or link with the guest so they can request services and see their bill.",
-  guestAccessAdminOnly: "Only the owner can create or revoke guest access.",
+  guestAccessAdminOnly: "Only authorised team members can create or revoke guest access.",
   generateGuestAccess: "Generate guest access",
   noGuestAccessYet: "No guest link yet",
   showQr: "Show QR full screen",
@@ -681,7 +681,7 @@ const pt: Dict = {
 
   guestAccess: "Acesso do hóspede / QR",
   guestAccessDesc: "Partilhe este QR ou link com o hóspede para pedir serviços e ver a conta.",
-  guestAccessAdminOnly: "Só o proprietário pode criar ou anular o acesso do hóspede.",
+  guestAccessAdminOnly: "Só membros da equipa autorizados podem criar ou anular o acesso do hóspede.",
   generateGuestAccess: "Gerar acesso do hóspede",
   noGuestAccessYet: "Ainda não existe link do hóspede",
   showQr: "Mostrar QR em ecrã inteiro",
@@ -1022,7 +1022,7 @@ const fr: Dict = {
 
   guestAccess: "Accès client / QR",
   guestAccessDesc: "Partagez ce QR ou ce lien avec le client pour ses demandes et sa note.",
-  guestAccessAdminOnly: "Seul le propriétaire peut créer ou révoquer l'accès client.",
+  guestAccessAdminOnly: "Seuls les membres autorisés de l'équipe peuvent créer ou révoquer l'accès client.",
   generateGuestAccess: "Générer l'accès client",
   noGuestAccessYet: "Aucun lien client pour l'instant",
   showQr: "Afficher le QR en plein écran",
@@ -1363,7 +1363,7 @@ const ar: Dict = {
 
   guestAccess: "وصول الضيف / رمز QR",
   guestAccessDesc: "شارك رمز QR أو الرابط مع الضيف لطلب الخدمات ومعاينة الفاتورة.",
-  guestAccessAdminOnly: "المالك وحده يمكنه إنشاء وصول الضيف أو إلغاؤه.",
+  guestAccessAdminOnly: "يمكن لأعضاء الفريق المخوّلين فقط إنشاء وصول الضيف أو إلغاؤه.",
   generateGuestAccess: "إنشاء وصول للضيف",
   noGuestAccessYet: "لا يوجد رابط للضيف بعد",
   showQr: "عرض رمز QR بملء الشاشة",

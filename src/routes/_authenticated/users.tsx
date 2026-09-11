@@ -108,7 +108,7 @@ function UsersPage() {
                 <div className="mt-4 space-y-4 border-t border-border pt-4">
                   <div>
                     <Label className="text-xs text-muted-foreground">{t("role")}</Label>
-                    <div className="mt-1.5 flex gap-2">
+                    <div className="mt-1.5 flex flex-wrap gap-2">
                       {ROLES.map((r) => (
                         <Button
                           key={r}
@@ -267,7 +267,7 @@ function AddUserCard({
               </Button>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {ROLES.map((r) => (
               <Button key={r} size="sm" variant={role === r ? "default" : "outline"} onClick={() => setRole(r)}>
                 {roleName(r)}
@@ -294,7 +294,7 @@ function AddUserCard({
   );
 }
 
-/** Available to the signed-in admin; the PIN itself is only sent to Auth. */
+/** Self-service PIN change; the PIN itself is only ever sent to Auth. */
 function ChangeMyPinCard({
   busy,
   run,
@@ -357,7 +357,7 @@ function PermissionRow({
   const effective = effectivePermission(user.role, user.overrides, permission, user.active);
   const disabled = busy || user.role === "admin";
   return (
-    <li className="flex items-center justify-between gap-2 rounded-xl bg-muted/40 px-3 py-2 text-sm">
+    <li className="flex flex-col gap-2 rounded-xl bg-muted/40 px-3 py-2 text-sm sm:flex-row sm:items-center sm:justify-between">
       <span className="min-w-0">
         <span className="block truncate">{t(PERMISSION_LABEL_KEYS[permission])}</span>
         <span className="block text-[11px] text-muted-foreground">
@@ -368,7 +368,7 @@ function PermissionRow({
               : t("notAllowed")}
         </span>
       </span>
-      <span className="flex shrink-0 gap-1">
+      <span className="flex flex-wrap gap-1 sm:shrink-0">
         <Button
           size="sm"
           variant={!isDefault && effective ? "default" : "outline"}
