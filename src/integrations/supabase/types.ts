@@ -131,6 +131,44 @@ export type Database = {
           },
         ]
       }
+      guest_access_tokens: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          id: string
+          revoked_at: string | null
+          stay_id: string
+          token: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          revoked_at?: string | null
+          stay_id: string
+          token: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          revoked_at?: string | null
+          stay_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_access_tokens_stay_id_fkey"
+            columns: ["stay_id"]
+            isOneToOne: false
+            referencedRelation: "stays"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guests: {
         Row: {
           created_at: string
@@ -232,6 +270,7 @@ export type Database = {
           completed_by: string | null
           created_at: string
           created_by: string | null
+          created_via: string
           id: string
           label: string
           notes: string | null
@@ -246,6 +285,7 @@ export type Database = {
           completed_by?: string | null
           created_at?: string
           created_by?: string | null
+          created_via?: string
           id?: string
           label: string
           notes?: string | null
@@ -260,6 +300,7 @@ export type Database = {
           completed_by?: string | null
           created_at?: string
           created_by?: string | null
+          created_via?: string
           id?: string
           label?: string
           notes?: string | null
@@ -505,6 +546,20 @@ export type Database = {
         }
         Returns: string
       }
+      guest_create_request: {
+        Args: {
+          p_custom_label: string
+          p_kind?: string
+          p_notes: string
+          p_service_type_id: string
+          p_token: string
+        }
+        Returns: string
+      }
+      guest_portal: { Args: { p_token: string }; Returns: Json }
+      guest_stay_for_token: { Args: { p_token: string }; Returns: string }
+      guest_token_generate: { Args: { p_stay_id: string }; Returns: string }
+      guest_token_revoke: { Args: { p_stay_id: string }; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
