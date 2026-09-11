@@ -9,7 +9,10 @@ import { cn } from "@/lib/utils";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { CurrencySwitcher } from "@/components/CurrencySwitcher";
+import { TaskBell } from "@/components/TaskBell";
+import { useRealtimeSync } from "@/lib/realtime";
 import type { ReactNode } from "react";
+
 
 type NavItem = { to: string; label: string; icon: typeof BedDouble; adminOnly?: boolean };
 
@@ -32,6 +35,9 @@ export function AppShell({ title, children }: { title?: string; children: ReactN
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const items = navItems().filter((i) => !i.adminOnly || isAdmin);
+  // One shared live-updates channel for every authenticated screen.
+  useRealtimeSync();
+
 
   async function signOut() {
     await queryClient.cancelQueries();
@@ -54,6 +60,8 @@ export function AppShell({ title, children }: { title?: string; children: ReactN
           <div className="flex shrink-0 items-center gap-2">
             <LanguageSwitcher />
             <CurrencySwitcher />
+            <TaskBell />
+
             <button
               onClick={signOut}
               aria-label={t("signOut")}

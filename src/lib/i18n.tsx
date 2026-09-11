@@ -222,6 +222,15 @@ export const en = {
   backOnline: "Back online",
   loading: "Loading…",
   by: "by",
+  tasks: "Tasks",
+  tasksEmpty: "Nothing to do right now",
+  taskApprovals: "Reservation approvals",
+  taskGuestRequests: "Guest requests",
+  taskArrivals: "Arrivals today",
+  taskDepartures: "Departures today",
+  taskOverdue: "Overdue",
+  openTasks: "Open tasks",
+
 } as const;
 
 export type TranslationKey = keyof typeof en;
@@ -413,6 +422,15 @@ const pt: Dict = {
   backOnline: "Ligação reposta",
   loading: "A carregar…",
   by: "por",
+  tasks: "Tarefas",
+  tasksEmpty: "Sem tarefas de momento",
+  taskApprovals: "Pedidos de reserva",
+  taskGuestRequests: "Pedidos de hóspedes",
+  taskArrivals: "Chegadas de hoje",
+  taskDepartures: "Partidas de hoje",
+  taskOverdue: "Atrasado",
+  openTasks: "Abrir tarefas",
+
 };
 
 const fr: Dict = {
@@ -601,6 +619,15 @@ const fr: Dict = {
   backOnline: "Connexion rétablie",
   loading: "Chargement…",
   by: "par",
+  tasks: "Tâches",
+  tasksEmpty: "Aucune tâche pour le moment",
+  taskApprovals: "Demandes de réservation",
+  taskGuestRequests: "Demandes des clients",
+  taskArrivals: "Arrivées du jour",
+  taskDepartures: "Départs du jour",
+  taskOverdue: "En retard",
+  openTasks: "Ouvrir les tâches",
+
 };
 
 const ar: Dict = {
@@ -789,6 +816,15 @@ const ar: Dict = {
   backOnline: "عاد الاتصال",
   loading: "جارٍ التحميل…",
   by: "بواسطة",
+  tasks: "المهام",
+  tasksEmpty: "لا توجد مهام الآن",
+  taskApprovals: "طلبات الحجز",
+  taskGuestRequests: "طلبات النزلاء",
+  taskArrivals: "وصول اليوم",
+  taskDepartures: "مغادرة اليوم",
+  taskOverdue: "متأخر",
+  openTasks: "فتح المهام",
+
 };
 
 const dictionaries: Record<Lang, Dict> = { pt, en, fr, ar };
