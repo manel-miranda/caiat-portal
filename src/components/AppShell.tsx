@@ -36,7 +36,7 @@ function navItems(): NavItem[] {
     { to: "/services", label: t("navServices"), icon: ConciergeBell },
     { to: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard, permission: "activity_view" },
     { to: "/cash", label: t("navCash"), icon: Banknote, permission: "cash_reconcile" },
-    { to: "/activity", label: t("navActivity"), icon: History, permission: "activity_view" },
+    // Activity lives behind the Dashboard so the bottom bar stays readable at 390px.
   ];
 }
 
