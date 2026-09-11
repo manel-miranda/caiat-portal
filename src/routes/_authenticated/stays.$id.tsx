@@ -563,7 +563,7 @@ function Action({
     <button
       onClick={onClick}
       className={[
-        "flex min-h-[64px] items-center justify-center gap-2 rounded-2xl border text-base font-semibold active:scale-[0.99]",
+        "flex min-h-[52px] items-center justify-center gap-2 rounded-xl border text-sm font-semibold active:scale-[0.99] sm:min-h-16 sm:rounded-2xl sm:text-base",
         primary
           ? "border-primary bg-primary text-primary-foreground"
           : "border-border bg-card text-foreground",
