@@ -132,7 +132,34 @@ function ServicesPage() {
       ) : items.length === 0 ? (
         <p className="surface-card mt-4 p-4 text-sm text-muted-foreground">{t("noResults")}</p>
       ) : (
-        GROUPS.map((g) => {
+        <>
+        {(() => {
+          const facilities = items
+            .filter((s) => s.category === "included")
+            .sort((a, b) => a.sort_order - b.sort_order);
+          if (facilities.length === 0) return null;
+          return (
+            <section className="mt-6">
+              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                {t("catIncluded")}
+              </h2>
+              <div className="surface-card p-4">
+                <ul className="flex flex-wrap gap-2">
+                  {facilities.map((s) => (
+                    <li
+                      key={s.id}
+                      className="rounded-full bg-muted px-3 py-1.5 text-sm text-muted-foreground"
+                    >
+                      {s.label}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-3 text-xs text-muted-foreground">{t("includedNote")}</p>
+              </div>
+            </section>
+          );
+        })()}
+        {GROUPS.map((g) => {
           const group = items
             .filter((s) => (s.category ?? "other") === g.key)
             .sort((a, b) => a.sort_order - b.sort_order);
