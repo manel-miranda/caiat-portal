@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { BedDouble, Users, Wallet, Banknote, AlertCircle, Bell, LogIn, LogOut } from "lucide-react";
+import { BedDouble, Users, Wallet, Banknote, AlertCircle, Bell, LogIn, LogOut, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { confirmReservation, rejectReservation } from "@/lib/mutations";
@@ -136,11 +136,19 @@ function DashboardPage() {
       </section>
 
       <div className="mt-3 flex flex-wrap gap-2">
+        {can("users_manage") ? (
+          <Link
+            to="/users"
+            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-semibold active:bg-muted"
+          >
+            <Users className="size-4" /> {t("usersTitle")}
+          </Link>
+        ) : null}
         <Link
-          to="/users"
+          to="/activity"
           className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-semibold active:bg-muted"
         >
-          <Users className="size-4" /> {t("usersTitle")}
+          <History className="size-4" /> {t("navActivity")}
         </Link>
         <Link
           to="/customers"
@@ -152,14 +160,16 @@ function DashboardPage() {
 
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
 
-        <Link to="/cash" className="contents">
-          <StatCard
-            icon={<Banknote className="size-4" />}
-            label={t("expectedInSafe")}
-            value={mad(cashToday)}
-            hint={t("cashControl")}
-          />
-        </Link>
+        {can("cash_reconcile") ? (
+          <Link to="/cash" className="contents">
+            <StatCard
+              icon={<Banknote className="size-4" />}
+              label={t("expectedInSafe")}
+              value={mad(cashToday)}
+              hint={t("cashControl")}
+            />
+          </Link>
+        ) : null}
         <StatCard
           icon={<AlertCircle className="size-4" />}
           label={t("outstandingBalances")}
@@ -186,7 +196,7 @@ function DashboardPage() {
                   {sourceLabel(s.source)} · {mad(s.accommodation_total)}
                 </p>
               </Link>
-              <div className="mt-2 flex gap-2">
+              <div className={`mt-2 flex gap-2 ${can("reservations_manage") ? "" : "hidden"}`}>
                 <Button size="sm" className="rounded-lg" onClick={() => void decide(s.id, true)}>
                   {t("accept")}
                 </Button>

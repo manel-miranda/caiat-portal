@@ -20,7 +20,8 @@ export const Route = createFileRoute("/_authenticated/requests")({
 });
 
 function RequestsPage() {
-  const { user } = useAuth();
+  const { user, can } = useAuth();
+  const canManage = can("requests_manage");
   const online = useOnline();
   const queryClient = useQueryClient();
   const requests = useQuery(requestsQuery);
@@ -91,6 +92,7 @@ function RequestsPage() {
           {pending.map((r) => (
             <li key={r.id} className="surface-card p-4">
               <RequestHead r={r} label={serviceLabel(serviceFor(r) ?? { label: r.label })} />
+              {canManage ? (
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <Button
                   onClick={() => void onComplete(r)}
@@ -108,6 +110,7 @@ function RequestsPage() {
                   <X className="size-4" /> {t("cancel")}
                 </Button>
               </div>
+              ) : null}
             </li>
           ))}
         </ul>

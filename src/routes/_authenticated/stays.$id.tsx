@@ -294,9 +294,15 @@ function StayDetailPage() {
         </p>
       ) : stay.status === "active" ? (
         <section className="mt-4 grid grid-cols-2 gap-3">
-          <Action icon={<Plus className="size-5" />} label={t("addCharge")} onClick={() => setSheet("charge")} />
-          <Action icon={<CreditCard className="size-5" />} label={t("addPayment")} onClick={() => setSheet("payment")} />
-          <Action icon={<Bell className="size-5" />} label={t("addRequest")} onClick={() => setSheet("request")} />
+          {can("payments_manage") ? (
+            <Action icon={<Plus className="size-5" />} label={t("addCharge")} onClick={() => setSheet("charge")} />
+          ) : null}
+          {can("payments_manage") ? (
+            <Action icon={<CreditCard className="size-5" />} label={t("addPayment")} onClick={() => setSheet("payment")} />
+          ) : null}
+          {can("requests_manage") ? (
+            <Action icon={<Bell className="size-5" />} label={t("addRequest")} onClick={() => setSheet("request")} />
+          ) : null}
           <Action
             icon={<LogOut className="size-5" />}
             label={t("checkout")}
