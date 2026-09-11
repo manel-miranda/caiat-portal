@@ -5,7 +5,6 @@ import {
   LogOut,
   LayoutDashboard,
   Banknote,
-  History,
   ConciergeBell,
   Users,
 } from "lucide-react";
@@ -41,7 +40,7 @@ function navItems(): NavItem[] {
 }
 
 export function AppShell({ title, children }: { title?: string; children: ReactNode }) {
-  const { profile, isAdmin, can } = useAuth();
+  const { profile, role, can } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -64,10 +63,10 @@ export function AppShell({ title, children }: { title?: string; children: ReactN
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3 px-4 py-3">
           <div className="min-w-0">
             <p className="truncate text-lg font-semibold tracking-tight">{title ?? t("appName")}</p>
-            <p className="truncate text-xs text-muted-foreground">
+            <Link to="/account" className="block truncate text-xs text-muted-foreground underline-offset-2 active:underline">
               {profile?.full_name ?? ""}
-              {profile ? ` · ${roleLabel(profile, isAdmin)}` : ""}
-            </p>
+              {profile ? ` · ${roleLabel(profile, role)}` : ""}
+            </Link>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <LanguageSwitcher />
