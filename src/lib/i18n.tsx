@@ -405,7 +405,7 @@ const fr: Dict = {
   perExtraGuest: "par personne supplémentaire",
   breakfastIncluded: "Petit-déjeuner inclus",
   editable: "modifiable",
-  extras: "extras",
+  extras: "suppléments",
   pax: "pers.",
   stay: "Séjour",
   guest: "Client",
