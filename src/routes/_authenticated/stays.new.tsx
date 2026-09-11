@@ -148,7 +148,6 @@ function NewStayPage() {
   return (
     <AppShell title={t("newStay")}>
       <form onSubmit={submit} className="surface-card space-y-4 p-4">
-        <Field label={t("guestName")}>
         {customer ? (
           <div className="rounded-xl border border-primary/40 bg-primary/5 p-3">
             <div className="flex items-start justify-between gap-3">
