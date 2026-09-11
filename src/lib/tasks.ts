@@ -25,7 +25,7 @@ export type TaskGroup = {
  * an item disappears as soon as the underlying record is resolved.
  */
 export function buildTasks(input: {
-  isAdmin: boolean;
+  canApprove: boolean;
   stays: StayRow[];
   requests: RequestRow[];
   pendingReservations: StayRow[];
@@ -36,8 +36,8 @@ export function buildTasks(input: {
   const now = input.now ?? new Date();
   const groups: TaskGroup[] = [];
 
-  // Only owners/admins accept or reject reservation requests.
-  if (input.isAdmin) {
+  // Only users allowed to manage reservations accept or reject requests.
+  if (input.canApprove) {
     const items = input.pendingReservations.map((s) => ({
       id: `res:${s.id}`,
       title: s.guest?.full_name ?? "—",
