@@ -175,5 +175,10 @@
 }
 
 @utility tap-target {
-  min-height: 3.25rem;
+  /* Comfortable on phones (>=44px) without feeling oversized; roomier on desktop. */
+  min-height: 2.875rem;
+
+  @media (width >= 40rem) {
+    min-height: 3.25rem;
+  }
 }
