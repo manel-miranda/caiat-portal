@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, LogIn, LogOut, BedDouble, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, LogIn, LogOut, BedDouble, Clock, Plus } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { staysRangeQuery, roomsQuery, type StayRow } from "@/lib/queries";
 import { addDaysISO, firstName, roomLabel, shortDate, todayISO } from "@/lib/format";
@@ -125,8 +125,24 @@ function CalendarPage() {
   const agendaEmpty =
     dayArrivals.length + dayInHouse.length + dayDepartures.length + dayPending.length === 0;
 
+  const newStaySearch = (iso: string) => ({
+    checkIn: iso,
+    checkOut: addDaysISO(iso, 1),
+    ...(roomFilter !== "all" ? { room: roomFilter } : {}),
+  });
+
   return (
     <AppShell title={t("calendarTitle")}>
+      <div className="mb-3">
+        <Link
+          to="/stays/new"
+          search={newStaySearch(selected)}
+          className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground active:scale-[0.98]"
+        >
+          <Plus className="size-4" /> {t("addReservation")}
+        </Link>
+      </div>
+
       <div className="flex items-center justify-between gap-2">
         <button
           onClick={() => goMonth(-1)}
