@@ -32,6 +32,9 @@ export function AppShell({ title, children }: { title?: string; children: ReactN
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const items = navItems().filter((i) => !i.adminOnly || isAdmin);
+  // One shared live-updates channel for every authenticated screen.
+  useRealtimeSync();
+
 
   async function signOut() {
     await queryClient.cancelQueries();
