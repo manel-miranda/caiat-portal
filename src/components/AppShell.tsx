@@ -45,16 +45,16 @@ function desktopNavItems(): NavItem[] {
 }
 
 // Phones keep five slots only; everything else moves into the More sheet.
-// Dashboard-capable users get Dashboard in the middle slot (Calendar moves to
-// the More sheet); everyone else keeps Calendar there.
+// Dashboard-capable users see Dashboard + Calendar in the bar and find
+// Customers inside More; everyone else keeps Customers + Calendar.
 function mobileNavItems(canDashboard: boolean): NavItem[] {
   return [
     { to: "/home", label: t("navRooms"), icon: BedDouble },
     { to: "/requests", label: t("navRequests"), icon: Bell },
     canDashboard
       ? { to: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard }
-      : { to: "/calendar", label: t("navCalendar"), icon: CalendarDays },
-    { to: "/customers", label: t("navCustomers"), icon: Users },
+      : { to: "/customers", label: t("navCustomers"), icon: Users },
+    { to: "/calendar", label: t("navCalendar"), icon: CalendarDays },
   ];
 }
 
