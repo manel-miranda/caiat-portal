@@ -209,6 +209,8 @@ export const en = {
   customerSaved: "Customer saved",
   customerCreated: "Customer created",
   editCustomer: "Edit customer",
+  phone: "Phone",
+  email: "Email",
   nationality: "Nationality",
   existingCustomer: "Existing customer",
   searchCustomer: "Search customer",

@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -16,6 +16,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { GuestAccessCard } from "@/components/GuestAccessCard";
+import { countedStays, customerQuery } from "@/lib/customers";
 import { useAuth } from "@/lib/auth";
 import { useOnline } from "@/components/OfflineBanner";
 import { businessLocalToISO, mad, nights, roomLabel, shortDate, shortDateTime } from "@/lib/format";
@@ -59,6 +60,10 @@ function StayDetailPage() {
   const paymentsQ = useQuery(stayPaymentsQuery(id));
   const servicesQ = useQuery(serviceTypesQuery);
   const requestsQ = useQuery(requestsQuery);
+  // Customer history behind this booking: new face or someone coming back?
+  const guestId = stayQ.data?.guest_id;
+  const customerQ = useQuery({ ...customerQuery(guestId ?? ""), enabled: Boolean(guestId) });
+  const customerStayCount = customerQ.data ? countedStays(customerQ.data).length : 0;
 
   const stay = stayQ.data;
   const services = servicesQ.data ?? [];
@@ -120,7 +125,19 @@ function StayDetailPage() {
             <p className="mt-1 text-sm text-muted-foreground">
               {stay.guest?.phone ?? ""} {stay.guest?.nationality ? `· ${stay.guest.nationality}` : ""}
             </p>
+            {guestId && customerQ.data ? (
+              <Link
+                to="/customers/$id"
+                params={{ id: guestId }}
+                className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-semibold"
+              >
+                {customerStayCount > 1
+                  ? `${t("returningCustomer")} · ${t("stayCount", { count: customerStayCount })}`
+                  : t("newCustomer")}
+              </Link>
+            ) : null}
           </div>
+
           <span
             className={`rounded-full px-3 py-1 text-xs font-semibold ${
               isPendingRequest

@@ -70,7 +70,8 @@ export async function setUserPermission(
   const { error } = await supabase.rpc("set_user_permission", {
     p_user_id: userId,
     p_key: key,
-    p_granted: granted,
+    // Omitting the flag clears the override so the role default applies again.
+    ...(granted === null ? {} : { p_granted: granted }),
   });
   if (error) throw new Error(userError(error.message));
 }
@@ -88,4 +89,11 @@ export function generatePin(): string {
   const buf = new Uint32Array(1);
   crypto.getRandomValues(buf);
   return String((buf[0] ?? 0) % 1_000_000).padStart(6, "0");
+}
+
+/** Anyone signed in can change their own PIN; Auth stores it, we never do. */
+export async function changeMyPin(pin: string) {
+  if (!isValidPin(pin)) throw new Error(t("pinRule"));
+  const { error } = await supabase.auth.updateUser({ password: pin });
+  if (error) throw new Error(error.message);
 }

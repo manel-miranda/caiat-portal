@@ -13,6 +13,13 @@ import { sourceOptions, t } from "@/lib/i18n";
 import { roomsQuery, nightlyRate, suggestedAccommodationTotal } from "@/lib/queries";
 import { createStay } from "@/lib/mutations";
 import { useOnline } from "@/components/OfflineBanner";
+import {
+  countedStays,
+  customersQuery,
+  matchesCustomer,
+  type CustomerRow,
+} from "@/lib/customers";
+import { shortDate } from "@/lib/format";
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -48,6 +55,7 @@ function NewStayPage() {
   const { user } = useAuth();
   const online = useOnline();
   const rooms = useQuery(roomsQuery);
+  const customers = useQuery(customersQuery);
 
   // Calendar prefill: fall back to the normal defaults for missing/invalid values.
   const initialCheckIn = search.checkIn ?? todayISO();
@@ -57,6 +65,12 @@ function NewStayPage() {
       : addDaysISO(initialCheckIn, 1);
 
   const [guestName, setGuestName] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
+  // Picking an existing customer links the booking to that exact row; leaving it
+  // empty creates a new customer. Same-name people are never merged.
+  const [customer, setCustomer] = useState<CustomerRow | null>(null);
+  const [customerSearch, setCustomerSearch] = useState("");
   const [roomId, setRoomId] = useState("");
   const [checkIn, setCheckIn] = useState(initialCheckIn);
   const [checkOut, setCheckOut] = useState(initialCheckOut);
@@ -92,7 +106,7 @@ function NewStayPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!online) { toast.error(t("offline")); return; }
-    if (!guestName.trim()) { toast.error(t("guestNameRequired")); return; }
+    if (!customer && !guestName.trim()) { toast.error(t("guestNameRequired")); return; }
     if (!roomId) { toast.error(t("roomRequired")); return; }
     if (!(checkOut > checkIn)) { toast.error(t("datesInvalid")); return; }
     const guestCount = Number(numGuests);
@@ -107,7 +121,7 @@ function NewStayPage() {
     setBusy(true);
     try {
       const stayId = await createStay({
-        guestName,
+        guestName: customer ? customer.full_name : guestName,
         roomId,
         checkIn,
         checkOut,
@@ -116,6 +130,9 @@ function NewStayPage() {
         accommodationTotal: amount,
         notes,
         confirmationStatus,
+        guestId: customer?.id ?? null,
+        phone: customer ? null : guestPhone.trim() || null,
+        email: customer ? null : guestEmail.trim() || null,
         userId: user?.id,
       });
       await queryClient.invalidateQueries();
@@ -131,14 +148,110 @@ function NewStayPage() {
   return (
     <AppShell title={t("newStay")}>
       <form onSubmit={submit} className="surface-card space-y-4 p-4">
-        <Field label={t("guestName")}>
-          <Input
-            className="tap-target text-base"
-            value={guestName}
-            onChange={(e) => setGuestName(e.target.value)}
-            required
-          />
-        </Field>
+        {customer ? (
+          <div className="rounded-xl border border-primary/40 bg-primary/5 p-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="truncate font-semibold">{customer.full_name}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {(() => {
+                    const past = countedStays(customer);
+                    const last = past
+                      .map((s) => s.check_in)
+                      .sort()
+                      .at(-1);
+                    if (past.length === 0) return t("noPreviousStays");
+                    return `${t("returningCustomer")} · ${t("previousStays", { count: past.length })}${
+                      last ? ` · ${t("lastStayedOn", { date: shortDate(last) })}` : ""
+                    }`;
+                  })()}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="shrink-0 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold"
+                onClick={() => {
+                  setCustomer(null);
+                  setCustomerSearch("");
+                }}
+              >
+                {t("changeCustomer")}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <Field label={t("searchCustomer")}>
+              <Input
+                className="tap-target text-base"
+                value={customerSearch}
+                placeholder={t("customerSearch")}
+                onChange={(e) => setCustomerSearch(e.target.value)}
+              />
+              {customerSearch.trim().length >= 2 ? (
+                <ul className="mt-2 max-h-56 space-y-1.5 overflow-y-auto">
+                  {(customers.data ?? [])
+                    .filter((c) => matchesCustomer(c, customerSearch))
+                    .slice(0, 8)
+                    .map((c) => (
+                      <li key={c.id}>
+                        <button
+                          type="button"
+                          onClick={() => setCustomer(c)}
+                          className="flex w-full items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2 text-start text-sm active:bg-muted"
+                        >
+                          <span className="min-w-0">
+                            <span className="block truncate font-medium">{c.full_name}</span>
+                            <span className="block truncate text-[11px] text-muted-foreground">
+                              {c.phone ?? c.email ?? ""} ·{" "}
+                              {t("stayCount", { count: countedStays(c).length })}
+                            </span>
+                          </span>
+                          <span className="shrink-0 text-[11px] font-semibold text-primary">
+                            {t("useThisCustomer")}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  {(customers.data ?? []).filter((c) => matchesCustomer(c, customerSearch)).length ===
+                  0 ? (
+                    <li className="px-1 text-xs text-muted-foreground">{t("noCustomers")}</li>
+                  ) : null}
+                </ul>
+              ) : null}
+            </Field>
+
+            <Field label={t("guestName")}>
+              <Input
+                className="tap-target text-base"
+                value={guestName}
+                onChange={(e) => setGuestName(e.target.value)}
+                required
+              />
+            </Field>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Field label={`${t("phone")} (${t("optional")})`}>
+                <Input
+                  className="tap-target text-base"
+                  inputMode="tel"
+                  value={guestPhone}
+                  onChange={(e) => setGuestPhone(e.target.value)}
+                />
+              </Field>
+              <Field label={`${t("email")} (${t("optional")})`}>
+                <Input
+                  className="tap-target text-base"
+                  inputMode="email"
+                  value={guestEmail}
+                  onChange={(e) => setGuestEmail(e.target.value)}
+                />
+              </Field>
+            </div>
+          </>
+        )}
+
+
 
         <Field label={t("room")}>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
