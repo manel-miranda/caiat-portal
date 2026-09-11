@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,19 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/lib/auth";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   countedStays,
+  customersQuery,
+  findDuplicateCandidates,
+  matchReasonKey,
+  mergeCustomers,
   customerFinancialsQuery,
   customerQuery,
   isReturning,
@@ -33,11 +45,15 @@ function CustomerDetailPage() {
   const { id } = Route.useParams();
   const { user, can } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const customer = useQuery(customerQuery(id));
+  const allCustomers = useQuery(customersQuery);
   const money = useQuery(customerFinancialsQuery(id));
   const rooms = useQuery(roomsQuery);
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [mergeTargetId, setMergeTargetId] = useState<string | null>(null);
+  const [merging, setMerging] = useState(false);
   const [form, setForm] = useState({
     full_name: "",
     phone: "",
@@ -85,6 +101,39 @@ function CustomerDetailPage() {
       toast.error((e as Error).message);
     } finally {
       setBusy(false);
+    }
+  }
+
+  /** Candidates are matched against the live values being edited, if any. */
+  const duplicates = useMemo(() => {
+    if (!c) return [];
+    return findDuplicateCandidates(allCustomers.data ?? [], {
+      id: c.id,
+      full_name: editing ? form.full_name : c.full_name,
+      phone: editing ? form.phone : c.phone,
+      email: editing ? form.email : c.email,
+    });
+  }, [allCustomers.data, c, editing, form]);
+
+  const mergeTarget = duplicates.find((d) => d.customer.id === mergeTargetId)?.customer ?? null;
+  /** Default keeps the older record, but the user can flip which one remains. */
+  const [keepThis, setKeepThis] = useState(true);
+
+  async function confirmMerge() {
+    if (!c || !mergeTarget) return;
+    const keepId = keepThis ? c.id : mergeTarget.id;
+    const dropId = keepThis ? mergeTarget.id : c.id;
+    setMerging(true);
+    try {
+      await mergeCustomers(keepId, dropId);
+      await queryClient.invalidateQueries();
+      toast.success(t("customersMerged"));
+      setMergeTargetId(null);
+      navigate({ to: "/customers/$id", params: { id: keepId }, replace: true });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setMerging(false);
     }
   }
 
