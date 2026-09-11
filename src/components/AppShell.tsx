@@ -7,6 +7,7 @@ import { t } from "@/lib/i18n";
 import { roleLabel } from "@/lib/roles";
 import { cn } from "@/lib/utils";
 import { OfflineBanner } from "@/components/OfflineBanner";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import type { ReactNode } from "react";
 
 type NavItem = { to: string; label: string; icon: typeof BedDouble; adminOnly?: boolean };
