@@ -229,7 +229,10 @@ function CalendarPage() {
                       )}
                     >
                       {isConfirmed(s) ? "" : "◇ "}
-                      {firstName(s.guest?.full_name ?? "—")} · {s.room?.number ?? ""}
+                      {roomFilter === "all"
+                        ? roomLabel(s.room)
+                        : firstName(s.guest?.full_name ?? "—")}
+
                     </Link>
                   ))}
                   {items.length > 2 && !isExpanded ? (
