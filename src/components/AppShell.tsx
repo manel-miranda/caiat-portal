@@ -1,11 +1,21 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { BedDouble, Bell, LogOut, LayoutDashboard, Banknote, History, ConciergeBell } from "lucide-react";
+import {
+  BedDouble,
+  Bell,
+  LogOut,
+  LayoutDashboard,
+  Banknote,
+  History,
+  ConciergeBell,
+  Users,
+} from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { t } from "@/lib/i18n";
 import { roleLabel } from "@/lib/roles";
 import { cn } from "@/lib/utils";
+import type { PermissionKey } from "@/lib/permissions";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { CurrencySwitcher } from "@/components/CurrencySwitcher";
@@ -14,29 +24,31 @@ import { useRealtimeSync } from "@/lib/realtime";
 import type { ReactNode } from "react";
 
 
-type NavItem = { to: string; label: string; icon: typeof BedDouble; adminOnly?: boolean };
+type NavItem = { to: string; label: string; icon: typeof BedDouble; permission?: PermissionKey };
 
-// Only routes that exist are listed; management screens are owner-only and the
-// routes themselves re-check the role, so hiding here is convenience, not security.
+// Only routes that exist are listed. Hiding an entry is convenience only — the
+// routes and the database both re-check the permission.
 function navItems(): NavItem[] {
   return [
     { to: "/home", label: t("navRooms"), icon: BedDouble },
     { to: "/requests", label: t("navRequests"), icon: Bell },
+    { to: "/customers", label: t("navCustomers"), icon: Users },
     { to: "/services", label: t("navServices"), icon: ConciergeBell },
-    { to: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard, adminOnly: true },
-    { to: "/cash", label: t("navCash"), icon: Banknote, adminOnly: true },
-    { to: "/activity", label: t("navActivity"), icon: History, adminOnly: true },
+    { to: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard, permission: "activity_view" },
+    { to: "/cash", label: t("navCash"), icon: Banknote, permission: "cash_reconcile" },
+    { to: "/activity", label: t("navActivity"), icon: History, permission: "activity_view" },
   ];
 }
 
 export function AppShell({ title, children }: { title?: string; children: ReactNode }) {
-  const { profile, isAdmin } = useAuth();
+  const { profile, isAdmin, can } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const items = navItems().filter((i) => !i.adminOnly || isAdmin);
+  const items = navItems().filter((i) => !i.permission || can(i.permission));
   // One shared live-updates channel for every authenticated screen.
   useRealtimeSync();
+
 
 
   async function signOut() {
