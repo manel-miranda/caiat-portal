@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { CurrencySwitcher } from "@/components/CurrencySwitcher";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -98,8 +99,9 @@ function LoginPage() {
           </Button>
         </form>
 
-        <div className="mt-6 flex justify-center">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
           <LanguageSwitcher />
+          <CurrencySwitcher />
         </div>
 
         <p className="mt-4 text-center text-xs text-muted-foreground">{t("loginHelp")}</p>

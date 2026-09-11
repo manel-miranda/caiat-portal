@@ -8,6 +8,7 @@ import { roleLabel } from "@/lib/roles";
 import { cn } from "@/lib/utils";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { CurrencySwitcher } from "@/components/CurrencySwitcher";
 import type { ReactNode } from "react";
 
 type NavItem = { to: string; label: string; icon: typeof BedDouble; adminOnly?: boolean };
@@ -52,6 +53,7 @@ export function AppShell({ title, children }: { title?: string; children: ReactN
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <LanguageSwitcher />
+            <CurrencySwitcher />
             <button
               onClick={signOut}
               aria-label={t("signOut")}

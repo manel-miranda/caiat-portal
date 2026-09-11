@@ -7,6 +7,7 @@
  * when the locale changes and keeps <html lang/dir> in sync.
  */
 import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCurrency } from "./currency";
 
 export type Lang = "pt" | "en" | "fr" | "ar";
 
@@ -21,6 +22,8 @@ export const en = {
   appName: "Caiat",
   appSubtitle: "Operations",
   language: "Language",
+  currency: "Currency",
+  currencyApproxNote: "Amounts are stored in DH; other currencies are approximate.",
   // auth
   signIn: "Sign in",
   usernameOrPhone: "Username or phone",
@@ -64,7 +67,7 @@ export const en = {
   guests: "Guests",
   source: "Source",
   accommodation: "Accommodation",
-  accommodationTotal: "Accommodation total (MAD)",
+  accommodationTotal: "Accommodation total (DH)",
   notes: "Notes",
   optional: "optional",
   custom: "Other…",
@@ -85,7 +88,7 @@ export const en = {
   // charges
   service: "Service",
   quantity: "Quantity",
-  unitPrice: "Unit price (MAD)",
+  unitPrice: "Unit price (DH)",
   chargeTotal: "Charge total",
   // requests
   request: "Request",
@@ -103,7 +106,7 @@ export const en = {
   noJustComplete: "No, just complete",
   // payments
   payment: "Payment",
-  amount: "Amount (MAD)",
+  amount: "Amount (DH)",
   method: "Method",
   cash: "Cash",
   card: "Card",
@@ -123,7 +126,7 @@ export const en = {
   date: "Date",
   byEmployee: "Cash by employee",
   expectedInSafe: "Expected in safe",
-  countedCash: "Counted cash (MAD)",
+  countedCash: "Counted cash (DH)",
   difference: "Difference",
   saveCount: "Save cash count",
   cashCountSaved: "Cash count saved",
@@ -209,6 +212,8 @@ type Dict = Partial<Record<TranslationKey, string>>;
 const pt: Dict = {
   appSubtitle: "Operações",
   language: "Idioma",
+  currency: "Moeda",
+  currencyApproxNote: "Os valores são guardados em DH; outras moedas são aproximadas.",
   signIn: "Entrar",
   usernameOrPhone: "Utilizador ou telemóvel",
   pin: "PIN",
@@ -248,7 +253,7 @@ const pt: Dict = {
   guests: "Hóspedes",
   source: "Origem",
   accommodation: "Alojamento",
-  accommodationTotal: "Total de alojamento (MAD)",
+  accommodationTotal: "Total de alojamento (DH)",
   notes: "Notas",
   optional: "opcional",
   custom: "Outro…",
@@ -268,7 +273,7 @@ const pt: Dict = {
   stayCreated: "Estadia criada",
   service: "Serviço",
   quantity: "Quantidade",
-  unitPrice: "Preço unitário (MAD)",
+  unitPrice: "Preço unitário (DH)",
   chargeTotal: "Total do consumo",
   request: "Pedido",
   requestType: "Tipo",
@@ -284,7 +289,7 @@ const pt: Dict = {
   yesAddCharge: "Sim, adicionar",
   noJustComplete: "Não, apenas concluir",
   payment: "Pagamento",
-  amount: "Valor (MAD)",
+  amount: "Valor (DH)",
   method: "Método",
   cash: "Dinheiro",
   card: "Cartão",
@@ -302,7 +307,7 @@ const pt: Dict = {
   date: "Data",
   byEmployee: "Dinheiro por funcionário",
   expectedInSafe: "Esperado no cofre",
-  countedCash: "Dinheiro contado (MAD)",
+  countedCash: "Dinheiro contado (DH)",
   difference: "Diferença",
   saveCount: "Guardar contagem",
   cashCountSaved: "Contagem guardada",
@@ -377,6 +382,8 @@ const pt: Dict = {
 const fr: Dict = {
   appSubtitle: "Opérations",
   language: "Langue",
+  currency: "Devise",
+  currencyApproxNote: "Les montants sont enregistrés en DH ; les autres devises sont approximatives.",
   signIn: "Connexion",
   usernameOrPhone: "Identifiant ou téléphone",
   pin: "Code PIN",
@@ -416,7 +423,7 @@ const fr: Dict = {
   guests: "Personnes",
   source: "Source",
   accommodation: "Hébergement",
-  accommodationTotal: "Total hébergement (MAD)",
+  accommodationTotal: "Total hébergement (DH)",
   notes: "Notes",
   optional: "facultatif",
   custom: "Autre…",
@@ -436,7 +443,7 @@ const fr: Dict = {
   stayCreated: "Séjour créé",
   service: "Service",
   quantity: "Quantité",
-  unitPrice: "Prix unitaire (MAD)",
+  unitPrice: "Prix unitaire (DH)",
   chargeTotal: "Total prestation",
   request: "Demande",
   requestType: "Type",
@@ -452,7 +459,7 @@ const fr: Dict = {
   yesAddCharge: "Oui, ajouter",
   noJustComplete: "Non, juste terminer",
   payment: "Paiement",
-  amount: "Montant (MAD)",
+  amount: "Montant (DH)",
   method: "Moyen",
   cash: "Espèces",
   card: "Carte",
@@ -470,7 +477,7 @@ const fr: Dict = {
   date: "Date",
   byEmployee: "Espèces par employé",
   expectedInSafe: "Attendu au coffre",
-  countedCash: "Espèces comptées (MAD)",
+  countedCash: "Espèces comptées (DH)",
   difference: "Écart",
   saveCount: "Enregistrer le comptage",
   cashCountSaved: "Comptage enregistré",
@@ -545,6 +552,8 @@ const fr: Dict = {
 const ar: Dict = {
   appSubtitle: "العمليات",
   language: "اللغة",
+  currency: "العملة",
+  currencyApproxNote: "المبالغ مخزنة بالدرهم؛ العملات الأخرى تقريبية.",
   signIn: "تسجيل الدخول",
   usernameOrPhone: "اسم المستخدم أو الهاتف",
   pin: "الرمز السري",
@@ -796,7 +805,8 @@ export function useLang(): { lang: Lang; setLang: (l: Lang) => void } {
  */
 export function I18nProvider({ children }: { children: ReactNode }) {
   const { lang } = useLang();
-  return <div key={lang} className="contents">{children}</div>;
+  const { currency } = useCurrency();
+  return <div key={`${lang}:${currency}`} className="contents">{children}</div>;
 }
 
 const SOURCE_KEYS: Record<string, TranslationKey> = {
