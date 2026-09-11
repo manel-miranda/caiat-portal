@@ -125,5 +125,5 @@ export function roomLabel(
   room: { number?: string | null; name?: string | null } | null | undefined,
 ): string {
   if (!room) return "—";
-  return room.name?.trim() || (room.number ? `Room ${room.number}` : "—");
+  return room.name?.trim() || (room.number ? `${t("room")} ${room.number}` : "—");
 }
