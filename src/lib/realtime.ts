@@ -33,15 +33,11 @@ export function useRealtimeSync() {
     const channel = supabase.channel("caiat-ops");
 
     for (const table of Object.keys(TABLE_KEYS)) {
-      channel.on(
-        "postgres_changes",
-        { event: "*", schema: "public", table },
-        () => {
-          for (const key of TABLE_KEYS[table] ?? []) {
-            void queryClient.invalidateQueries({ queryKey: key });
-          }
-        },
-      );
+      channel.on("postgres_changes", { event: "*", schema: "public", table }, () => {
+        for (const key of TABLE_KEYS[table] ?? []) {
+          void queryClient.invalidateQueries({ queryKey: key });
+        }
+      });
     }
 
     channel.subscribe();

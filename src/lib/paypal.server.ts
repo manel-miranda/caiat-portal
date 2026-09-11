@@ -21,16 +21,16 @@ export type PaypalConfig = {
 
 /** Reads config at call time (env is injected per request, not at import). */
 export function paypalConfig(): PaypalConfig | null {
-  const clientId = process.env['PAYPAL_CLIENT_ID'];
-  const clientSecret = process.env['PAYPAL_CLIENT_SECRET'];
-  const environment = (process.env['PAYPAL_ENVIRONMENT'] ?? 'sandbox').toLowerCase();
+  const clientId = process.env["PAYPAL_CLIENT_ID"];
+  const clientSecret = process.env["PAYPAL_CLIENT_SECRET"];
+  const environment = (process.env["PAYPAL_ENVIRONMENT"] ?? "sandbox").toLowerCase();
   if (!clientId || !clientSecret) return null;
-  const live = environment === 'live' || environment === 'production';
+  const live = environment === "live" || environment === "production";
   return {
     clientId,
     clientSecret,
-    environment: live ? 'live' : 'sandbox',
-    apiBase: live ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com',
+    environment: live ? "live" : "sandbox",
+    apiBase: live ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com",
   };
 }
 
@@ -41,7 +41,7 @@ export function paypalConfig(): PaypalConfig | null {
  * Both the MAD amount and the EUR amount + rate are persisted for audit.
  */
 export const DEMO_EUR_RATE = 0.092;
-export const CHARGE_CURRENCY = 'EUR';
+export const CHARGE_CURRENCY = "EUR";
 
 export function madToCharge(amountMad: number): { amount: number; currency: string; rate: number } {
   const eur = Math.round(amountMad * DEMO_EUR_RATE * 100) / 100;
@@ -49,21 +49,21 @@ export function madToCharge(amountMad: number): { amount: number; currency: stri
 }
 
 async function accessToken(cfg: PaypalConfig): Promise<string> {
-  const basic = Buffer.from(`${cfg.clientId}:${cfg.clientSecret}`).toString('base64');
+  const basic = Buffer.from(`${cfg.clientId}:${cfg.clientSecret}`).toString("base64");
   const res = await fetch(`${cfg.apiBase}/v1/oauth2/token`, {
-    method: 'POST',
+    method: "POST",
     headers: {
       Authorization: `Basic ${basic}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
+      "Content-Type": "application/x-www-form-urlencoded",
     },
-    body: 'grant_type=client_credentials',
+    body: "grant_type=client_credentials",
   });
   if (!res.ok) {
     // Never log the response body: it can echo credentials context.
     throw new Error(`PAYPAL_AUTH_FAILED_${res.status}`);
   }
   const json = (await res.json()) as { access_token?: string };
-  if (!json.access_token) throw new Error('PAYPAL_AUTH_FAILED');
+  if (!json.access_token) throw new Error("PAYPAL_AUTH_FAILED");
   return json.access_token;
 }
 
@@ -80,22 +80,22 @@ export async function createOrder(params: {
 }): Promise<CreatedOrder> {
   const token = await accessToken(params.cfg);
   const res = await fetch(`${params.cfg.apiBase}/v2/checkout/orders`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      intent: 'CAPTURE',
+      intent: "CAPTURE",
       purchase_units: [
         {
           reference_id: params.referenceId,
           custom_id: params.referenceId,
-          description: 'Caiat Lounge Refuge — stay balance',
+          description: "Caiat Lounge Refuge — stay balance",
           amount: { currency_code: params.currency, value: params.amount.toFixed(2) },
         },
       ],
       payment_source: {
         paypal: {
           experience_context: {
-            user_action: 'PAY_NOW',
+            user_action: "PAY_NOW",
             return_url: params.returnUrl,
             cancel_url: params.cancelUrl,
           },
@@ -108,8 +108,8 @@ export async function createOrder(params: {
     links?: { rel: string; href: string }[];
   };
   if (!res.ok || !json.id) throw new Error(`PAYPAL_ORDER_FAILED_${res.status}`);
-  const approve = json.links?.find((l) => l.rel === 'payer-action' || l.rel === 'approve');
-  if (!approve) throw new Error('PAYPAL_NO_APPROVE_LINK');
+  const approve = json.links?.find((l) => l.rel === "payer-action" || l.rel === "approve");
+  if (!approve) throw new Error("PAYPAL_NO_APPROVE_LINK");
   return { orderId: json.id, approveUrl: approve.href };
 }
 
@@ -123,26 +123,30 @@ export type CaptureResult = {
 export async function captureOrder(cfg: PaypalConfig, orderId: string): Promise<CaptureResult> {
   const token = await accessToken(cfg);
   const res = await fetch(`${cfg.apiBase}/v2/checkout/orders/${orderId}/capture`, {
-    method: 'POST',
+    method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       // Safe to retry: PayPal de-duplicates on this key.
-      'PayPal-Request-Id': `capture-${orderId}`,
+      "PayPal-Request-Id": `capture-${orderId}`,
     },
   });
   const json = (await res.json()) as {
     status?: string;
     purchase_units?: {
       payments?: {
-        captures?: { id: string; status: string; amount: { currency_code: string; value: string } }[];
+        captures?: {
+          id: string;
+          status: string;
+          amount: { currency_code: string; value: string };
+        }[];
       };
     }[];
   };
   if (!res.ok) throw new Error(`PAYPAL_CAPTURE_FAILED_${res.status}`);
   const cap = json.purchase_units?.[0]?.payments?.captures?.[0];
   return {
-    status: cap?.status ?? json.status ?? 'UNKNOWN',
+    status: cap?.status ?? json.status ?? "UNKNOWN",
     captureId: cap?.id ?? null,
     amount: cap ? Number(cap.amount.value) : null,
     currency: cap?.amount.currency_code ?? null,

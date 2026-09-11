@@ -64,8 +64,14 @@ export function customerFinancialsQuery(id: string) {
     queryKey: ["customer", id, "money"],
     queryFn: async () => {
       const [{ data: charges, error: e1 }, { data: payments, error: e2 }] = await Promise.all([
-        supabase.from("charges").select("total, stay:stays!inner(guest_id)").eq("stays.guest_id", id),
-        supabase.from("payments").select("amount, stay:stays!inner(guest_id)").eq("stays.guest_id", id),
+        supabase
+          .from("charges")
+          .select("total, stay:stays!inner(guest_id)")
+          .eq("stays.guest_id", id),
+        supabase
+          .from("payments")
+          .select("amount, stay:stays!inner(guest_id)")
+          .eq("stays.guest_id", id),
       ]);
       if (e1) throw e1;
       if (e2) throw e2;

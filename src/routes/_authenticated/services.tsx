@@ -25,7 +25,8 @@ export const Route = createFileRoute("/_authenticated/services")({
       { property: "og:title", content: "Services & activities — Caiat Operations" },
       {
         property: "og:description",
-        content: "Internal catalogue of Caiat meals, transport, outdoor activities and route experiences.",
+        content:
+          "Internal catalogue of Caiat meals, transport, outdoor activities and route experiences.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -58,7 +59,10 @@ function ServicesPage() {
   const items = services.data ?? [];
 
   async function quickCharge(svc: ServiceType) {
-    if (!online) { toast.error(t("offline")); return; }
+    if (!online) {
+      toast.error(t("offline"));
+      return;
+    }
     if (!stayId) return;
     setBusy(svc.id);
     try {
@@ -79,7 +83,10 @@ function ServicesPage() {
   }
 
   async function quickRequest(svc: ServiceType) {
-    if (!online) { toast.error(t("offline")); return; }
+    if (!online) {
+      toast.error(t("offline"));
+      return;
+    }
     if (!stayId) return;
     const stay = stayOptions.find((s) => s.id === stayId);
     setBusy(svc.id);
@@ -136,90 +143,92 @@ function ServicesPage() {
         <p className="surface-card mt-4 p-4 text-sm text-muted-foreground">{t("noResults")}</p>
       ) : (
         <>
-        {(() => {
-          const facilities = items
-            .filter((s) => s.category === "included")
-            .sort((a, b) => a.sort_order - b.sort_order);
-          if (facilities.length === 0) return null;
-          return (
-            <section className="mt-6">
-              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                {t("catIncluded")}
-              </h2>
-              <div className="surface-card p-4">
-                <ul className="flex flex-wrap gap-2">
-                  {facilities.map((s) => (
-                    <li
-                      key={s.id}
-                      className="rounded-full bg-muted px-3 py-1.5 text-sm text-muted-foreground"
-                    >
-                      {serviceLabel(s)}
+          {(() => {
+            const facilities = items
+              .filter((s) => s.category === "included")
+              .sort((a, b) => a.sort_order - b.sort_order);
+            if (facilities.length === 0) return null;
+            return (
+              <section className="mt-6">
+                <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                  {t("catIncluded")}
+                </h2>
+                <div className="surface-card p-4">
+                  <ul className="flex flex-wrap gap-2">
+                    {facilities.map((s) => (
+                      <li
+                        key={s.id}
+                        className="rounded-full bg-muted px-3 py-1.5 text-sm text-muted-foreground"
+                      >
+                        {serviceLabel(s)}
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-3 text-xs text-muted-foreground">{t("includedNote")}</p>
+                </div>
+              </section>
+            );
+          })()}
+          {groups().map((g) => {
+            const group = items
+              .filter((s) => (s.category ?? "other") === g.key)
+              .sort((a, b) => a.sort_order - b.sort_order);
+            if (group.length === 0) return null;
+            return (
+              <section key={g.key} className="mt-6">
+                <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                  {g.label}
+                </h2>
+                <ul className="surface-card divide-y divide-border">
+                  {group.map((s) => (
+                    <li key={s.id} className="p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-base font-semibold">{serviceLabel(s)}</p>
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            {s.default_price > 0 ? mad(s.default_price) : "—"} ·{" "}
+                            {s.requestable ? t("requestable") : t("billableOnly")}
+                          </p>
+                          {s.activity_mode || s.difficulty ? (
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                              {[activityModeLabel(s.activity_mode), difficultyLabel(s.difficulty)]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </p>
+                          ) : null}
+                        </div>
+                        {stayId ? (
+                          <div className="flex shrink-0 gap-2">
+                            {s.requestable ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="rounded-xl"
+                                disabled={busy === s.id}
+                                onClick={() => void quickRequest(s)}
+                              >
+                                {t("addRequest")}
+                              </Button>
+                            ) : null}
+                            {s.billable ? (
+                              <Button
+                                size="sm"
+                                className="rounded-xl"
+                                disabled={busy === s.id}
+                                onClick={() => void quickCharge(s)}
+                              >
+                                {t("addCharge")}
+                              </Button>
+                            ) : null}
+                          </div>
+                        ) : null}
+                      </div>
                     </li>
                   ))}
                 </ul>
-                <p className="mt-3 text-xs text-muted-foreground">{t("includedNote")}</p>
-              </div>
-            </section>
-          );
-        })()}
-        {groups().map((g) => {
-          const group = items
-            .filter((s) => (s.category ?? "other") === g.key)
-            .sort((a, b) => a.sort_order - b.sort_order);
-          if (group.length === 0) return null;
-          return (
-            <section key={g.key} className="mt-6">
-              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                {g.label}
-              </h2>
-              <ul className="surface-card divide-y divide-border">
-                {group.map((s) => (
-                  <li key={s.id} className="p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="truncate text-base font-semibold">{serviceLabel(s)}</p>
-                        <p className="mt-0.5 text-xs text-muted-foreground">
-                          {s.default_price > 0 ? mad(s.default_price) : "—"} ·{" "}
-                          {s.requestable ? t("requestable") : t("billableOnly")}
-                        </p>
-                        {s.activity_mode || s.difficulty ? (
-                          <p className="mt-0.5 text-xs text-muted-foreground">
-                            {[activityModeLabel(s.activity_mode), difficultyLabel(s.difficulty)].filter(Boolean).join(" · ")}
-                          </p>
-                        ) : null}
-                      </div>
-                      {stayId ? (
-                        <div className="flex shrink-0 gap-2">
-                          {s.requestable ? (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="rounded-xl"
-                              disabled={busy === s.id}
-                              onClick={() => void quickRequest(s)}
-                            >
-                              {t("addRequest")}
-                            </Button>
-                          ) : null}
-                          {s.billable ? (
-                            <Button
-                              size="sm"
-                              className="rounded-xl"
-                              disabled={busy === s.id}
-                              onClick={() => void quickCharge(s)}
-                            >
-                              {t("addCharge")}
-                            </Button>
-                          ) : null}
-                        </div>
-                      ) : null}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          );
-        })}
+              </section>
+            );
+          })}
         </>
       )}
     </AppShell>

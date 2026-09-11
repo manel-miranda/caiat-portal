@@ -38,7 +38,13 @@ function CustomerDetailPage() {
   const rooms = useQuery(roomsQuery);
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [form, setForm] = useState({ full_name: "", phone: "", email: "", nationality: "", notes: "" });
+  const [form, setForm] = useState({
+    full_name: "",
+    phone: "",
+    email: "",
+    nationality: "",
+    notes: "",
+  });
 
   const c = customer.data;
   const stays = c ? countedStays(c) : [];
@@ -130,10 +136,7 @@ function CustomerDetailPage() {
             label={t("firstStay")}
             value={sorted.length ? shortDate(sorted[sorted.length - 1]!.check_in) : "—"}
           />
-          <Info
-            label={t("totalPaid")}
-            value={money.data ? mad(money.data.paid) : "—"}
-          />
+          <Info label={t("totalPaid")} value={money.data ? mad(money.data.paid) : "—"} />
           <Info
             label={t("totalBilled")}
             value={

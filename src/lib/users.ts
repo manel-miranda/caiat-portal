@@ -18,7 +18,10 @@ export const managedUsersQuery = queryOptions({
   queryFn: async (): Promise<ManagedUser[]> => {
     const [{ data: profiles, error: e1 }, { data: roles, error: e2 }, { data: perms, error: e3 }] =
       await Promise.all([
-        supabase.from("profiles").select("id, username, full_name, phone, active").order("full_name"),
+        supabase
+          .from("profiles")
+          .select("id, username, full_name, phone, active")
+          .order("full_name"),
         supabase.from("user_roles").select("user_id, role"),
         supabase.from("user_permissions").select("user_id, permission, granted"),
       ]);
@@ -34,7 +37,8 @@ export const managedUsersQuery = queryOptions({
           ? "supervisor"
           : "staff";
       const overrides: Record<string, boolean> = {};
-      for (const row of perms ?? []) if (row.user_id === p.id) overrides[row.permission] = row.granted;
+      for (const row of perms ?? [])
+        if (row.user_id === p.id) overrides[row.permission] = row.granted;
       return {
         id: p.id,
         username: p.username,

@@ -7,12 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/lib/auth";
 import { t } from "@/lib/i18n";
-import {
-  generateGuestToken,
-  guestTokenQuery,
-  guestUrl,
-  revokeGuestToken,
-} from "@/lib/guest";
+import { generateGuestToken, guestTokenQuery, guestUrl, revokeGuestToken } from "@/lib/guest";
 
 /**
  * Staff-facing guest access panel. Any signed-in staff member can see and show
@@ -92,7 +87,11 @@ export function GuestAccessCard({ stayId }: { stayId: string }) {
           <p className="text-center text-xs text-muted-foreground">{t("scanQrHint")}</p>
 
           <div className="grid grid-cols-2 gap-2">
-            <Button variant="outline" className="tap-target rounded-xl" onClick={() => setFullscreen(true)}>
+            <Button
+              variant="outline"
+              className="tap-target rounded-xl"
+              onClick={() => setFullscreen(true)}
+            >
               <Maximize2 className="me-2 size-4" /> {t("showQr")}
             </Button>
             <Button variant="outline" className="tap-target rounded-xl" onClick={() => void copy()}>

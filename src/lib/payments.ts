@@ -14,8 +14,7 @@
 export type PaymentProvider = "cmi" | "paypal";
 
 export type PaymentConfig =
-  | { available: false }
-  | { available: true; provider: PaymentProvider; environment: string | null };
+  { available: false } | { available: true; provider: PaymentProvider; environment: string | null };
 
 /** Server-checked provider availability. Never exposes any credential. */
 export function paymentStatusQuery() {
@@ -25,7 +24,9 @@ export function paymentStatusQuery() {
     retry: false,
     queryFn: async (): Promise<PaymentConfig> => {
       try {
-        const res = await fetch("/api/public/paypal/status", { headers: { Accept: "application/json" } });
+        const res = await fetch("/api/public/paypal/status", {
+          headers: { Accept: "application/json" },
+        });
         if (!res.ok) return { available: false };
         const json = (await res.json()) as {
           available?: boolean;

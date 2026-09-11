@@ -105,10 +105,22 @@ function EditStayPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!online) { toast.error(t("offline")); return; }
-    if (!values.guestName.trim()) { toast.error(t("guestNameRequired")); return; }
-    if (!values.roomId) { toast.error(t("roomRequired")); return; }
-    if (!(values.checkOut > values.checkIn)) { toast.error(t("datesInvalid")); return; }
+    if (!online) {
+      toast.error(t("offline"));
+      return;
+    }
+    if (!values.guestName.trim()) {
+      toast.error(t("guestNameRequired"));
+      return;
+    }
+    if (!values.roomId) {
+      toast.error(t("roomRequired"));
+      return;
+    }
+    if (!(values.checkOut > values.checkIn)) {
+      toast.error(t("datesInvalid"));
+      return;
+    }
     if (!Number.isFinite(values.numGuests) || values.numGuests < 1) {
       toast.error(t("guestsMinOne"));
       return;
@@ -254,11 +266,7 @@ function EditStayPage() {
         </Field>
 
         <Field label={`${t("notes")} (${t("optional")})`}>
-          <Textarea
-            value={values.notes}
-            onChange={(e) => set("notes", e.target.value)}
-            rows={3}
-          />
+          <Textarea value={values.notes} onChange={(e) => set("notes", e.target.value)} rows={3} />
         </Field>
 
         <div className="flex gap-2">

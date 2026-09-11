@@ -14,12 +14,14 @@ export const Route = createFileRoute("/_authenticated/calendar")({
       { title: "Reservations calendar — Caiat Operations" },
       {
         name: "description",
-        content: "Month view of Caiat guesthouse room occupancy, arrivals, departures and pending reservation requests.",
+        content:
+          "Month view of Caiat guesthouse room occupancy, arrivals, departures and pending reservation requests.",
       },
       { property: "og:title", content: "Reservations calendar — Caiat Operations" },
       {
         property: "og:description",
-        content: "See which Caiat rooms are booked each night and open any stay directly from the calendar.",
+        content:
+          "See which Caiat rooms are booked each night and open any stay directly from the calendar.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -88,9 +90,7 @@ function CalendarPage() {
   const weekdays = useMemo(() => {
     const fmt = new Intl.DateTimeFormat(INTL_LOCALE[lang], { weekday: "short", timeZone: "UTC" });
     // 2024-01-01 was a Monday, so this walks Monday → Sunday.
-    return Array.from({ length: 7 }, (_, i) =>
-      fmt.format(new Date(`2024-01-0${i + 1}T00:00:00Z`)),
-    );
+    return Array.from({ length: 7 }, (_, i) => fmt.format(new Date(`2024-01-0${i + 1}T00:00:00Z`)));
   }, [lang]);
 
   const visible = (stays.data ?? []).filter(
@@ -191,7 +191,10 @@ function CalendarPage() {
       <div className="surface-card mt-3 p-2">
         <div className="grid grid-cols-7 gap-1 pb-1">
           {weekdays.map((w) => (
-            <div key={w} className="text-center text-[10px] font-semibold uppercase text-muted-foreground">
+            <div
+              key={w}
+              className="text-center text-[10px] font-semibold uppercase text-muted-foreground"
+            >
               {w}
             </div>
           ))}
@@ -248,7 +251,6 @@ function CalendarPage() {
                       {roomFilter === "all"
                         ? roomLabel(s.room)
                         : firstName(s.guest?.full_name ?? "—")}
-
                     </Link>
                   ))}
                   {items.length > 2 && !isExpanded ? (
@@ -302,16 +304,27 @@ function CalendarPage() {
           <p className="surface-card px-4 py-6 text-center text-sm text-destructive">
             {(stays.error as Error).message}
           </p>
-
         ) : agendaEmpty ? (
           <p className="surface-card px-4 py-6 text-center text-sm text-muted-foreground">
             {t("noReservationsDay")}
           </p>
         ) : (
           <div className="space-y-3">
-            <AgendaGroup icon={<LogIn className="size-4" />} title={t("arrivals")} stays={dayArrivals} />
-            <AgendaGroup icon={<BedDouble className="size-4" />} title={t("inHouse")} stays={dayInHouse} />
-            <AgendaGroup icon={<LogOut className="size-4" />} title={t("departures")} stays={dayDepartures} />
+            <AgendaGroup
+              icon={<LogIn className="size-4" />}
+              title={t("arrivals")}
+              stays={dayArrivals}
+            />
+            <AgendaGroup
+              icon={<BedDouble className="size-4" />}
+              title={t("inHouse")}
+              stays={dayInHouse}
+            />
+            <AgendaGroup
+              icon={<LogOut className="size-4" />}
+              title={t("departures")}
+              stays={dayDepartures}
+            />
             <AgendaGroup
               icon={<Clock className="size-4" />}
               title={t("pendingReservations")}

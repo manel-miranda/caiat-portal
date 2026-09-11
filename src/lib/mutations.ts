@@ -109,11 +109,11 @@ export async function createStay(params: {
     "stay",
     stayId,
     {
-    guest: params.guestName.trim(),
-    room_id: params.roomId,
-    check_in: params.checkIn,
-    check_out: params.checkOut,
-    confirmation_status: confirmation,
+      guest: params.guestName.trim(),
+      room_id: params.roomId,
+      check_in: params.checkIn,
+      check_out: params.checkOut,
+      confirmation_status: confirmation,
     },
   );
   return stayId;
@@ -284,7 +284,11 @@ export async function completeRequest(params: {
 export async function cancelRequest(requestId: string, userId?: string) {
   const { error } = await supabase
     .from("requests")
-    .update({ status: "cancelled", completed_by: userId ?? null, completed_at: new Date().toISOString() })
+    .update({
+      status: "cancelled",
+      completed_by: userId ?? null,
+      completed_at: new Date().toISOString(),
+    })
     .eq("id", requestId);
   if (error) throw error;
   void logAudit(userId, "request.cancelled", "request", requestId, {});

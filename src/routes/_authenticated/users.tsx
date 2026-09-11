@@ -72,7 +72,9 @@ function UsersPage() {
   return (
     <AppShell title={t("usersTitle")}>
       {users.isLoading ? <p className="text-sm text-muted-foreground">{t("loading")}</p> : null}
-      {users.error ? <p className="text-sm text-destructive">{(users.error as Error).message}</p> : null}
+      {users.error ? (
+        <p className="text-sm text-destructive">{(users.error as Error).message}</p>
+      ) : null}
 
       <ul className="space-y-3">
         {(users.data ?? []).map((u) => {
@@ -248,7 +250,9 @@ function AddUserCard({
             <Input
               className="tap-target text-base"
               value={username}
-              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, ""))}
+              onChange={(e) =>
+                setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, ""))
+              }
             />
           </div>
           <div>
@@ -262,14 +266,23 @@ function AddUserCard({
                 placeholder={t("pinRule")}
                 onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
               />
-              <Button variant="outline" className="tap-target shrink-0" onClick={() => setPin(generatePin())}>
+              <Button
+                variant="outline"
+                className="tap-target shrink-0"
+                onClick={() => setPin(generatePin())}
+              >
                 {t("generatePin")}
               </Button>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
             {ROLES.map((r) => (
-              <Button key={r} size="sm" variant={role === r ? "default" : "outline"} onClick={() => setRole(r)}>
+              <Button
+                key={r}
+                size="sm"
+                variant={role === r ? "default" : "outline"}
+                onClick={() => setRole(r)}
+              >
                 {roleName(r)}
               </Button>
             ))}
@@ -341,7 +354,6 @@ function ChangeMyPinCard({
   );
 }
 
-
 function PermissionRow({
   user,
   permission,
@@ -385,7 +397,12 @@ function PermissionRow({
         >
           {t("notAllowed")}
         </Button>
-        <Button size="sm" variant="ghost" disabled={disabled || isDefault} onClick={() => onChange(null)}>
+        <Button
+          size="sm"
+          variant="ghost"
+          disabled={disabled || isDefault}
+          onClick={() => onChange(null)}
+        >
           {t("roleDefault")}
         </Button>
       </span>

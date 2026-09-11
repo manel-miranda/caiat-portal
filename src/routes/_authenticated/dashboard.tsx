@@ -1,7 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { BedDouble, Users, Wallet, Banknote, AlertCircle, Bell, LogIn, LogOut, History } from "lucide-react";
+import {
+  BedDouble,
+  Users,
+  Wallet,
+  Banknote,
+  AlertCircle,
+  Bell,
+  LogIn,
+  LogOut,
+  History,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { confirmReservation, rejectReservation } from "@/lib/mutations";
@@ -53,7 +63,11 @@ function DashboardPage() {
   const charges = useQuery(todayChargesQuery);
 
   const loading =
-    rooms.isLoading || stays.isLoading || requests.isLoading || payments.isLoading || charges.isLoading;
+    rooms.isLoading ||
+    stays.isLoading ||
+    requests.isLoading ||
+    payments.isLoading ||
+    charges.isLoading;
   const error = rooms.error ?? stays.error ?? requests.error ?? payments.error ?? charges.error;
 
   const roomList = rooms.data ?? [];
@@ -67,7 +81,10 @@ function DashboardPage() {
   const departures = activeStays.filter((s) => s.check_out === today);
 
   const chargesToday = (charges.data ?? []).reduce((sum, c) => sum + Number(c.total ?? 0), 0);
-  const accommodationToday = arrivals.reduce((sum, s) => sum + Number(s.accommodation_total ?? 0), 0);
+  const accommodationToday = arrivals.reduce(
+    (sum, s) => sum + Number(s.accommodation_total ?? 0),
+    0,
+  );
   const revenueToday = chargesToday + accommodationToday;
 
   const paymentsToday = (payments.data ?? []).reduce((sum, p) => sum + Number(p.amount ?? 0), 0);
@@ -120,7 +137,11 @@ function DashboardPage() {
           value={`${occupiedStays.length}/${roomList.length || 7}`}
           hint={shortDate(today)}
         />
-        <StatCard icon={<Users className="size-4" />} label={t("guestsStaying")} value={guestsStaying} />
+        <StatCard
+          icon={<Users className="size-4" />}
+          label={t("guestsStaying")}
+          value={guestsStaying}
+        />
         <StatCard
           icon={<Wallet className="size-4" />}
           label={t("revenueToday")}
@@ -159,7 +180,6 @@ function DashboardPage() {
       </div>
 
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
-
         {can("cash_reconcile") ? (
           <Link to="/cash" className="contents">
             <StatCard
@@ -180,14 +200,14 @@ function DashboardPage() {
       </div>
 
       <Section title={`${t("pendingReservations")} (${(pendingReservations.data ?? []).length})`}>
-        <Group title={t("reservationRequest")} icon={<Bell className="size-4" />} empty={(pendingReservations.data ?? []).length === 0}>
+        <Group
+          title={t("reservationRequest")}
+          icon={<Bell className="size-4" />}
+          empty={(pendingReservations.data ?? []).length === 0}
+        >
           {(pendingReservations.data ?? []).map((s) => (
             <div key={s.id} className="px-4 py-3 text-sm">
-              <Link
-                to="/stays/$id"
-                params={{ id: s.id }}
-                className="block active:opacity-70"
-              >
+              <Link to="/stays/$id" params={{ id: s.id }} className="block active:opacity-70">
                 <p className="font-medium">
                   {s.guest?.full_name ?? "—"} · {roomLabel(s.room)}
                 </p>
@@ -215,12 +235,20 @@ function DashboardPage() {
       </Section>
 
       <Section title={t("today")}>
-        <Group title={t("arrivals")} icon={<LogIn className="size-4" />} empty={arrivals.length === 0}>
+        <Group
+          title={t("arrivals")}
+          icon={<LogIn className="size-4" />}
+          empty={arrivals.length === 0}
+        >
           {arrivals.map((s) => (
             <Row key={s.id} to={s.id} left={s.guest?.full_name ?? "—"} right={roomLabel(s.room)} />
           ))}
         </Group>
-        <Group title={t("departures")} icon={<LogOut className="size-4" />} empty={departures.length === 0}>
+        <Group
+          title={t("departures")}
+          icon={<LogOut className="size-4" />}
+          empty={departures.length === 0}
+        >
           {departures.map((s) => (
             <Row
               key={s.id}
@@ -246,7 +274,11 @@ function DashboardPage() {
       </Section>
 
       <Section title={t("next24h")}>
-        <Group title={t("scheduledRequests")} icon={<Bell className="size-4" />} empty={next24Requests.length === 0}>
+        <Group
+          title={t("scheduledRequests")}
+          icon={<Bell className="size-4" />}
+          empty={next24Requests.length === 0}
+        >
           {next24Requests.map((r) => (
             <Link
               key={r.id}
@@ -263,12 +295,22 @@ function DashboardPage() {
         </Group>
         <Group title={t("arrivals")} empty={arrivalsTomorrow.length === 0}>
           {arrivalsTomorrow.map((s) => (
-            <Row key={s.id} to={s.id} left={s.guest?.full_name ?? "—"} right={shortDate(s.check_in)} />
+            <Row
+              key={s.id}
+              to={s.id}
+              left={s.guest?.full_name ?? "—"}
+              right={shortDate(s.check_in)}
+            />
           ))}
         </Group>
         <Group title={t("departures")} empty={departuresTomorrow.length === 0}>
           {departuresTomorrow.map((s) => (
-            <Row key={s.id} to={s.id} left={s.guest?.full_name ?? "—"} right={shortDate(s.check_out)} />
+            <Row
+              key={s.id}
+              to={s.id}
+              left={s.guest?.full_name ?? "—"}
+              right={shortDate(s.check_out)}
+            />
           ))}
         </Group>
       </Section>
@@ -279,7 +321,9 @@ function DashboardPage() {
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="mt-6">
-      <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">{title}</h2>
+      <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        {title}
+      </h2>
       <div className="surface-card divide-y divide-border">{children}</div>
     </section>
   );
@@ -302,7 +346,11 @@ function Group({
         {icon}
         {title}
       </p>
-      {empty ? <p className="px-4 py-3 text-sm text-muted-foreground">{t("noResults")}</p> : children}
+      {empty ? (
+        <p className="px-4 py-3 text-sm text-muted-foreground">{t("noResults")}</p>
+      ) : (
+        children
+      )}
     </div>
   );
 }
