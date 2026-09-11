@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { BedDouble, CalendarDays, CreditCard, Send, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import { mad, nights, shortDate } from "@/lib/format";
 import { statusLabel, t } from "@/lib/i18n";
 import { serviceLabel } from "@/lib/service-i18n";
 import { guestCreateRequest, guestPortalQuery, type GuestPortalData } from "@/lib/guest";
-import { paymentConfig } from "@/lib/payments";
+import { paymentStatusQuery, startCheckout, type PaymentConfig } from "@/lib/payments";
 
 export const Route = createFileRoute("/guest/$token")({
   head: () => ({
