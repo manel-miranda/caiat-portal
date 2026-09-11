@@ -67,14 +67,41 @@ function Centered({ children }: { children: React.ReactNode }) {
 
 function Portal({ token, data }: { token: string; data: GuestPortalData }) {
   const queryClient = useQueryClient();
-  const payment = paymentConfig();
+  const paymentStatus = useQuery(paymentStatusQuery());
+  const payment: PaymentConfig = paymentStatus.data ?? { available: false };
   const [serviceId, setServiceId] = useState<string>("");
   const [customLabel, setCustomLabel] = useState("");
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
+  const [payBusy, setPayBusy] = useState(false);
+  const [payResult, setPayResult] = useState<"success" | "cancelled" | "error" | null>(null);
 
   async function refresh() {
     await queryClient.invalidateQueries({ queryKey: ["guest-portal", token] });
+  }
+
+  // Outcome of a PayPal redirect: read once, then clean the URL.
+  useEffect(() => {
+    const state = new URLSearchParams(window.location.search).get("payment");
+    if (state === "success" || state === "cancelled" || state === "error") {
+      setPayResult(state);
+      window.history.replaceState({}, "", window.location.pathname);
+      if (state === "success") void refresh();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function payNow() {
+    setPayBusy(true);
+    try {
+      // The server decides the amount; the browser never sends one.
+      const approveUrl = await startCheckout(token);
+      window.location.href = approveUrl;
+    } catch (e) {
+      const code = (e as Error).message;
+      toast.error(code === "NOTHING_DUE" ? t("paymentNothingDue") : t("paymentError"));
+      setPayBusy(false);
+    }
   }
 
   function errorText(code: string) {
