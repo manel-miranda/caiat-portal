@@ -383,6 +383,9 @@ export type Database = {
           check_in: string
           check_out: string
           checked_out_at: string | null
+          confirmation_status: string
+          confirmed_at: string | null
+          confirmed_by: string | null
           created_at: string
           created_by: string | null
           guest_id: string
@@ -398,6 +401,9 @@ export type Database = {
           check_in: string
           check_out: string
           checked_out_at?: string | null
+          confirmation_status?: string
+          confirmed_at?: string | null
+          confirmed_by?: string | null
           created_at?: string
           created_by?: string | null
           guest_id: string
@@ -413,6 +419,9 @@ export type Database = {
           check_in?: string
           check_out?: string
           checked_out_at?: string | null
+          confirmation_status?: string
+          confirmed_at?: string | null
+          confirmed_by?: string | null
           created_at?: string
           created_by?: string | null
           guest_id?: string
@@ -467,19 +476,35 @@ export type Database = {
         Args: { p_override?: boolean; p_stay_id: string }
         Returns: number
       }
-      create_stay_with_guest: {
-        Args: {
-          p_accommodation_total: number
-          p_check_in: string
-          p_check_out: string
-          p_guest_name: string
-          p_notes: string
-          p_num_guests: number
-          p_room_id: string
-          p_source: Database["public"]["Enums"]["stay_source"]
-        }
-        Returns: string
-      }
+      confirm_reservation: { Args: { p_stay_id: string }; Returns: string }
+      create_stay_with_guest:
+        | {
+            Args: {
+              p_accommodation_total: number
+              p_check_in: string
+              p_check_out: string
+              p_guest_name: string
+              p_notes: string
+              p_num_guests: number
+              p_room_id: string
+              p_source: Database["public"]["Enums"]["stay_source"]
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_accommodation_total: number
+              p_check_in: string
+              p_check_out: string
+              p_confirmation_status?: string
+              p_guest_name: string
+              p_notes: string
+              p_num_guests: number
+              p_room_id: string
+              p_source: Database["public"]["Enums"]["stay_source"]
+            }
+            Returns: string
+          }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -487,6 +512,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      reject_reservation: { Args: { p_stay_id: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "staff"
