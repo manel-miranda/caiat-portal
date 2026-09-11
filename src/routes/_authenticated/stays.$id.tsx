@@ -225,6 +225,11 @@ function StayDetailPage() {
               <li key={r.id} className="flex items-center justify-between py-2">
                 <span>
                   {r.label}
+                  {r.created_via === "guest_portal" ? (
+                    <span className="ms-2 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                      {t("guestOriginTag")}
+                    </span>
+                  ) : null}
                   <span className="block text-xs text-muted-foreground">
                     {r.scheduled_at ? shortDateTime(r.scheduled_at) : "—"}
                   </span>
@@ -237,6 +242,10 @@ function StayDetailPage() {
           </ul>
         )}
       </section>
+
+      {stay.status === "active" && stay.confirmation_status === "confirmed" ? (
+        <GuestAccessCard stayId={id} />
+      ) : null}
 
       {isPendingRequest ? (
         <section className="mt-4 space-y-3">
