@@ -931,6 +931,9 @@ const ACTION_KEYS: Record<string, TranslationKey> = {
   "stay.created": "actStayCreated",
   "stay.checked_out": "actCheckout",
   "cash.reconciled": "actCashSaved",
+  "reservation.requested": "actReservationRequested",
+  "reservation.confirmed": "actReservationConfirmed",
+  "reservation.rejected": "actReservationRejected",
 };
 
 export function actionLabel(action: string): string {
