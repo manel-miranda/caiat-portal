@@ -118,9 +118,17 @@ export const setUserActiveFn = createServerFn({ method: "POST" })
     });
     if (error) throw new Error(error.message);
     const db = await admin();
-    // Blocking the Auth account is what actually stops a sign-in.
-    await db.auth.admin.updateUserById(data.userId, {
+    // Blocking the Auth account is what actually stops a sign-in. If that fails,
+    // revert the profile flag so the app never shows a state the login contradicts.
+    const { error: banError } = await db.auth.admin.updateUserById(data.userId, {
       ban_duration: data.active ? "none" : "876000h",
     });
+    if (banError) {
+      await context.supabase.rpc("set_user_active", {
+        p_user_id: data.userId,
+        p_active: !data.active,
+      });
+      throw new Error(banError.message);
+    }
     return { ok: true };
   });
