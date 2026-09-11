@@ -1,8 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, usernameToEmail } from "@/lib/auth";
+import { resolveLandingPath } from "@/lib/landing";
 import { t } from "@/lib/i18n";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,12 +37,22 @@ function LoginPage() {
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Guards against a double navigation when the auth state settles while the
+  // post-login redirect is already in flight.
+  const redirecting = useRef(false);
+
+  const goToLanding = useCallback(async () => {
+    if (redirecting.current) return;
+    redirecting.current = true;
+    const to = await resolveLandingPath();
+    navigate({ to, replace: true });
+  }, [navigate]);
 
   useEffect(() => {
     if (!loading && session) {
-      navigate({ to: "/home", replace: true });
+      void goToLanding();
     }
-  }, [loading, session, navigate]);
+  }, [loading, session, goToLanding]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -49,13 +61,15 @@ function LoginPage() {
     const identifier = username.trim();
     const email = identifier.includes("@") ? identifier : usernameToEmail(identifier);
     const { error: err } = await supabase.auth.signInWithPassword({ email, password: pin });
-    setBusy(false);
     if (err) {
+      setBusy(false);
       setError(t("invalidCredentials"));
       return;
     }
-    navigate({ to: "/home", replace: true });
+    await goToLanding();
+    setBusy(false);
   }
+
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-5 py-10">
