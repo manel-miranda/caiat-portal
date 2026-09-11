@@ -60,6 +60,8 @@ export function AppShell({ title, children }: { title?: string; children: ReactN
           <div className="flex shrink-0 items-center gap-2">
             <LanguageSwitcher />
             <CurrencySwitcher />
+            <TaskBell />
+
             <button
               onClick={signOut}
               aria-label={t("signOut")}
