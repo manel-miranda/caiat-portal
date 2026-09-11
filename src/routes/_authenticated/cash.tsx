@@ -44,9 +44,10 @@ function CashPage() {
     setNotes(reconciliation?.notes ?? "");
   }, [reconciliation?.id, date]);
 
-  const countedNumber = Number(counted || 0);
+  const countedNumber = Number(counted.trim().replace(",", "."));
+  const countValid = counted.trim() !== "" && Number.isFinite(countedNumber) && countedNumber >= 0;
   const difference = countedNumber - expected;
-  const hasCount = counted.trim() !== "";
+  const hasCount = countValid;
 
   const byEmployee = Object.values(
     payments.reduce<Record<string, { id: string; total: number; count: number }>>((acc, p) => {
