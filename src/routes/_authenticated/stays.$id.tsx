@@ -48,7 +48,7 @@ type Sheet = null | "charge" | "payment" | "request" | "checkout";
 
 function StayDetailPage() {
   const { id } = Route.useParams();
-  const { user, isAdmin } = useAuth();
+  const { user, can } = useAuth();
   const online = useOnline();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -169,7 +169,7 @@ function StayDetailPage() {
         {stay.notes ? (
           <p className="mt-3 rounded-xl bg-muted/60 p-3 text-sm">{stay.notes}</p>
         ) : null}
-        {isAdmin && stay.status === "active" && !isRejected ? (
+        {can("reservations_manage") && stay.status === "active" && !isRejected ? (
           <Button
             variant="outline"
             className="tap-target mt-4 w-full rounded-xl"
@@ -270,7 +270,7 @@ function StayDetailPage() {
           <p className="rounded-2xl border border-border p-4 text-sm text-muted-foreground">
             {t("pendingNoOperations")}
           </p>
-          {isAdmin ? (
+          {can("reservations_manage") ? (
             <div className="grid grid-cols-2 gap-3">
               <Button
                 className="tap-target rounded-xl text-base"
@@ -392,7 +392,7 @@ function StayDetailPage() {
               >
                 {t("recordPayment")}
               </Button>
-              {isAdmin && !overrideConfirm ? (
+              {can("checkout_override") && !overrideConfirm ? (
                 <Button
                   variant="outline"
                   className="tap-target w-full rounded-xl"
@@ -401,7 +401,7 @@ function StayDetailPage() {
                   {t("adminOverride")}
                 </Button>
               ) : null}
-              {isAdmin && overrideConfirm ? (
+              {can("checkout_override") && overrideConfirm ? (
                 <div className="space-y-2 rounded-xl border border-destructive/40 p-3">
                   <p className="text-sm font-semibold">{t("overrideConfirmTitle")}</p>
                   <p className="text-xs text-muted-foreground">{t("overrideConfirmBody")}</p>

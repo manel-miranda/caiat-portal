@@ -1,13 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell } from "@/components/AppShell";
-import { requireAdmin } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 import { auditQuery, profilesQuery } from "@/lib/queries";
 import { mad, shortDateTime } from "@/lib/format";
 import { actionLabel, methodLabel, t } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/activity")({
-  beforeLoad: requireAdmin,
+  beforeLoad: requirePermission("activity_view"),
   head: () => ({ meta: [{ title: "Activity — Caiat Operations" }] }),
   component: ActivityPage,
 });

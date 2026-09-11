@@ -46,7 +46,7 @@ function CustomersPage() {
             aria-label={t("customerSearch")}
           />
         </div>
-        {can("reservations_manage") ? (
+        {true ? (
           <Link
             to="/stays/new"
             className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"

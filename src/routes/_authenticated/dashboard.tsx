@@ -8,7 +8,7 @@ import { confirmReservation, rejectReservation } from "@/lib/mutations";
 import { sourceLabel } from "@/lib/i18n";
 import { AppShell } from "@/components/AppShell";
 import { StatCard } from "@/components/ui/stat-card";
-import { requireAdmin } from "@/lib/admin-guard";
+import { requirePermission } from "@/lib/admin-guard";
 import { addDaysISO, mad, roomLabel, shortDate, timeOnly, todayISO } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import {
@@ -25,7 +25,7 @@ import {
 import type { ReactNode } from "react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  beforeLoad: requireAdmin,
+  beforeLoad: requirePermission("activity_view"),
   head: () => ({ meta: [{ title: "Owner dashboard — Caiat Operations" }] }),
   component: DashboardPage,
 });
@@ -37,7 +37,7 @@ function DashboardPage() {
   const requests = useQuery(requestsQuery);
   const pendingReservations = useQuery(pendingReservationsQuery);
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, can } = useAuth();
 
   async function decide(stayId: string, accept: boolean) {
     try {
