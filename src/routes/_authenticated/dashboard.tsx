@@ -4,7 +4,7 @@ import { BedDouble, Users, Wallet, Banknote, AlertCircle, Bell, LogIn, LogOut } 
 import { AppShell } from "@/components/AppShell";
 import { StatCard } from "@/components/ui/stat-card";
 import { requireAdmin } from "@/lib/admin-guard";
-import { addDaysISO, mad, shortDate, timeOnly, todayISO } from "@/lib/format";
+import { addDaysISO, mad, roomLabel, shortDate, timeOnly, todayISO } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import {
   activeStaysQuery,
@@ -131,7 +131,7 @@ function DashboardPage() {
       <Section title={t("today")}>
         <Group title={t("arrivals")} icon={<LogIn className="size-4" />} empty={arrivals.length === 0}>
           {arrivals.map((s) => (
-            <Row key={s.id} to={s.id} left={s.guest?.full_name ?? "—"} right={`${t("room")} ${s.room?.number ?? ""}`} />
+            <Row key={s.id} to={s.id} left={s.guest?.full_name ?? "—"} right={roomLabel(s.room)} />
           ))}
         </Group>
         <Group title={t("departures")} icon={<LogOut className="size-4" />} empty={departures.length === 0}>
@@ -152,7 +152,7 @@ function DashboardPage() {
             <Row
               key={r.stay.id}
               to={r.stay.id}
-              left={`${r.stay.guest?.full_name ?? "—"} · ${t("room")} ${r.stay.room?.number ?? ""}`}
+              left={`${r.stay.guest?.full_name ?? "—"} · ${roomLabel(r.stay.room)}`}
               right={mad(r.outstanding)}
             />
           ))}
@@ -169,7 +169,7 @@ function DashboardPage() {
             >
               <span className="truncate font-medium">
                 {r.label}
-                {r.room ? ` · ${t("room")} ${r.room.number}` : ""}
+                {r.room ? ` · ${roomLabel(r.room)}` : ""}
               </span>
               <span className="shrink-0 text-muted-foreground">{timeOnly(r.scheduled_at)}</span>
             </Link>

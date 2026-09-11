@@ -34,6 +34,7 @@ export type ServiceType = {
   billable: boolean;
   requestable: boolean;
   sort_order: number;
+  category: string;
 };
 
 export type StayRow = {

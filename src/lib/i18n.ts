@@ -26,6 +26,7 @@ export const en = {
   navDashboard: "Dashboard",
   navCash: "Cash",
   navActivity: "Activity",
+  navServices: "Services",
   // rooms / statuses
   room: "Room",
   available: "Available",
@@ -131,6 +132,17 @@ export const en = {
   overrideConfirmBody: "The guest still owes money. This will be recorded against you.",
   stayNotFound: "This stay could not be loaded",
   back: "Back",
+  // services catalogue
+  servicesTitle: "Services & Activities",
+  servicesIntro: "Default prices are provisional and stay editable when adding a charge.",
+  catFood: "Food",
+  catTransport: "Transport",
+  catOutdoor: "Outdoor activities",
+  catRoute: "Route experiences",
+  catOther: "Other services",
+  requestable: "Can be requested",
+  billableOnly: "Charge only",
+  defaultPrice: "Default price",
   // misc
   noResults: "Nothing here yet",
   offline: "No connection — changes are paused",

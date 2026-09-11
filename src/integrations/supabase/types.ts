@@ -339,6 +339,7 @@ export type Database = {
         Row: {
           active: boolean
           billable: boolean
+          category: string
           default_price: number
           id: string
           key: string
@@ -349,6 +350,7 @@ export type Database = {
         Insert: {
           active?: boolean
           billable?: boolean
+          category?: string
           default_price?: number
           id?: string
           key: string
@@ -359,6 +361,7 @@ export type Database = {
         Update: {
           active?: boolean
           billable?: boolean
+          category?: string
           default_price?: number
           id?: string
           key?: string

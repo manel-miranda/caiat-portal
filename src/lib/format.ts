@@ -95,3 +95,14 @@ export function nights(checkIn: string, checkOut: string): number {
 export function firstName(fullName: string): string {
   return fullName.split(" ")[0] ?? fullName;
 }
+
+/**
+ * User-visible room label: always the real room name (Rif, Zarka, …).
+ * The number is only a fallback when a name is missing.
+ */
+export function roomLabel(
+  room: { number?: string | null; name?: string | null } | null | undefined,
+): string {
+  if (!room) return "—";
+  return room.name?.trim() || (room.number ? `Room ${room.number}` : "—");
+}
