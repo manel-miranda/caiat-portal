@@ -12,16 +12,6 @@ export const Route = createFileRoute("/_authenticated/activity")({
   component: ActivityPage,
 });
 
-const ACTION_LABELS: Record<string, string> = {
-  "charge.added": "Charge added",
-  "payment.recorded": "Payment recorded",
-  "request.created": "Request created",
-  "request.completed": "Request completed",
-  "request.cancelled": "Request cancelled",
-  "stay.created": "Stay created",
-  "stay.checked_out": "Checkout",
-  "cash.reconciled": "Cash count saved",
-};
 
 function detailLine(details: Record<string, unknown>): string {
   const parts: string[] = [];
