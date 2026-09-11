@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/lib/auth";
 import { addDaysISO, mad, nights, todayISO } from "@/lib/format";
-import { sourceLabels, t } from "@/lib/i18n";
+import { sourceOptions, t } from "@/lib/i18n";
 import { roomsQuery, nightlyRate, suggestedAccommodationTotal } from "@/lib/queries";
 import { createStay } from "@/lib/mutations";
 import { useOnline } from "@/components/OfflineBanner";
@@ -84,7 +84,7 @@ function NewStayPage() {
         userId: user?.id,
       });
       await queryClient.invalidateQueries();
-      toast.success(t("createStay"));
+      toast.success(t("stayCreated"));
       navigate({ to: "/stays/$id", params: { id: stayId } });
     } catch (err) {
       toast.error((err as Error).message);
@@ -129,14 +129,15 @@ function NewStayPage() {
             <div className="mt-2 rounded-xl border border-border bg-muted/40 p-3 text-sm">
               <p className="font-semibold">{selectedRoom.name}</p>
               <p className="mt-1 text-muted-foreground">
-                Up to {selectedRoom.capacity} · {mad(selectedRoom.base_price)} /{" "}
-                {selectedRoom.included_guests} guests
+                {t("upToGuests", { count: selectedRoom.capacity })} ·{" "}
+                {mad(selectedRoom.base_price)}{" "}
+                {t("perGuests", { count: selectedRoom.included_guests })}
                 {selectedRoom.extra_guest_price > 0
-                  ? ` · +${mad(selectedRoom.extra_guest_price)} per extra guest`
+                  ? ` · +${mad(selectedRoom.extra_guest_price)} ${t("perExtraGuest")}`
                   : ""}
               </p>
               {selectedRoom.breakfast_included ? (
-                <p className="mt-1 text-muted-foreground">Breakfast included</p>
+                <p className="mt-1 text-muted-foreground">{t("breakfastIncluded")}</p>
               ) : null}
               {selectedRoom.amenities.length > 0 ? (
                 <ul className="mt-2 flex flex-wrap gap-1.5">
@@ -203,15 +204,15 @@ function NewStayPage() {
         </div>
         {selectedRoom && suggested !== null && stayNights > 0 ? (
           <p className="-mt-1 text-xs text-muted-foreground">
-            {stayNights} × {mad(nightlyRate(selectedRoom, guestCountNum))} = {mad(suggested)} ·
-            editable
+            {stayNights} × {mad(nightlyRate(selectedRoom, guestCountNum))} = {mad(suggested)} ·{" "}
+            {t("editable")}
           </p>
         ) : null}
 
 
         <Field label={t("source")}>
           <div className="grid grid-cols-3 gap-2">
-            {Object.entries(sourceLabels).map(([key, label]) => (
+            {sourceOptions().map(({ key, label }) => (
               <button
                 type="button"
                 key={key}

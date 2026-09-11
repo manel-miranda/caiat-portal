@@ -18,7 +18,8 @@ import {
 import { useAuth } from "@/lib/auth";
 import { useOnline } from "@/components/OfflineBanner";
 import { businessLocalToISO, mad, nights, roomLabel, shortDate, shortDateTime } from "@/lib/format";
-import { methodLabels, sourceLabels, t } from "@/lib/i18n";
+import { methodLabel, sourceLabel, statusLabel, t } from "@/lib/i18n";
+import { serviceLabel } from "@/lib/service-i18n";
 import {
   requestsQuery,
   serviceTypesQuery,
@@ -98,8 +99,8 @@ function StayDetailPage() {
               {stay.guest?.phone ?? ""} {stay.guest?.nationality ? `· ${stay.guest.nationality}` : ""}
             </p>
           </div>
-          <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold capitalize">
-            {stay.status}
+          <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold">
+            {statusLabel(stay.status)}
           </span>
         </div>
         <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
@@ -112,7 +113,7 @@ function StayDetailPage() {
             )} ${t("nights")})`}
           />
           <Info label={t("guests")} value={String(stay.num_guests)} />
-          <Info label={t("source")} value={sourceLabels[stay.source] ?? stay.source} />
+          <Info label={t("source")} value={sourceLabel(stay.source)} />
         </dl>
         {stay.notes ? (
           <p className="mt-3 rounded-xl bg-muted/60 p-3 text-sm">{stay.notes}</p>
@@ -157,7 +158,7 @@ function StayDetailPage() {
             {(paymentsQ.data ?? []).map((p) => (
               <li key={p.id} className="flex items-center justify-between py-2">
                 <span>
-                  {methodLabels[p.method] ?? p.method}
+                  {methodLabel(p.method)}
                   <span className="block text-xs text-muted-foreground">
                     {shortDateTime(p.created_at)}
                   </span>
@@ -185,8 +186,8 @@ function StayDetailPage() {
                     {r.scheduled_at ? shortDateTime(r.scheduled_at) : "—"}
                   </span>
                 </span>
-                <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold capitalize">
-                  {r.status}
+                <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold">
+                  {statusLabel(r.status)}
                 </span>
               </li>
             ))}
@@ -222,7 +223,7 @@ function StayDetailPage() {
               await addCharge({ stayId: id, userId: user?.id, ...values });
               await refresh();
               setSheet(null);
-              toast.success(t("addCharge"));
+              toast.success(t("chargeAdded"));
             } catch (e) {
               toast.error((e as Error).message);
             }
@@ -264,7 +265,7 @@ function StayDetailPage() {
               });
               await refresh();
               setSheet(null);
-              toast.success(t("addRequest"));
+              toast.success(t("requestAdded"));
             } catch (e) {
               toast.error((e as Error).message);
             }
@@ -513,7 +514,7 @@ function ChargeForm({
                   : "border-border bg-card"
               }`}
             >
-              {s.label}
+              {serviceLabel(s)}
             </button>
           ))}
           <button
@@ -523,7 +524,7 @@ function ChargeForm({
               serviceId === "" ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card"
             }`}
           >
-            {t("optional")}…
+            {t("custom")}
           </button>
         </div>
       </div>
@@ -650,7 +651,7 @@ function PaymentForm({
                   : "border-border bg-card"
               }`}
             >
-              {methodLabels[m]}
+              {methodLabel(m)}
             </button>
           ))}
         </div>
@@ -725,7 +726,7 @@ function RequestForm({
                   : "border-border bg-card"
               }`}
             >
-              {s.label}
+              {serviceLabel(s)}
             </button>
           ))}
           <button
@@ -735,7 +736,7 @@ function RequestForm({
               serviceId === "" ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card"
             }`}
           >
-            {t("optional")}…
+            {t("custom")}
           </button>
         </div>
       </div>
