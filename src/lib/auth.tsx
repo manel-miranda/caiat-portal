@@ -1,12 +1,14 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { effectivePermission, type AppRole, type PermissionKey } from "./permissions";
 
 export type Profile = {
   id: string;
   username: string;
   full_name: string;
   phone: string | null;
+  active?: boolean | null;
 };
 
 type AuthValue = {
@@ -14,7 +16,11 @@ type AuthValue = {
   session: Session | null;
   user: User | null;
   profile: Profile | null;
+  role: AppRole;
   isAdmin: boolean;
+  isSupervisor: boolean;
+  /** Effective permission check, mirroring the database `has_permission`. */
+  can: (key: PermissionKey) => boolean;
   refresh: () => Promise<void>;
 };
 
@@ -23,7 +29,10 @@ const AuthContext = createContext<AuthValue>({
   session: null,
   user: null,
   profile: null,
+  role: "staff",
   isAdmin: false,
+  isSupervisor: false,
+  can: () => false,
   refresh: async () => {},
 });
 
@@ -32,24 +41,41 @@ export function usernameToEmail(username: string) {
   return `${username.trim().toLowerCase().replace(/[^a-z0-9._-]/g, "")}@caiat.local`;
 }
 
+function pickRole(roles: { role: string }[] | null | undefined): AppRole {
+  const set = new Set((roles ?? []).map((r) => r.role));
+  if (set.has("admin")) return "admin";
+  if (set.has("supervisor")) return "supervisor";
+  return "staff";
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [role, setRole] = useState<AppRole>("staff");
+  const [overrides, setOverrides] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
 
   async function loadIdentity(userId: string | undefined) {
     if (!userId) {
       setProfile(null);
-      setIsAdmin(false);
+      setRole("staff");
+      setOverrides({});
       return;
     }
-    const [{ data: p }, { data: roles }] = await Promise.all([
-      supabase.from("profiles").select("id, username, full_name, phone").eq("id", userId).maybeSingle(),
+    const [{ data: p }, { data: roles }, { data: perms }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("id, username, full_name, phone, active")
+        .eq("id", userId)
+        .maybeSingle(),
       supabase.from("user_roles").select("role").eq("user_id", userId),
+      supabase.from("user_permissions").select("permission, granted").eq("user_id", userId),
     ]);
     setProfile((p as Profile) ?? null);
-    setIsAdmin(Boolean(roles?.some((r) => r.role === "admin")));
+    setRole(pickRole(roles));
+    const map: Record<string, boolean> = {};
+    for (const row of perms ?? []) map[row.permission] = row.granted;
+    setOverrides(map);
   }
 
   useEffect(() => {
@@ -71,12 +97,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  const isActive = profile?.active !== false;
   const value: AuthValue = {
     loading,
     session,
     user: session?.user ?? null,
     profile,
-    isAdmin,
+    role,
+    isAdmin: role === "admin",
+    isSupervisor: role === "supervisor",
+    can: (key) => effectivePermission(role, overrides, key, isActive),
     refresh: async () => loadIdentity(session?.user?.id),
   };
 
