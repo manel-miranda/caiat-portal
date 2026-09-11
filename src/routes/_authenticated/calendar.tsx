@@ -229,7 +229,10 @@ function CalendarPage() {
                       )}
                     >
                       {isConfirmed(s) ? "" : "◇ "}
-                      {firstName(s.guest?.full_name ?? "—")} · {s.room?.number ?? ""}
+                      {roomFilter === "all"
+                        ? roomLabel(s.room)
+                        : firstName(s.guest?.full_name ?? "—")}
+
                     </Link>
                   ))}
                   {items.length > 2 && !isExpanded ? (
@@ -270,8 +273,9 @@ function CalendarPage() {
           <p className="surface-card px-4 py-6 text-center text-sm text-muted-foreground">…</p>
         ) : stays.isError ? (
           <p className="surface-card px-4 py-6 text-center text-sm text-destructive">
-            {t("somethingWrong")}
+            {(stays.error as Error).message}
           </p>
+
         ) : agendaEmpty ? (
           <p className="surface-card px-4 py-6 text-center text-sm text-muted-foreground">
             {t("noReservationsDay")}
