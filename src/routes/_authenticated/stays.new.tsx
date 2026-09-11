@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,14 @@ import { sourceOptions, t } from "@/lib/i18n";
 import { roomsQuery, nightlyRate, suggestedAccommodationTotal } from "@/lib/queries";
 import { createStay } from "@/lib/mutations";
 import { useOnline } from "@/components/OfflineBanner";
-import { countedStays, customersQuery, matchesCustomer, type CustomerRow } from "@/lib/customers";
+import {
+  countedStays,
+  customersQuery,
+  matchesCustomer,
+  findDuplicateCandidates,
+  matchReasonKey,
+  type CustomerRow,
+} from "@/lib/customers";
 import { shortDate } from "@/lib/format";
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -87,6 +94,27 @@ function NewStayPage() {
     selectedRoom && Number.isFinite(guestCountNum) && guestCountNum >= 1
       ? suggestedAccommodationTotal(selectedRoom, guestCountNum, stayNights)
       : null;
+
+  /** Merges free-text search hits with exact contact/name duplicate matches. */
+  const suggestions = useMemo(() => {
+    const all = customers.data ?? [];
+    const dupes = findDuplicateCandidates(all, {
+      full_name: guestName,
+      phone: guestPhone,
+      email: guestEmail,
+    });
+    const seen = new Set(dupes.map((d) => d.customer.id));
+    const term = customerSearch.trim();
+    const searched =
+      term.length >= 2
+        ? all
+            .filter((c) => matchesCustomer(c, term) && !seen.has(c.id))
+            .map((c) => ({ customer: c, reason: "name" as const }))
+        : [];
+    return [...dupes, ...searched].slice(0, 6);
+  }, [customers.data, customerSearch, guestName, guestPhone, guestEmail]);
+
+  const hasContactMatch = suggestions.some((s) => s.reason !== "name");
 
   // Prefill the room only when the search param matches a real, active room.
   useEffect(() => {
@@ -427,6 +455,13 @@ function NewStayPage() {
       </form>
     </AppShell>
   );
+}
+
+function lastStayOf(c: CustomerRow): string | null {
+  const dates = countedStays(c)
+    .map((s) => s.check_in)
+    .sort();
+  return dates.at(-1) ?? null;
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
