@@ -35,6 +35,8 @@ export function MobileMenu({ variant = "icon" }: { variant?: "icon" | "tab" }) {
   const queryClient = useQueryClient();
 
   const links: MenuLink[] = ([
+    // Calendar also lives here because Dashboard-capable users lose its bottom-nav slot.
+    { to: "/calendar", label: t("navCalendar"), icon: CalendarDays },
     { to: "/services", label: t("navServices"), icon: ConciergeBell },
     { to: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard, permission: "activity_view" },
     { to: "/cash", label: t("navCash"), icon: Banknote, permission: "cash_reconcile" },
