@@ -19,7 +19,7 @@ import { roomsQuery } from "@/lib/queries";
 import { mad, roomLabel, shortDate } from "@/lib/format";
 import { statusLabel, t } from "@/lib/i18n";
 
-export const Route = createFileRoute("/_authenticated/customers/$id")({
+export const Route = createFileRoute("/_authenticated/customers_/$id")({
   head: () => ({
     meta: [
       { title: "Customer profile — Caiat Operations" },
