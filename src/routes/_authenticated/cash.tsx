@@ -67,6 +67,7 @@ function CashPage() {
   async function save() {
     if (!online) { toast.error(t("offline")); return; }
     if (!user?.id) return;
+    if (!countValid) { toast.error(t("countedCashInvalid")); return; }
     setBusy(true);
     try {
       await saveCashCount({
@@ -134,6 +135,9 @@ function CashPage() {
               <Label htmlFor="counted">{t("countedCash")}</Label>
               <Input
                 id="counted"
+                type="number"
+                min={0}
+                step="0.01"
                 inputMode="decimal"
                 value={counted}
                 onChange={(e) => setCounted(e.target.value)}
@@ -172,7 +176,7 @@ function CashPage() {
               />
             </div>
 
-            <Button className="h-12 w-full text-base" disabled={!hasCount || busy} onClick={save}>
+            <Button className="h-12 w-full text-base" disabled={!countValid || busy} onClick={save}>
               {t("saveCount")}
             </Button>
 
