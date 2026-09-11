@@ -77,7 +77,7 @@ function CashPage() {
         userId: user.id,
       });
       await queryClient.invalidateQueries();
-      toast.success(t("saveCount"));
+      toast.success(t("cashCountSaved"));
     } catch (e) {
       toast.error((e as Error).message);
     }
