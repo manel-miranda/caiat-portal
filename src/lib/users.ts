@@ -90,3 +90,10 @@ export function generatePin(): string {
   crypto.getRandomValues(buf);
   return String((buf[0] ?? 0) % 1_000_000).padStart(6, "0");
 }
+
+/** Anyone signed in can change their own PIN; Auth stores it, we never do. */
+export async function changeMyPin(pin: string) {
+  if (!isValidPin(pin)) throw new Error(t("pinRule"));
+  const { error } = await supabase.auth.updateUser({ password: pin });
+  if (error) throw new Error(error.message);
+}
