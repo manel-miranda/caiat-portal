@@ -18,6 +18,7 @@ import {
   type OperationalPermission,
 } from "@/lib/permissions";
 import {
+  changeMyPin,
   generatePin,
   isValidPin,
   managedUsersQuery,
@@ -25,7 +26,7 @@ import {
   setUserRole,
   type ManagedUser,
 } from "@/lib/users";
-import { resetUserPin, setUserActiveFn } from "@/lib/users.functions";
+import { createStaffUser, resetUserPin, setUserActiveFn } from "@/lib/users.functions";
 
 export const Route = createFileRoute("/_authenticated/users")({
   beforeLoad: requireAdmin,
@@ -206,9 +207,140 @@ function UsersPage() {
           );
         })}
       </ul>
+
+      <AddUserCard busy={busy} run={run} />
+      <ChangeMyPinCard busy={busy} run={run} />
     </AppShell>
   );
 }
+
+/** Admin-only: creates the sign-in account, profile and role in one step. */
+function AddUserCard({
+  busy,
+  run,
+}: {
+  busy: boolean;
+  run: (fn: () => Promise<void>, ok: string) => Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
+  const [pin, setPin] = useState("");
+  const [role, setRole] = useState<AppRole>("staff");
+
+  return (
+    <section className="surface-card mt-4 p-4">
+      <button className="w-full text-start font-semibold" onClick={() => setOpen(!open)}>
+        {t("addUser")}
+      </button>
+      {open ? (
+        <div className="mt-3 space-y-3">
+          <div>
+            <Label className="text-xs text-muted-foreground">{t("displayName")}</Label>
+            <Input
+              className="tap-target text-base"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+            />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">{t("username")}</Label>
+            <Input
+              className="tap-target text-base"
+              value={username}
+              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, ""))}
+            />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">{t("newPin")}</Label>
+            <div className="flex gap-2">
+              <Input
+                className="tap-target text-base"
+                inputMode="numeric"
+                maxLength={6}
+                value={pin}
+                placeholder={t("pinRule")}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              />
+              <Button variant="outline" className="tap-target shrink-0" onClick={() => setPin(generatePin())}>
+                {t("generatePin")}
+              </Button>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            {ROLES.map((r) => (
+              <Button key={r} size="sm" variant={role === r ? "default" : "outline"} onClick={() => setRole(r)}>
+                {roleName(r)}
+              </Button>
+            ))}
+          </div>
+          <Button
+            className="tap-target w-full"
+            disabled={busy || !isValidPin(pin) || fullName.trim().length < 2 || username.length < 2}
+            onClick={() =>
+              void run(async () => {
+                await createStaffUser({ data: { username, fullName: fullName.trim(), pin, role } });
+                setFullName("");
+                setUsername("");
+                setPin("");
+              }, t("userCreated"))
+            }
+          >
+            {t("addUser")}
+          </Button>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+/** Available to the signed-in admin; the PIN itself is only sent to Auth. */
+function ChangeMyPinCard({
+  busy,
+  run,
+}: {
+  busy: boolean;
+  run: (fn: () => Promise<void>, ok: string) => Promise<void>;
+}) {
+  const [pin, setPin] = useState("");
+  const [confirm, setConfirm] = useState("");
+  return (
+    <section className="surface-card mt-4 space-y-3 p-4">
+      <p className="font-semibold">{t("changeMyPin")}</p>
+      <Input
+        className="tap-target text-base"
+        inputMode="numeric"
+        maxLength={6}
+        value={pin}
+        placeholder={t("newPin")}
+        onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
+      />
+      <Input
+        className="tap-target text-base"
+        inputMode="numeric"
+        maxLength={6}
+        value={confirm}
+        placeholder={t("confirmPin")}
+        onChange={(e) => setConfirm(e.target.value.replace(/\D/g, "").slice(0, 6))}
+      />
+      <Button
+        className="tap-target w-full"
+        disabled={busy || !isValidPin(pin)}
+        onClick={() =>
+          void run(async () => {
+            if (pin !== confirm) throw new Error(t("pinMismatch"));
+            await changeMyPin(pin);
+            setPin("");
+            setConfirm("");
+          }, t("pinReset"))
+        }
+      >
+        {t("changeMyPin")}
+      </Button>
+    </section>
+  );
+}
+
 
 function PermissionRow({
   user,
