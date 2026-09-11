@@ -106,7 +106,7 @@ function NewStayPage() {
         </Field>
 
         <Field label={t("room")}>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
             {(rooms.data ?? []).map((r) => (
               <button
                 type="button"
@@ -118,7 +118,10 @@ function NewStayPage() {
                     : "border-border bg-card"
                 }`}
               >
-                {r.number}
+                {r.name}
+                <span className="mt-0.5 block text-[10px] font-normal opacity-70">
+                  #{r.number}
+                </span>
               </button>
             ))}
           </div>
