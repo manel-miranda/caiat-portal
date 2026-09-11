@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, LogIn, LogOut, Bell } from "lucide-react";
+import { Plus, LogIn, LogOut, Bell, CalendarDays } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { activeStaysQuery, requestsQuery, roomsQuery, stayForRoom, roomState } from "@/lib/queries";
 import { firstName, mad, roomLabel, shortDate, todayISO, timeOnly } from "@/lib/format";
@@ -51,12 +51,20 @@ function HomePage() {
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           {t("navRooms")}
         </h2>
+        <div className="flex items-center gap-2">
+        <Link
+          to="/calendar"
+          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-semibold active:bg-muted"
+        >
+          <CalendarDays className="size-4" /> {t("calendarTitle")}
+        </Link>
         <Link
           to="/stays/new"
           className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground active:scale-[0.98]"
         >
           <Plus className="size-4" /> {t("newStay")}
         </Link>
+        </div>
       </div>
 
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
