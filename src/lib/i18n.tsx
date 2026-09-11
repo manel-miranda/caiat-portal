@@ -1195,6 +1195,7 @@ const METHOD_KEYS: Record<string, TranslationKey> = {
   cash: "cash",
   card: "card",
   bank_transfer: "bankTransfer",
+  paypal: "paypal",
 };
 
 export function methodLabel(key: string): string {
