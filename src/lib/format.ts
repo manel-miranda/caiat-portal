@@ -1,3 +1,5 @@
+import { t } from "./i18n";
+
 /** Business timezone for the guesthouse. All "today"/day boundaries use it. */
 export const BUSINESS_TZ = "Africa/Casablanca";
 
