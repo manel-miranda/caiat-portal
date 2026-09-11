@@ -29,12 +29,12 @@ def build_texture(photo, ellipse):
 def profile(t):
     """Height (m) of the plate surface at normalised radius t in [0,1]."""
     if t <= 0.60:                       # mounded food in the centre
-        return 0.052 + 0.020 * math.cos(t / 0.60 * math.pi / 2)
+        return 0.040 + 0.016 * math.cos(t / 0.60 * math.pi / 2)
     if t <= 0.80:                       # inner wall rising to the rim
         k = (t - 0.60) / 0.20
-        return 0.052 + 0.026 * (1 - math.cos(k * math.pi / 2))
+        return 0.040 + 0.020 * (1 - math.cos(k * math.pi / 2))
     k = (t - 0.80) / 0.20               # flat outer rim, slight outward fall
-    return 0.078 - 0.010 * k * k
+    return 0.060 - 0.008 * k * k
 
 
 def add_normals(pos, idx):
@@ -68,14 +68,14 @@ def top_surface():
     for ri in range(RINGS):
         for si in range(SEG):
             a = ri * row + si; b = a + 1; c = a + row; d = c + 1
-            idx += [a, c, b, b, c, d]
+            idx += [a, b, c, b, d, c]
     return pos, uv, idx
 
 
 def body():
     """Dark ceramic outer wall + foot + bottom."""
     rim_y = profile(1.0)
-    levels = [(R, rim_y), (R * 1.005, rim_y - 0.012), (R * 0.96, 0.026), (R * 0.72, 0.006), (R * 0.62, 0.0)]
+    levels = [(R, rim_y), (R * 1.01, rim_y - 0.010), (R * 0.95, 0.018), (R * 0.70, 0.005), (R * 0.60, 0.0)]
     pos, idx = [], []
     for r, y in levels:
         for si in range(SEG + 1):
@@ -85,12 +85,12 @@ def body():
     for li in range(len(levels) - 1):
         for si in range(SEG):
             a = li * row + si; b = a + 1; c = a + row; d = c + 1
-            idx += [a, b, c, b, d, c]
+            idx += [a, c, b, b, c, d]
     centre = len(pos)
     pos.append((0.0, 0.0, 0.0))
     base = (len(levels) - 1) * row
     for si in range(SEG):
-        idx += [centre, base + si + 1, base + si]
+        idx += [centre, base + si, base + si + 1]
     return pos, idx
 
 
