@@ -705,7 +705,7 @@ function RequestForm({
         await onSubmit({
           serviceTypeId: serviceId || null,
           label: (selected?.label ?? customLabel).trim() || "Request",
-          scheduledAt: when ? new Date(when).toISOString() : null,
+          scheduledAt: businessLocalToISO(when),
           notes,
         });
         setBusy(false);

@@ -40,13 +40,34 @@ function tzOffsetMinutes(instant: Date): number {
   return (asUTC - instant.getTime()) / 60000;
 }
 
-/** UTC instants bounding a business day [start, end) in Africa/Casablanca. */
-export function businessDayRange(iso: string): { fromISO: string; toISO: string } {
+/** UTC instant of local midnight in Africa/Casablanca for a calendar date. */
+function localMidnightUTC(iso: string): number {
   const guess = Date.parse(`${iso}T00:00:00Z`);
   let start = guess - tzOffsetMinutes(new Date(guess)) * 60000;
   start = guess - tzOffsetMinutes(new Date(start)) * 60000;
-  const end = start + 86400000;
+  return start;
+}
+
+/** UTC instants bounding a business day [start, end) in Africa/Casablanca. */
+export function businessDayRange(iso: string): { fromISO: string; toISO: string } {
+  const start = localMidnightUTC(iso);
+  // The next calendar date's own local midnight, so days that gain or lose an
+  // hour still cover exactly one business day.
+  const end = localMidnightUTC(addDaysISO(iso, 1));
   return { fromISO: new Date(start).toISOString(), toISO: new Date(end - 1).toISOString() };
+}
+
+/**
+ * Turn a "YYYY-MM-DDTHH:mm" value typed into a date/time field into a UTC
+ * instant, reading it as Morocco business time rather than device time.
+ */
+export function businessLocalToISO(value: string): string | null {
+  if (!value) return null;
+  const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})/.exec(value);
+  if (!match) return null;
+  const [, date, hh, mm] = match;
+  const instant = localMidnightUTC(date!) + Number(hh) * 3600000 + Number(mm) * 60000;
+  return new Date(instant).toISOString();
 }
 
 export function addDaysISO(iso: string, days: number): string {
