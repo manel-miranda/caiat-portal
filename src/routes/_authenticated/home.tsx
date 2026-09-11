@@ -74,12 +74,12 @@ function HomePage() {
                 <div>
                   <p className="text-xl font-semibold leading-none">{room.name}</p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    #{room.number} · Up to {room.capacity} ·{" "}
-                    {mad(room.base_price)} / {room.included_guests} guests
+                    #{room.number} · {t("upToGuests", { count: room.capacity })} ·{" "}
+                    {mad(room.base_price)} {t("perGuests", { count: room.included_guests })}
                   </p>
                 </div>
                 <span className="rounded-full bg-background/70 px-2.5 py-1 text-[11px] font-semibold">
-                  {STATE_LABELS[state]}
+                  {stateLabel(state)}
                 </span>
               </div>
               {stay ? (
