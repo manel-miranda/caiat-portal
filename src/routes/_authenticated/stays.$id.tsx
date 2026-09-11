@@ -125,7 +125,19 @@ function StayDetailPage() {
             <p className="mt-1 text-sm text-muted-foreground">
               {stay.guest?.phone ?? ""} {stay.guest?.nationality ? `· ${stay.guest.nationality}` : ""}
             </p>
+            {guestId && customerQ.data ? (
+              <Link
+                to="/customers/$id"
+                params={{ id: guestId }}
+                className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-semibold"
+              >
+                {customerStayCount > 1
+                  ? `${t("returningCustomer")} · ${t("stayCount", { count: customerStayCount })}`
+                  : t("newCustomer")}
+              </Link>
+            ) : null}
           </div>
+
           <span
             className={`rounded-full px-3 py-1 text-xs font-semibold ${
               isPendingRequest
