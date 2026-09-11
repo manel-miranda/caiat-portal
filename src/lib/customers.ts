@@ -135,8 +135,8 @@ export async function updateCustomer(params: {
 }
 
 export function customerError(message: string): string {
-  if (message.includes("PERMISSION_DENIED")) return "permissionDenied";
-  if (message.includes("GUEST_NAME_REQUIRED")) return "guestNameRequired";
+  if (message.includes("PERMISSION_DENIED")) return t("permissionDenied");
+  if (message.includes("GUEST_NAME_REQUIRED")) return t("guestNameRequired");
   return message;
 }
 
