@@ -742,6 +742,16 @@ const pt: Dict = {
   guestWelcome: "Bem-vindo, {name}",
   myStay: "A minha estadia",
   requestSomething: "Pedir algo",
+  // menu 3D/AR prototype
+  menuSection: "Descobrir o menu",
+  dishTajine: "Tajine Caiat",
+  dishDemoNote:
+    "Prato protótipo em 3D, apresentado para demonstrar a experiência. Ainda não é um prato nem um preço reais.",
+  demoBadge: "Demo 3D",
+  dragToRotate: "Arraste para rodar o prato",
+  viewOnTable: "Ver na sua mesa",
+  arUnavailable:
+    "O seu telemóvel não suporta a vista pela câmara. Pode continuar a explorar o prato em 3D.",
   otherRequest: "Outro pedido",
   describeRequest: "Do que precisa?",
   sendRequest: "Enviar pedido",
