@@ -120,7 +120,7 @@ function NewStayPage() {
     setBusy(true);
     try {
       const stayId = await createStay({
-        guestName,
+        guestName: customer ? customer.full_name : guestName,
         roomId,
         checkIn,
         checkOut,
@@ -129,6 +129,9 @@ function NewStayPage() {
         accommodationTotal: amount,
         notes,
         confirmationStatus,
+        guestId: customer?.id ?? null,
+        phone: customer ? null : guestPhone.trim() || null,
+        email: customer ? null : guestEmail.trim() || null,
         userId: user?.id,
       });
       await queryClient.invalidateQueries();
