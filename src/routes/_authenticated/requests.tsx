@@ -133,7 +133,10 @@ function RequestsPage() {
       ) : null}
       {pending.length === 0 ? (
         openOrders.length > 0 ? null : (
-        <p className="surface-card mt-2 p-3 sm:p-4 text-sm text-muted-foreground">{t("noResults")}</p>
+          <p className="surface-card mt-2 p-3 text-sm text-muted-foreground sm:p-4">
+            {t("noResults")}
+          </p>
+        )
       ) : (
         <ul className="mt-2 space-y-3">
           {pending.map((r) => (
