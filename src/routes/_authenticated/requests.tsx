@@ -103,10 +103,36 @@ function RequestsPage() {
 
   return (
     <AppShell title={t("navRequests")}>
+      {previewHost ? (
+        <div className="mb-3 flex gap-2">
+          {(["all", "food", "other"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`min-h-[38px] rounded-full border px-3 text-xs font-semibold ${
+                filter === f
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card text-muted-foreground"
+              }`}
+            >
+              {t(f === "all" ? "filterAll" : f === "food" ? "typeFood" : "filterOther")}
+            </button>
+          ))}
+        </div>
+      ) : null}
+
       <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
         {t("pendingRequests")}
       </h2>
+      {openOrders.length > 0 ? (
+        <ul className="mt-2 space-y-3">
+          {openOrders.map((o) => (
+            <FoodOrderCard key={o.id} order={o} />
+          ))}
+        </ul>
+      ) : null}
       {pending.length === 0 ? (
+        openOrders.length > 0 ? null : (
         <p className="surface-card mt-2 p-3 sm:p-4 text-sm text-muted-foreground">{t("noResults")}</p>
       ) : (
         <ul className="mt-2 space-y-3">
