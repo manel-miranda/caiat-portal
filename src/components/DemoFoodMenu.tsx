@@ -216,15 +216,10 @@ function DemoMenuBody({
 
   return (
     <section className="surface-card mt-4 p-3 sm:p-4">
-      <div className="flex items-start justify-between gap-2">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          {t("demoMenuSection")}
-        </h2>
-        <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold uppercase">
-          {t("demoMenuBadge")}
-        </span>
-      </div>
-      <p className="mt-1 text-xs text-muted-foreground">{t("previewOrderBanner")}</p>
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        {t("gcatFood")}
+      </h2>
+
 
       {confirmed ? (
         <div className="mt-3 rounded-xl border border-primary/40 bg-primary/5 p-3">
