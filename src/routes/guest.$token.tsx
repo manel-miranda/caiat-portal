@@ -200,35 +200,16 @@ function Portal({ token, data }: { token: string; data: GuestPortalData }) {
           {t("requestSomething")}
         </h2>
         <form className="mt-3 space-y-4" onSubmit={submitRequest}>
-          <div className="grid grid-cols-2 gap-2">
-            {data.services.map((s) => (
-              <button
-                type="button"
-                key={s.id}
-                onClick={() => setServiceId(s.id)}
-                className={`rounded-xl border px-2 py-3 text-sm font-semibold ${
-                  serviceId === s.id
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-card"
-                }`}
-              >
-                {serviceLabel(s)}
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={() => setServiceId("")}
-              className={`rounded-xl border px-2 py-3 text-sm font-semibold ${
-                serviceId === ""
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card"
-              }`}
-            >
-              {t("otherRequest")}
-            </button>
-          </div>
+          <GuestCatalog
+            services={data.services}
+            selection={selection}
+            onSelect={(next) => {
+              setSelection(next);
+              if (next?.kind !== "else") setCustomLabel("");
+            }}
+          />
 
-          {serviceId === "" ? (
+          {selection?.kind === "else" ? (
             <div className="space-y-2">
               <Label htmlFor="what">{t("describeRequest")}</Label>
               <Input
@@ -242,20 +223,28 @@ function Portal({ token, data }: { token: string; data: GuestPortalData }) {
             </div>
           ) : null}
 
-          <div className="space-y-2">
-            <Label htmlFor="gnotes">{`${t("notes")} (${t("optional")})`}</Label>
-            <Textarea
-              id="gnotes"
-              rows={2}
-              maxLength={500}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-            />
-          </div>
+          {selection ? (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="gnotes">{`${t("notes")} (${t("optional")})`}</Label>
+                <Textarea
+                  id="gnotes"
+                  rows={2}
+                  maxLength={500}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                />
+              </div>
 
-          <Button type="submit" disabled={busy} className="tap-target w-full rounded-xl text-base">
-            <Send className="me-2 size-4" /> {t("sendRequest")}
-          </Button>
+              <Button
+                type="submit"
+                disabled={busy}
+                className="tap-target w-full rounded-xl text-base"
+              >
+                <Send className="me-2 size-4" /> {t("sendRequest")}
+              </Button>
+            </>
+          ) : null}
         </form>
       </section>
 
