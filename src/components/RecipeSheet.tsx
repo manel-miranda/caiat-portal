@@ -114,7 +114,7 @@ export function RecipeSheet({
                 />
                 <span className="w-10 shrink-0 text-xs text-muted-foreground">{unit}</span>
                 <button
-                  aria-label={t("delete")}
+                  aria-label="Remove"
                   onClick={() => setRows(rows.filter((_, i) => i !== index))}
                   className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-border text-muted-foreground"
                 >
