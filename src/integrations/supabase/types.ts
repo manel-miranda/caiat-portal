@@ -560,6 +560,7 @@ export type Database = {
           key: string
           label: string
           name_i18n: Json
+          preview_only: boolean
           requestable: boolean
           short_description: string | null
           signature: boolean
@@ -584,6 +585,7 @@ export type Database = {
           key: string
           label: string
           name_i18n?: Json
+          preview_only?: boolean
           requestable?: boolean
           short_description?: string | null
           signature?: boolean
@@ -608,6 +610,7 @@ export type Database = {
           key?: string
           label?: string
           name_i18n?: Json
+          preview_only?: boolean
           requestable?: boolean
           short_description?: string | null
           signature?: boolean
@@ -744,6 +747,10 @@ export type Database = {
       catalog_set_active: {
         Args: { p_active: boolean; p_id: string }
         Returns: string
+      }
+      catalog_set_incoming_recommendations: {
+        Args: { p_id: string; p_source_ids: string[] }
+        Returns: number
       }
       catalog_set_recommendations: {
         Args: { p_id: string; p_ids: string[] }
