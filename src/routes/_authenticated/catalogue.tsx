@@ -149,6 +149,16 @@ function CataloguePage() {
     return map;
   }, [recs.data]);
 
+  /** Reverse index: item id -> sources that recommend it. */
+  const incomingMap = useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const r of recs.data ?? []) {
+      const target = r.recommended_service_type_id;
+      map.set(target, [...(map.get(target) ?? []), r.service_type_id]);
+    }
+    return map;
+  }, [recs.data]);
+
   const visible = useMemo(() => {
     const term = search.trim().toLowerCase();
     let list = all.filter((i) => {
