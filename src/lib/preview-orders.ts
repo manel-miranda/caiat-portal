@@ -11,11 +11,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { isDemoPreviewHost } from "./demo-menu";
 import type { TranslationKey } from "./i18n";
 
+/**
+ * "ready" was removed from the workflow; legacy rows are normalised to
+ * "preparing" in the database and defensively mapped on read.
+ */
 export const PREVIEW_ORDER_STATUSES = [
   "requested",
   "accepted",
   "preparing",
-  "ready",
   "delivered",
   "cancelled",
 ] as const;
@@ -26,10 +29,16 @@ export const PREVIEW_STATUS_LABEL: Record<PreviewOrderStatus, TranslationKey> = 
   requested: "foStatusRequested",
   accepted: "foStatusAccepted",
   preparing: "foStatusPreparing",
-  ready: "foStatusReady",
   delivered: "foStatusDelivered",
   cancelled: "foStatusCancelled",
 };
+
+function normaliseStatus(raw: string): PreviewOrderStatus {
+  if (raw === "ready") return "preparing";
+  return (PREVIEW_ORDER_STATUSES as readonly string[]).includes(raw)
+    ? (raw as PreviewOrderStatus)
+    : "requested";
+}
 
 export const PREVIEW_TIMINGS = ["asap", "breakfast", "lunch", "dinner"] as const;
 export type PreviewTiming = (typeof PREVIEW_TIMINGS)[number];
@@ -43,7 +52,7 @@ export const PREVIEW_TIMING_LABEL: Record<PreviewTiming, TranslationKey> = {
 
 /** The next status in the kitchen flow, or null when the order is finished. */
 export function nextStatus(status: PreviewOrderStatus): PreviewOrderStatus | null {
-  const flow: PreviewOrderStatus[] = ["requested", "accepted", "preparing", "ready", "delivered"];
+  const flow: PreviewOrderStatus[] = ["requested", "accepted", "preparing", "delivered"];
   const i = flow.indexOf(status);
   if (i < 0 || i === flow.length - 1) return null;
   return flow[i + 1] ?? null;
@@ -126,7 +135,7 @@ export const previewOrdersQuery = {
     return ((data ?? []) as unknown as OrderRow[]).map((row) => ({
       id: row.id,
       stay_id: row.stay_id,
-      status: row.status as PreviewOrderStatus,
+      status: normaliseStatus(row.status),
       timing: row.timing as PreviewTiming,
       notes: row.notes,
       subtotal: Number(row.subtotal ?? 0),

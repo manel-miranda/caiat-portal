@@ -12,6 +12,8 @@ import { statusLabel, t } from "@/lib/i18n";
 import { serviceLabel } from "@/lib/service-i18n";
 import { requestsQuery, serviceTypesQuery, type RequestRow } from "@/lib/queries";
 import { cancelRequest, completeRequest } from "@/lib/mutations";
+import { previewOrdersQuery, useIsPreviewHost } from "@/lib/preview-orders";
+import { FoodOrderCard } from "@/components/FoodOrderCard";
 import { SheetDialog } from "./stays.$id";
 
 export const Route = createFileRoute("/_authenticated/requests")({
@@ -28,10 +30,23 @@ function RequestsPage() {
   const services = useQuery(serviceTypesQuery);
   const [billing, setBilling] = useState<RequestRow | null>(null);
   const [busy, setBusy] = useState(false);
+  // Preview-only food orders share this inbox on preview hosts.
+  const previewHost = useIsPreviewHost();
+  const orders = useQuery({ ...previewOrdersQuery, enabled: previewHost });
+  const [filter, setFilter] = useState<"all" | "food" | "other">("all");
 
   const all = requests.data ?? [];
-  const pending = all.filter((r) => r.status === "pending");
-  const history = all.filter((r) => r.status !== "pending");
+  const showOther = filter !== "food";
+  const showFood = previewHost && filter !== "other";
+  const pending = showOther ? all.filter((r) => r.status === "pending") : [];
+  const history = showOther ? all.filter((r) => r.status !== "pending") : [];
+  const allOrders = showFood ? (orders.data ?? []) : [];
+  const openOrders = allOrders.filter(
+    (o) => o.status !== "delivered" && o.status !== "cancelled",
+  );
+  const doneOrders = allOrders.filter(
+    (o) => o.status === "delivered" || o.status === "cancelled",
+  );
 
   function serviceFor(r: RequestRow) {
     return (services.data ?? []).find((s) => s.id === r.service_type_id);
@@ -88,11 +103,40 @@ function RequestsPage() {
 
   return (
     <AppShell title={t("navRequests")}>
+      {previewHost ? (
+        <div className="mb-3 flex gap-2">
+          {(["all", "food", "other"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`min-h-[38px] rounded-full border px-3 text-xs font-semibold ${
+                filter === f
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card text-muted-foreground"
+              }`}
+            >
+              {t(f === "all" ? "filterAll" : f === "food" ? "typeFood" : "filterOther")}
+            </button>
+          ))}
+        </div>
+      ) : null}
+
       <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
         {t("pendingRequests")}
       </h2>
+      {openOrders.length > 0 ? (
+        <ul className="mt-2 space-y-3">
+          {openOrders.map((o) => (
+            <FoodOrderCard key={o.id} order={o} />
+          ))}
+        </ul>
+      ) : null}
       {pending.length === 0 ? (
-        <p className="surface-card mt-2 p-3 sm:p-4 text-sm text-muted-foreground">{t("noResults")}</p>
+        openOrders.length > 0 ? null : (
+          <p className="surface-card mt-2 p-3 text-sm text-muted-foreground sm:p-4">
+            {t("noResults")}
+          </p>
+        )
       ) : (
         <ul className="mt-2 space-y-3">
           {pending.map((r) => (
@@ -125,8 +169,19 @@ function RequestsPage() {
       <h2 className="mt-6 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
         {t("activity")}
       </h2>
+      {doneOrders.length > 0 ? (
+        <ul className="mt-2 space-y-3">
+          {doneOrders.map((o) => (
+            <FoodOrderCard key={o.id} order={o} />
+          ))}
+        </ul>
+      ) : null}
       {history.length === 0 ? (
-        <p className="surface-card mt-2 p-3 sm:p-4 text-sm text-muted-foreground">{t("noResults")}</p>
+        doneOrders.length > 0 ? null : (
+          <p className="surface-card mt-2 p-3 text-sm text-muted-foreground sm:p-4">
+            {t("noResults")}
+          </p>
+        )
       ) : (
         <ul className="surface-card mt-2 divide-y divide-border">
           {history.map((r) => (

@@ -9,7 +9,6 @@ import {
   BookOpen,
   ConciergeBell,
   Users,
-  UtensilsCrossed,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,14 +23,13 @@ import { CurrencySwitcher } from "@/components/CurrencySwitcher";
 import { TaskBell } from "@/components/TaskBell";
 import { MobileMenu } from "@/components/MobileMenu";
 import { useRealtimeSync } from "@/lib/realtime";
-import { useIsPreviewHost } from "@/lib/preview-orders";
 import type { ReactNode } from "react";
 
 type NavItem = { to: string; label: string; icon: typeof BedDouble; permission?: PermissionKey };
 
 // Only routes that exist are listed. Hiding an entry is convenience only — the
 // routes and the database both re-check the permission.
-function desktopNavItems(previewHost: boolean): NavItem[] {
+function desktopNavItems(): NavItem[] {
   return [
     { to: "/home", label: t("navRooms"), icon: BedDouble },
     { to: "/requests", label: t("navRequests"), icon: Bell },
@@ -46,17 +44,6 @@ function desktopNavItems(previewHost: boolean): NavItem[] {
     { to: "/cash", label: t("navCash"), icon: Banknote, permission: "cash_reconcile" },
     // Catalogue is admin-only; `users_manage` is admin-only by definition.
     { to: "/catalogue", label: t("navCatalogue"), icon: BookOpen, permission: "users_manage" },
-    // Prototype board: preview hosts only, never on the published site.
-    ...(previewHost
-      ? [
-          {
-            to: "/food-orders",
-            label: t("navFoodOrders"),
-            icon: UtensilsCrossed,
-            permission: "requests_manage" as PermissionKey,
-          },
-        ]
-      : []),
   ];
 }
 
@@ -79,8 +66,7 @@ export function AppShell({ title, children }: { title?: string; children: ReactN
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const previewHost = useIsPreviewHost();
-  const desktopItems = desktopNavItems(previewHost).filter((i) => !i.permission || can(i.permission));
+  const desktopItems = desktopNavItems().filter((i) => !i.permission || can(i.permission));
   const mobileItems = mobileNavItems(can("activity_view"));
   // One shared live-updates channel for every authenticated screen.
   useRealtimeSync();

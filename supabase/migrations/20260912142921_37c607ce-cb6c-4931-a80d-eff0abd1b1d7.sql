@@ -1,0 +1,1 @@
+UPDATE public.preview_food_orders SET status = 'preparing', updated_at = now() WHERE status = 'ready';

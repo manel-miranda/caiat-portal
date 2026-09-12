@@ -29,6 +29,8 @@ export function buildTasks(input: {
   stays: StayRow[];
   requests: RequestRow[];
   pendingReservations: StayRow[];
+  /** Preview-only food orders still waiting to be accepted. */
+  pendingFoodOrders?: { id: string; room_label: string | null; guest_first_name: string | null }[];
   today?: string;
   now?: Date;
 }): TaskGroup[] {
@@ -59,8 +61,15 @@ export function buildTasks(input: {
       to: "/requests",
       overdue: Boolean(r.scheduled_at && new Date(r.scheduled_at).getTime() <= now.getTime()),
     }));
-  if (pendingRequests.length)
-    groups.push({ key: "requests", label: t("taskGuestRequests"), items: pendingRequests });
+  const foodTasks = (input.pendingFoodOrders ?? []).map((o) => ({
+    id: `food:${o.id}`,
+    title: t("typeFood"),
+    detail: [o.room_label, o.guest_first_name].filter(Boolean).join(" · "),
+    to: "/requests",
+  }));
+  const guestWork = [...pendingRequests, ...foodTasks];
+  if (guestWork.length)
+    groups.push({ key: "requests", label: t("taskGuestRequests"), items: guestWork });
 
   const operational = input.stays.filter(
     (s) => s.status === "active" && s.confirmation_status === "confirmed",
