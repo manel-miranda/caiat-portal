@@ -34,11 +34,12 @@ export function TaskBell() {
       ? (orders.data ?? []).filter((o) => o.status === "requested")
       : [],
   });
-  // Preview-only: ingredients that need buying, so Bernardo sees them here too.
-  const stock = useQuery({ ...inventoryStatusQuery, enabled: previewHost });
-  const lowStock = previewHost
-    ? (stock.data ?? []).filter((i) => i.active && i.status !== "good")
-    : [];
+  // Low stock alerts. On live hosts the seeded demo ingredients are excluded so
+  // the bell only surfaces real stock that needs buying.
+  const stock = useQuery(inventoryStatusQuery);
+  const lowStock = (stock.data ?? []).filter(
+    (i) => i.active && i.status !== "good" && (previewHost || !i.preview_only),
+  );
   if (lowStock.length > 0) {
     groups.push({
       key: "stock",
