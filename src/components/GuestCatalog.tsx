@@ -19,7 +19,12 @@ import {
 } from "lucide-react";
 import { mad } from "@/lib/format";
 import { t, type TranslationKey } from "@/lib/i18n";
-import { activityModeLabel, difficultyLabel, serviceLabel } from "@/lib/service-i18n";
+import {
+  activityModeLabel,
+  difficultyLabel,
+  serviceDescription,
+  serviceLabel,
+} from "@/lib/service-i18n";
 import type { GuestService } from "@/lib/guest";
 
 export type CatalogSelection =
@@ -239,9 +244,9 @@ export function GuestCatalog({
         >
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-semibold">{serviceLabel(s)}</span>
-            {s.short_description ? (
+            {serviceDescription(s) ? (
               <span className="mt-0.5 block text-xs text-muted-foreground">
-                {s.short_description}
+                {serviceDescription(s)}
               </span>
             ) : null}
             {metaText(s) ? (

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Banknote,
+  BookOpen,
   ConciergeBell,
   History,
   LayoutDashboard,
@@ -45,6 +46,7 @@ export function MobileMenu({ variant = "icon" }: { variant?: "icon" | "tab" }) {
     canDashboard ? null : ({ to: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard, permission: "activity_view" } as MenuLink),
     { to: "/cash", label: t("navCash"), icon: Banknote, permission: "cash_reconcile" },
     { to: "/activity", label: t("navActivity"), icon: History, permission: "activity_view" },
+    { to: "/catalogue", label: t("navCatalogue"), icon: BookOpen, permission: "users_manage" },
     { to: "/users", label: t("navUsers"), icon: UserCog, permission: "users_manage" },
   ] as (MenuLink | null)[]).filter((l): l is MenuLink => Boolean(l) && (!l!.permission || can(l!.permission)));
 

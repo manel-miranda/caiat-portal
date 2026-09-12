@@ -26,6 +26,10 @@ export type GuestService = {
   guest_category: string | null;
   guest_subcategory: string | null;
   short_description: string | null;
+  /** Custom items only; predefined items keep their built-in translations. */
+  name_i18n?: Record<string, string> | null;
+  description_i18n?: Record<string, string> | null;
+  recommended_ids?: string[];
   activity_mode: string | null;
   difficulty: string | null;
   featured: boolean;

@@ -499,13 +499,57 @@ export type Database = {
         }
         Relationships: []
       }
+      service_recommendations: {
+        Row: {
+          created_at: string
+          id: string
+          position: number
+          recommended_service_type_id: string
+          service_type_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          position?: number
+          recommended_service_type_id: string
+          service_type_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          position?: number
+          recommended_service_type_id?: string
+          service_type_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_recommendations_recommended_service_type_id_fkey"
+            columns: ["recommended_service_type_id"]
+            isOneToOne: false
+            referencedRelation: "service_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_recommendations_service_type_id_fkey"
+            columns: ["service_type_id"]
+            isOneToOne: false
+            referencedRelation: "service_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_types: {
         Row: {
           active: boolean
           activity_mode: string | null
           billable: boolean
           category: string
+          created_at: string
           default_price: number
+          description_i18n: Json
           difficulty: string | null
           display_order: number
           featured: boolean
@@ -515,17 +559,21 @@ export type Database = {
           id: string
           key: string
           label: string
+          name_i18n: Json
           requestable: boolean
           short_description: string | null
           signature: boolean
           sort_order: number
+          updated_at: string
         }
         Insert: {
           active?: boolean
           activity_mode?: string | null
           billable?: boolean
           category?: string
+          created_at?: string
           default_price?: number
+          description_i18n?: Json
           difficulty?: string | null
           display_order?: number
           featured?: boolean
@@ -535,17 +583,21 @@ export type Database = {
           id?: string
           key: string
           label: string
+          name_i18n?: Json
           requestable?: boolean
           short_description?: string | null
           signature?: boolean
           sort_order?: number
+          updated_at?: string
         }
         Update: {
           active?: boolean
           activity_mode?: string | null
           billable?: boolean
           category?: string
+          created_at?: string
           default_price?: number
+          description_i18n?: Json
           difficulty?: string | null
           display_order?: number
           featured?: boolean
@@ -555,10 +607,12 @@ export type Database = {
           id?: string
           key?: string
           label?: string
+          name_i18n?: Json
           requestable?: boolean
           short_description?: string | null
           signature?: boolean
           sort_order?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -687,6 +741,39 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      catalog_set_active: {
+        Args: { p_active: boolean; p_id: string }
+        Returns: string
+      }
+      catalog_set_recommendations: {
+        Args: { p_id: string; p_ids: string[] }
+        Returns: number
+      }
+      catalog_upsert_service: {
+        Args: {
+          p_active: boolean
+          p_activity_mode: string
+          p_billable: boolean
+          p_category: string
+          p_default_price: number
+          p_description_i18n?: Json
+          p_difficulty: string
+          p_display_order: number
+          p_featured: boolean
+          p_guest_category: string
+          p_guest_subcategory: string
+          p_guest_visible: boolean
+          p_id: string
+          p_key: string
+          p_label: string
+          p_name_i18n?: Json
+          p_requestable: boolean
+          p_short_description: string
+          p_signature: boolean
+          p_sort_order: number
+        }
+        Returns: string
+      }
       checkout_stay: {
         Args: { p_override?: boolean; p_stay_id: string }
         Returns: number

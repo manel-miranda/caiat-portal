@@ -6,6 +6,7 @@ import {
   LogOut,
   LayoutDashboard,
   Banknote,
+  BookOpen,
   ConciergeBell,
   Users,
 } from "lucide-react";
@@ -41,6 +42,8 @@ function desktopNavItems(): NavItem[] {
       permission: "activity_view",
     },
     { to: "/cash", label: t("navCash"), icon: Banknote, permission: "cash_reconcile" },
+    // Catalogue is admin-only; `users_manage` is admin-only by definition.
+    { to: "/catalogue", label: t("navCatalogue"), icon: BookOpen, permission: "users_manage" },
   ];
 }
 
