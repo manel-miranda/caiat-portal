@@ -12,6 +12,8 @@ import { statusLabel, t } from "@/lib/i18n";
 import { serviceLabel } from "@/lib/service-i18n";
 import { requestsQuery, serviceTypesQuery, type RequestRow } from "@/lib/queries";
 import { cancelRequest, completeRequest } from "@/lib/mutations";
+import { previewOrdersQuery, useIsPreviewHost } from "@/lib/preview-orders";
+import { FoodOrderCard } from "@/components/FoodOrderCard";
 import { SheetDialog } from "./stays.$id";
 
 export const Route = createFileRoute("/_authenticated/requests")({
@@ -28,10 +30,23 @@ function RequestsPage() {
   const services = useQuery(serviceTypesQuery);
   const [billing, setBilling] = useState<RequestRow | null>(null);
   const [busy, setBusy] = useState(false);
+  // Preview-only food orders share this inbox on preview hosts.
+  const previewHost = useIsPreviewHost();
+  const orders = useQuery({ ...previewOrdersQuery, enabled: previewHost });
+  const [filter, setFilter] = useState<"all" | "food" | "other">("all");
 
   const all = requests.data ?? [];
-  const pending = all.filter((r) => r.status === "pending");
-  const history = all.filter((r) => r.status !== "pending");
+  const showOther = filter !== "food";
+  const showFood = previewHost && filter !== "other";
+  const pending = showOther ? all.filter((r) => r.status === "pending") : [];
+  const history = showOther ? all.filter((r) => r.status !== "pending") : [];
+  const allOrders = showFood ? (orders.data ?? []) : [];
+  const openOrders = allOrders.filter(
+    (o) => o.status !== "delivered" && o.status !== "cancelled",
+  );
+  const doneOrders = allOrders.filter(
+    (o) => o.status === "delivered" || o.status === "cancelled",
+  );
 
   function serviceFor(r: RequestRow) {
     return (services.data ?? []).find((s) => s.id === r.service_type_id);
