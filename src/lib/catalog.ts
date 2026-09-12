@@ -21,6 +21,8 @@ export type CatalogItem = {
   requestable: boolean;
   active: boolean;
   guest_visible: boolean;
+  /** Preview prototype: admin switch for today's availability. */
+  available_today: boolean;
   /** Seeded demo/test item: never shown to real guests or on production hosts. */
   preview_only: boolean;
   category: string;
@@ -129,6 +131,14 @@ export async function saveCatalogItem(input: CatalogInput): Promise<string> {
 
 export async function setCatalogItemActive(id: string, active: boolean) {
   const { error } = await supabase.rpc("catalog_set_active", { p_id: id, p_active: active });
+  if (error) throw error;
+}
+
+export async function setCatalogItemAvailable(id: string, available: boolean) {
+  const { error } = await supabase.rpc("catalog_set_available", {
+    p_id: id,
+    p_available: available,
+  });
   if (error) throw error;
 }
 
