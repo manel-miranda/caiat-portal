@@ -21,6 +21,8 @@ export type CatalogItem = {
   requestable: boolean;
   active: boolean;
   guest_visible: boolean;
+  /** Seeded demo/test item: never shown to real guests or on production hosts. */
+  preview_only: boolean;
   category: string;
   guest_category: string | null;
   guest_subcategory: string | null;
@@ -135,5 +137,17 @@ export async function setCatalogRecommendations(id: string, ids: string[]) {
     p_id: id,
     p_ids: ids,
   });
+  if (error) throw error;
+}
+
+/**
+ * Reverse view: the items this one should be suggested after. The RPC adds or
+ * removes single rows on each source, keeping the 3-per-source cap intact.
+ */
+export async function setCatalogIncomingRecommendations(id: string, sourceIds: string[]) {
+  const { error } = await supabase.rpc("catalog_set_incoming_recommendations" as never, {
+    p_id: id,
+    p_source_ids: sourceIds,
+  } as never);
   if (error) throw error;
 }

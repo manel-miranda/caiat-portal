@@ -52,6 +52,8 @@ export type GuestPortalData = {
   outstanding: number;
   requests: GuestRequest[];
   services: GuestService[];
+  /** Preview-only demo dishes; rendered by the demo menu on preview hosts only. */
+  demo_services?: GuestService[];
 };
 
 export function guestPortalQuery(token: string) {
