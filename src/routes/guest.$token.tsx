@@ -8,11 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { DishViewer } from "@/components/DishViewer";
+import { GuestCatalog, type CatalogSelection } from "@/components/GuestCatalog";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { CurrencySwitcher } from "@/components/CurrencySwitcher";
 import { mad, nights, shortDate } from "@/lib/format";
 import { statusLabel, t } from "@/lib/i18n";
-import { serviceLabel } from "@/lib/service-i18n";
 import { guestCreateRequest, guestPortalQuery, type GuestPortalData } from "@/lib/guest";
 import { paymentStatusQuery, startCheckout, type PaymentConfig } from "@/lib/payments";
 
@@ -70,7 +70,7 @@ function Portal({ token, data }: { token: string; data: GuestPortalData }) {
   const queryClient = useQueryClient();
   const paymentStatus = useQuery(paymentStatusQuery());
   const payment: PaymentConfig = paymentStatus.data ?? { available: false };
-  const [serviceId, setServiceId] = useState<string>("");
+  const [selection, setSelection] = useState<CatalogSelection>(null);
   const [customLabel, setCustomLabel] = useState("");
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
@@ -118,13 +118,13 @@ function Portal({ token, data }: { token: string; data: GuestPortalData }) {
     try {
       await guestCreateRequest({
         token,
-        serviceTypeId: serviceId || null,
+        serviceTypeId: selection?.kind === "item" ? selection.service.id : null,
         customLabel: customLabel.slice(0, 80),
         notes: notes.slice(0, 500),
       });
       setCustomLabel("");
       setNotes("");
-      setServiceId("");
+      setSelection(null);
       await refresh();
       toast.success(t("requestSent"));
     } catch (e2) {
@@ -200,35 +200,16 @@ function Portal({ token, data }: { token: string; data: GuestPortalData }) {
           {t("requestSomething")}
         </h2>
         <form className="mt-3 space-y-4" onSubmit={submitRequest}>
-          <div className="grid grid-cols-2 gap-2">
-            {data.services.map((s) => (
-              <button
-                type="button"
-                key={s.id}
-                onClick={() => setServiceId(s.id)}
-                className={`rounded-xl border px-2 py-3 text-sm font-semibold ${
-                  serviceId === s.id
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-card"
-                }`}
-              >
-                {serviceLabel(s)}
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={() => setServiceId("")}
-              className={`rounded-xl border px-2 py-3 text-sm font-semibold ${
-                serviceId === ""
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card"
-              }`}
-            >
-              {t("otherRequest")}
-            </button>
-          </div>
+          <GuestCatalog
+            services={data.services}
+            selection={selection}
+            onSelect={(next) => {
+              setSelection(next);
+              if (next?.kind !== "else") setCustomLabel("");
+            }}
+          />
 
-          {serviceId === "" ? (
+          {selection?.kind === "else" ? (
             <div className="space-y-2">
               <Label htmlFor="what">{t("describeRequest")}</Label>
               <Input
@@ -242,20 +223,28 @@ function Portal({ token, data }: { token: string; data: GuestPortalData }) {
             </div>
           ) : null}
 
-          <div className="space-y-2">
-            <Label htmlFor="gnotes">{`${t("notes")} (${t("optional")})`}</Label>
-            <Textarea
-              id="gnotes"
-              rows={2}
-              maxLength={500}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-            />
-          </div>
+          {selection ? (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="gnotes">{`${t("notes")} (${t("optional")})`}</Label>
+                <Textarea
+                  id="gnotes"
+                  rows={2}
+                  maxLength={500}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                />
+              </div>
 
-          <Button type="submit" disabled={busy} className="tap-target w-full rounded-xl text-base">
-            <Send className="me-2 size-4" /> {t("sendRequest")}
-          </Button>
+              <Button
+                type="submit"
+                disabled={busy}
+                className="tap-target w-full rounded-xl text-base"
+              >
+                <Send className="me-2 size-4" /> {t("sendRequest")}
+              </Button>
+            </>
+          ) : null}
         </form>
       </section>
 

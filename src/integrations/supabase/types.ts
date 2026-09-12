@@ -169,6 +169,51 @@ export type Database = {
           },
         ]
       }
+      guest_catalog_events: {
+        Row: {
+          category: string | null
+          created_at: string
+          event_type: string
+          id: string
+          service_type_id: string | null
+          stay_id: string | null
+          subcategory: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          service_type_id?: string | null
+          stay_id?: string | null
+          subcategory?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          service_type_id?: string | null
+          stay_id?: string | null
+          subcategory?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_catalog_events_service_type_id_fkey"
+            columns: ["service_type_id"]
+            isOneToOne: false
+            referencedRelation: "service_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guest_catalog_events_stay_id_fkey"
+            columns: ["stay_id"]
+            isOneToOne: false
+            referencedRelation: "stays"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guests: {
         Row: {
           created_at: string
@@ -462,10 +507,17 @@ export type Database = {
           category: string
           default_price: number
           difficulty: string | null
+          display_order: number
+          featured: boolean
+          guest_category: string | null
+          guest_subcategory: string | null
+          guest_visible: boolean
           id: string
           key: string
           label: string
           requestable: boolean
+          short_description: string | null
+          signature: boolean
           sort_order: number
         }
         Insert: {
@@ -475,10 +527,17 @@ export type Database = {
           category?: string
           default_price?: number
           difficulty?: string | null
+          display_order?: number
+          featured?: boolean
+          guest_category?: string | null
+          guest_subcategory?: string | null
+          guest_visible?: boolean
           id?: string
           key: string
           label: string
           requestable?: boolean
+          short_description?: string | null
+          signature?: boolean
           sort_order?: number
         }
         Update: {
@@ -488,10 +547,17 @@ export type Database = {
           category?: string
           default_price?: number
           difficulty?: string | null
+          display_order?: number
+          featured?: boolean
+          guest_category?: string | null
+          guest_subcategory?: string | null
+          guest_visible?: boolean
           id?: string
           key?: string
           label?: string
           requestable?: boolean
+          short_description?: string | null
+          signature?: boolean
           sort_order?: number
         }
         Relationships: []
