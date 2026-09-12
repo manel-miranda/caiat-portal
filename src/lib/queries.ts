@@ -90,6 +90,8 @@ export const serviceTypesQuery = {
       .from("service_types")
       .select("*")
       .eq("active", true)
+      // Seeded demo dishes stay out of every operational screen.
+      .eq("preview_only", false)
       .order("sort_order");
     if (error) throw error;
     return data as unknown as ServiceType[];

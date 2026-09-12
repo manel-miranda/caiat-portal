@@ -2,22 +2,26 @@
  * PREVIEW-ONLY demo food menu with curated cross-sell.
  *
  * Rendered only on Lovable preview hosts, gated client-side after hydration
- * and defaulting to hidden. Nothing here touches the database: no requests,
- * charges or payments are created, and all dishes/prices come from the
- * frontend config in `src/lib/demo-menu.ts`.
+ * and defaulting to hidden. Nothing here creates requests, charges or
+ * payments: it is a preview-order experience only.
+ *
+ * Dishes come from the seeded `preview_only` catalogue rows when the guest
+ * portal returns them, so recommendations configured in the Catalogue manager
+ * (including real items such as Pampa) can be demonstrated. When those rows
+ * are unavailable the static config in `src/lib/demo-menu.ts` is used.
  */
 import { useEffect, useMemo, useState } from "react";
 import { Box, ChevronLeft, Plus, Check, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { mad } from "@/lib/format";
 import { t, useLang, type TranslationKey } from "@/lib/i18n";
+import { serviceDescription, serviceLabel } from "@/lib/service-i18n";
+import type { GuestService } from "@/lib/guest";
 import {
   DEMO_CATEGORY_ORDER,
   DEMO_MENU,
-  demoDish,
   isDemoPreviewHost,
   type DemoCategory,
-  type DemoDish,
 } from "@/lib/demo-menu";
 
 const CATEGORY_LABEL: Record<DemoCategory, TranslationKey> = {
@@ -27,7 +31,27 @@ const CATEGORY_LABEL: Record<DemoCategory, TranslationKey> = {
   desserts: "catDesserts",
 };
 
-export function DemoFoodMenu() {
+/** Flattened dish shape shared by the seeded rows and the static fallback. */
+type Dish = {
+  id: string;
+  name: string;
+  description: string;
+  priceMad: number;
+  category: DemoCategory;
+  signature: boolean;
+  recommendationIds: string[];
+  arAvailable: boolean;
+};
+
+function categoryOf(value: string | null | undefined): DemoCategory {
+  if (value === "signature" || value === "drinks" || value === "desserts") return value;
+  return "mains";
+}
+
+export function DemoFoodMenu(props: {
+  services?: GuestService[];
+  demoServices?: GuestService[];
+}) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -35,25 +59,73 @@ export function DemoFoodMenu() {
   }, []);
 
   if (!visible) return null;
-  return <DemoMenuBody />;
+  return <DemoMenuBody services={props.services ?? []} demoServices={props.demoServices ?? []} />;
 }
 
-function DemoMenuBody() {
+function DemoMenuBody({
+  services,
+  demoServices,
+}: {
+  services: GuestService[];
+  demoServices: GuestService[];
+}) {
   const { lang } = useLang();
-  const [selected, setSelected] = useState<DemoDish | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [addOns, setAddOns] = useState<string[]>([]);
   const [summary, setSummary] = useState(false);
+
+  // Every item a recommendation can point at: demo dishes plus real services.
+  const pool = useMemo(() => {
+    const map = new Map<string, Dish>();
+    for (const s of [...demoServices, ...services]) {
+      map.set(s.id, {
+        id: s.id,
+        name: serviceLabel(s),
+        description: serviceDescription(s) ?? "",
+        priceMad: Number(s.default_price ?? 0),
+        category: categoryOf(s.guest_subcategory),
+        signature: Boolean(s.signature),
+        recommendationIds: s.recommended_ids ?? [],
+        arAvailable: s.key === "demo_kefta_tajine",
+      });
+    }
+    return map;
+  }, [demoServices, services, lang]);
+
+  const dishes = useMemo<Dish[]>(() => {
+    if (demoServices.length > 0) {
+      return demoServices.map((s) => pool.get(s.id)!).filter(Boolean);
+    }
+    // Offline fallback: static preview config.
+    return DEMO_MENU.map((d) => ({
+      id: d.id,
+      name: d.name[lang],
+      description: d.description[lang],
+      priceMad: d.priceMad,
+      category: d.category,
+      signature: Boolean(d.signature),
+      recommendationIds: d.recommendationIds,
+      arAvailable: Boolean(d.arAvailable),
+    }));
+  }, [demoServices, pool, lang]);
+
+  const byId = useMemo(() => {
+    const map = new Map<string, Dish>(pool);
+    for (const d of dishes) map.set(d.id, d);
+    return map;
+  }, [pool, dishes]);
+
+  const selected = selectedId ? (byId.get(selectedId) ?? null) : null;
 
   const total = useMemo(() => {
     if (!selected) return 0;
     return (
-      selected.priceMad +
-      addOns.reduce((sum, id) => sum + (demoDish(id)?.priceMad ?? 0), 0)
+      selected.priceMad + addOns.reduce((sum, id) => sum + (byId.get(id)?.priceMad ?? 0), 0)
     );
-  }, [selected, addOns]);
+  }, [selected, addOns, byId]);
 
-  function choose(dish: DemoDish) {
-    setSelected(dish);
+  function choose(dish: Dish) {
+    setSelectedId(dish.id);
     setAddOns([]);
     setSummary(false);
   }
@@ -81,18 +153,15 @@ function DemoMenuBody() {
       {!selected ? (
         <div className="mt-3 space-y-4">
           {DEMO_CATEGORY_ORDER.map((cat) => {
-            const dishes = DEMO_MENU.filter((d) => d.category === cat);
-            if (dishes.length === 0) return null;
+            const list = dishes.filter((d) => d.category === cat);
+            if (list.length === 0) return null;
             return (
               <div key={cat} className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   {t(CATEGORY_LABEL[cat])}
                 </p>
-                {dishes.map((d) => (
-                  <div
-                    key={d.id}
-                    className="rounded-xl border border-border bg-card p-3"
-                  >
+                {list.map((d) => (
+                  <div key={d.id} className="rounded-xl border border-border bg-card p-3">
                     <button
                       type="button"
                       onClick={() => choose(d)}
@@ -104,9 +173,9 @@ function DemoMenuBody() {
                             <Sparkles className="size-3" /> {t("caiatSignature")}
                           </span>
                         ) : null}
-                        <span className="block text-sm font-semibold">{d.name[lang]}</span>
+                        <span className="block text-sm font-semibold">{d.name}</span>
                         <span className="mt-0.5 block text-xs text-muted-foreground">
-                          {d.description[lang]}
+                          {d.description}
                         </span>
                       </span>
                       <span className="shrink-0 text-sm font-semibold">{mad(d.priceMad)}</span>
@@ -131,7 +200,7 @@ function DemoMenuBody() {
           <button
             type="button"
             onClick={() => {
-              setSelected(null);
+              setSelectedId(null);
               setAddOns([]);
               setSummary(false);
             }}
@@ -145,7 +214,7 @@ function DemoMenuBody() {
               {t("demoMainItem")}
             </p>
             <div className="mt-0.5 flex items-start justify-between gap-3">
-              <p className="min-w-0 font-semibold">{selected.name[lang]}</p>
+              <p className="min-w-0 font-semibold">{selected.name}</p>
               <p className="shrink-0 font-semibold">{mad(selected.priceMad)}</p>
             </div>
           </div>
@@ -155,7 +224,7 @@ function DemoMenuBody() {
               <p className="text-sm font-semibold">{t("recommendedWith")}</p>
               <p className="text-xs text-muted-foreground">{t("completeMeal")}</p>
               {selected.recommendationIds.slice(0, 3).map((id) => {
-                const rec = demoDish(id);
+                const rec = byId.get(id);
                 if (!rec) return null;
                 const on = addOns.includes(id);
                 return (
@@ -168,7 +237,7 @@ function DemoMenuBody() {
                     }`}
                   >
                     <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-semibold">{rec.name[lang]}</span>
+                      <span className="block text-sm font-semibold">{rec.name}</span>
                       <span className="block text-xs text-muted-foreground">
                         {on ? t("removeItem") : t("addForPrice", { price: mad(rec.priceMad) })}
                       </span>
@@ -202,7 +271,7 @@ function DemoMenuBody() {
             <div className="rounded-xl border border-border bg-muted/40 p-3 text-sm">
               <p className="font-semibold">{t("demoSummaryTitle")}</p>
               <div className="mt-2 flex items-start justify-between gap-3">
-                <span className="min-w-0">{selected.name[lang]}</span>
+                <span className="min-w-0">{selected.name}</span>
                 <span className="shrink-0">{mad(selected.priceMad)}</span>
               </div>
               {addOns.length > 0 ? (
@@ -211,11 +280,11 @@ function DemoMenuBody() {
                     {t("demoAddOns")}
                   </p>
                   {addOns.map((id) => {
-                    const rec = demoDish(id);
+                    const rec = byId.get(id);
                     if (!rec) return null;
                     return (
                       <div key={id} className="flex items-start justify-between gap-3">
-                        <span className="min-w-0">{rec.name[lang]}</span>
+                        <span className="min-w-0">{rec.name}</span>
                         <span className="shrink-0">{mad(rec.priceMad)}</span>
                       </div>
                     );
