@@ -187,7 +187,7 @@ function DemoMenuBody({
     if (lines.length === 0 || !token) return;
     const payload = lines.filter((l) => l.dish.orderable);
     if (payload.length === 0) {
-      toast.error(t("genericError"));
+      toast.error(t("linkInactive"));
       return;
     }
     setBusy(true);
@@ -417,7 +417,7 @@ function DishRow({
   qty: number;
   onAdd: () => void;
   onRemove: () => void;
-  onView3d?: () => void;
+  onView3d?: (() => void) | undefined;
 }) {
   return (
     <div className="rounded-xl border border-border bg-card p-3">
