@@ -18,6 +18,7 @@ import {
   saveCatalogItem,
   setCatalogItemActive,
   setCatalogRecommendations,
+  setCatalogIncomingRecommendations,
   type CatalogItem,
   type LocalizedText,
 } from "@/lib/catalog";
@@ -66,6 +67,8 @@ type Draft = {
   names: LocalizedText;
   descriptions: LocalizedText;
   recommended: string[];
+  /** Items this one should be suggested after (incoming relationships). */
+  recommendedIn: string[];
 };
 
 function emptyDraft(): Draft {
@@ -91,10 +94,11 @@ function emptyDraft(): Draft {
     names: {},
     descriptions: {},
     recommended: [],
+    recommendedIn: [],
   };
 }
 
-function toDraft(item: CatalogItem, recommended: string[]): Draft {
+function toDraft(item: CatalogItem, recommended: string[], recommendedIn: string[]): Draft {
   return {
     id: item.id,
     key: item.key,
@@ -117,6 +121,7 @@ function toDraft(item: CatalogItem, recommended: string[]): Draft {
     names: (item.name_i18n ?? {}) as LocalizedText,
     descriptions: (item.description_i18n ?? {}) as LocalizedText,
     recommended,
+    recommendedIn,
   };
 }
 
@@ -130,6 +135,7 @@ function CataloguePage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<"all" | "active" | "inactive">("all");
   const [category, setCategory] = useState("");
+  const [kind, setKind] = useState<"all" | "real" | "demo">("all");
   const [sortBy, setSortBy] = useState<"order" | "name" | "price">("order");
   const [draft, setDraft] = useState<Draft | null>(null);
   const [busy, setBusy] = useState(false);
@@ -149,6 +155,8 @@ function CataloguePage() {
       if (status === "active" && !i.active) return false;
       if (status === "inactive" && i.active) return false;
       if (category && (i.category ?? "other") !== category) return false;
+      if (kind === "real" && i.preview_only) return false;
+      if (kind === "demo" && !i.preview_only) return false;
       if (!term) return true;
       return (
         i.label.toLowerCase().includes(term) ||
@@ -217,6 +225,7 @@ function CataloguePage() {
         descriptionI18n: cleanText(draft.descriptions),
       });
       await setCatalogRecommendations(id, draft.recommended.slice(0, 3));
+      await setCatalogIncomingRecommendations(id, draft.recommendedIn);
       await refresh();
       toast.success(t("catalogueSaved"));
       setDraft(null);
@@ -316,6 +325,11 @@ function CataloguePage() {
                     {item.signature ? <Tag>{t("catalogueSignature")}</Tag> : null}
                     {item.requestable ? <Tag>{t("catalogueRequestable")}</Tag> : null}
                     {item.guest_visible ? <Tag>{t("catalogueGuestVisible")}</Tag> : null}
+                    {item.preview_only ? (
+                      <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold uppercase text-amber-700 dark:text-amber-400">
+                        {t("catalogueDemoBadge")}
+                      </span>
+                    ) : null}
                   </div>
                 </div>
                 <div className="flex shrink-0 gap-2">
@@ -324,7 +338,11 @@ function CataloguePage() {
                     variant="outline"
                     className="rounded-xl"
                     disabled={busy}
-                    onClick={() => setDraft(toDraft(item, recMap.get(item.id) ?? []))}
+                    onClick={() =>
+                      setDraft(
+                        toDraft(item, recMap.get(item.id) ?? [], incomingMap.get(item.id) ?? []),
+                      )
+                    }
                   >
                     {t("catalogueEdit")}
                   </Button>
@@ -488,6 +506,41 @@ function CataloguePage() {
                 </div>
               </div>
 
+              {draft.id && all.find((i) => i.id === draft.id)?.preview_only ? (
+                <p className="rounded-xl bg-amber-500/10 p-2 text-xs font-medium text-amber-700 dark:text-amber-400">
+                  {t("catalogueDemoHint")}
+                </p>
+              ) : null}
+
+              <div>
+                <p className="text-sm font-semibold">{t("catalogueRecommendedIn")}</p>
+                <p className="text-xs text-muted-foreground">{t("catalogueRecommendedInHint")}</p>
+                <div className="mt-2 max-h-48 overflow-y-auto rounded-xl border border-border">
+                  {all
+                    .filter((i) => i.id !== draft.id && i.active)
+                    .map((i) => (
+                      <label
+                        key={i.id}
+                        className="flex min-h-11 items-center gap-2 border-b border-border px-3 text-sm last:border-b-0"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={draft.recommendedIn.includes(i.id)}
+                          onChange={() => toggleRecommendedIn(i.id)}
+                        />
+                        <span className="min-w-0 truncate">
+                          {serviceLabel(i)}
+                          {i.preview_only ? (
+                            <span className="ms-1 text-[11px] uppercase text-amber-700 dark:text-amber-400">
+                              {t("catalogueDemoBadge")}
+                            </span>
+                          ) : null}
+                        </span>
+                      </label>
+                    ))}
+                </div>
+              </div>
+
               <div>
                 <p className="text-sm font-semibold">{t("catalogueRecommended")}</p>
                 <p className="text-xs text-muted-foreground">{t("catalogueRecommendedHint")}</p>
@@ -504,7 +557,14 @@ function CataloguePage() {
                           checked={draft.recommended.includes(i.id)}
                           onChange={() => toggleRecommended(i.id)}
                         />
-                        <span className="min-w-0 truncate">{serviceLabel(i)}</span>
+                        <span className="min-w-0 truncate">
+                          {serviceLabel(i)}
+                          {i.preview_only ? (
+                            <span className="ms-1 text-[11px] uppercase text-amber-700 dark:text-amber-400">
+                              {t("catalogueDemoBadge")}
+                            </span>
+                          ) : null}
+                        </span>
                       </label>
                     ))}
                 </div>
