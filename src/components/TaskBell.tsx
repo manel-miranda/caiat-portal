@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { useAuth } from "@/lib/auth";
 import { t } from "@/lib/i18n";
 import { activeStaysQuery, pendingReservationsQuery, requestsQuery } from "@/lib/queries";
-import { previewOrdersQuery, useIsPreviewHost } from "@/lib/preview-orders";
+import { previewOrdersQuery } from "@/lib/preview-orders";
 import { buildTasks, taskCount } from "@/lib/tasks";
 import { inventoryStatusQuery, qty } from "@/lib/inventory";
 
