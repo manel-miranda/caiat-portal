@@ -363,7 +363,6 @@ function DemoMenuBody({
               >
                 {t("clearCart")}
               </Button>
-              <p className="text-xs text-muted-foreground">{t("demoNoCharge")}</p>
             </>
           )}
         </div>
