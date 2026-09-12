@@ -169,8 +169,19 @@ function RequestsPage() {
       <h2 className="mt-6 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
         {t("activity")}
       </h2>
+      {doneOrders.length > 0 ? (
+        <ul className="mt-2 space-y-3">
+          {doneOrders.map((o) => (
+            <FoodOrderCard key={o.id} order={o} />
+          ))}
+        </ul>
+      ) : null}
       {history.length === 0 ? (
-        <p className="surface-card mt-2 p-3 sm:p-4 text-sm text-muted-foreground">{t("noResults")}</p>
+        doneOrders.length > 0 ? null : (
+          <p className="surface-card mt-2 p-3 text-sm text-muted-foreground sm:p-4">
+            {t("noResults")}
+          </p>
+        )
       ) : (
         <ul className="surface-card mt-2 divide-y divide-border">
           {history.map((r) => (

@@ -46,17 +46,6 @@ function desktopNavItems(previewHost: boolean): NavItem[] {
     { to: "/cash", label: t("navCash"), icon: Banknote, permission: "cash_reconcile" },
     // Catalogue is admin-only; `users_manage` is admin-only by definition.
     { to: "/catalogue", label: t("navCatalogue"), icon: BookOpen, permission: "users_manage" },
-    // Prototype board: preview hosts only, never on the published site.
-    ...(previewHost
-      ? [
-          {
-            to: "/food-orders",
-            label: t("navFoodOrders"),
-            icon: UtensilsCrossed,
-            permission: "requests_manage" as PermissionKey,
-          },
-        ]
-      : []),
   ];
 }
 
