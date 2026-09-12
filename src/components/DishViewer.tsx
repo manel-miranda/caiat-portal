@@ -43,7 +43,7 @@ export function DishViewer() {
   }
 
   return (
-    <section className="surface-card mt-4 p-3 sm:p-4">
+    <section id="caiat-3d-demo" className="surface-card mt-4 p-3 sm:p-4">
       <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
         {t("menuSection")}
       </h2>
