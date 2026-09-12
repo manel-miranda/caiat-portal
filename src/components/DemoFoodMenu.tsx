@@ -98,6 +98,8 @@ function DemoMenuBody({
   const [notes, setNotes] = useState("");
   const [timing, setTiming] = useState<PreviewTiming>("asap");
   const [busy, setBusy] = useState(false);
+  /** Reference of the last submitted preview order, shown as a confirmation. */
+  const [confirmed, setConfirmed] = useState<string | null>(null);
 
   // Every item a recommendation can point at: demo dishes plus real services.
   const pool = useMemo(() => {
