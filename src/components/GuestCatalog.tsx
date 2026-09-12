@@ -18,7 +18,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { mad } from "@/lib/format";
-import { t } from "@/lib/i18n";
+import { t, type TranslationKey } from "@/lib/i18n";
 import { activityModeLabel, difficultyLabel, serviceLabel } from "@/lib/service-i18n";
 import type { GuestService } from "@/lib/guest";
 
@@ -27,7 +27,7 @@ export type CatalogSelection =
   | { kind: "else" }
   | null;
 
-type CategoryDef = { key: string; icon: LucideIcon; labelKey: string; subs: string[] };
+type CategoryDef = { key: string; icon: LucideIcon; labelKey: TranslationKey; subs: string[] };
 
 const CATEGORIES: CategoryDef[] = [
   {
@@ -48,7 +48,7 @@ const CATEGORIES: CategoryDef[] = [
   { key: "else", icon: MessageCircle, labelKey: "catElse", subs: [] },
 ];
 
-const SUB_LABEL: Record<string, string> = {
+const SUB_LABEL: Record<string, TranslationKey> = {
   breakfast: "subBreakfast",
   meals: "subMeals",
   room_service: "subRoomService",
