@@ -1,22 +1,33 @@
 /**
- * PREVIEW-ONLY demo food menu with curated cross-sell.
+ * PREVIEW-ONLY demo food ordering prototype with curated cross-sell.
  *
- * Rendered only on Lovable preview hosts, gated client-side after hydration
- * and defaulting to hidden. Nothing here creates requests, charges or
- * payments: it is a preview-order experience only.
+ * Rendered only on Lovable preview hosts, gated client-side after hydration and
+ * defaulting to hidden. Submitting creates a row in the dedicated
+ * `preview_food_orders` tables only: never a request, charge, payment or
+ * PayPal session.
  *
- * Dishes come from the seeded `preview_only` catalogue rows when the guest
- * portal returns them, so recommendations configured in the Catalogue manager
- * (including real items such as Pampa) can be demonstrated. When those rows
- * are unavailable the static config in `src/lib/demo-menu.ts` is used.
+ * Dishes come from the seeded `preview_only` catalogue rows returned by the
+ * guest portal, so recommendations configured in the Catalogue manager
+ * (including real items such as Pampa) can be demonstrated. The static config
+ * in `src/lib/demo-menu.ts` is only a display fallback when those rows are
+ * unavailable, and cannot be ordered.
  */
 import { useEffect, useMemo, useState } from "react";
-import { Box, ChevronLeft, Plus, Check, Sparkles } from "lucide-react";
+import { toast } from "sonner";
+import { Box, ChevronLeft, Plus, Minus, Sparkles, ShoppingBag, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { mad } from "@/lib/format";
 import { t, useLang, type TranslationKey } from "@/lib/i18n";
 import { serviceDescription, serviceLabel } from "@/lib/service-i18n";
 import type { GuestService } from "@/lib/guest";
+import {
+  PREVIEW_TIMINGS,
+  PREVIEW_TIMING_LABEL,
+  submitPreviewOrder,
+  type PreviewTiming,
+} from "@/lib/preview-orders";
 import {
   DEMO_CATEGORY_ORDER,
   DEMO_MENU,
@@ -41,6 +52,9 @@ type Dish = {
   signature: boolean;
   recommendationIds: string[];
   arAvailable: boolean;
+  available: boolean;
+  /** Only database-backed dishes can be ordered in the prototype. */
+  orderable: boolean;
 };
 
 function categoryOf(value: string | null | undefined): DemoCategory {
@@ -49,6 +63,7 @@ function categoryOf(value: string | null | undefined): DemoCategory {
 }
 
 export function DemoFoodMenu(props: {
+  token?: string;
   services?: GuestService[];
   demoServices?: GuestService[];
 }) {
@@ -59,20 +74,30 @@ export function DemoFoodMenu(props: {
   }, []);
 
   if (!visible) return null;
-  return <DemoMenuBody services={props.services ?? []} demoServices={props.demoServices ?? []} />;
+  return (
+    <DemoMenuBody
+      token={props.token ?? ""}
+      services={props.services ?? []}
+      demoServices={props.demoServices ?? []}
+    />
+  );
 }
 
 function DemoMenuBody({
+  token,
   services,
   demoServices,
 }: {
+  token: string;
   services: GuestService[];
   demoServices: GuestService[];
 }) {
   const { lang } = useLang();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [addOns, setAddOns] = useState<string[]>([]);
-  const [summary, setSummary] = useState(false);
+  const [cart, setCart] = useState<Record<string, number>>({});
+  const [step, setStep] = useState<"menu" | "review">("menu");
+  const [notes, setNotes] = useState("");
+  const [timing, setTiming] = useState<PreviewTiming>("asap");
+  const [busy, setBusy] = useState(false);
 
   // Every item a recommendation can point at: demo dishes plus real services.
   const pool = useMemo(() => {
@@ -87,6 +112,8 @@ function DemoMenuBody({
         signature: Boolean(s.signature),
         recommendationIds: s.recommended_ids ?? [],
         arAvailable: s.key === "demo_kefta_tajine",
+        available: s.available_today !== false,
+        orderable: true,
       });
     }
     return map;
@@ -96,7 +123,7 @@ function DemoMenuBody({
     if (demoServices.length > 0) {
       return demoServices.map((s) => pool.get(s.id)!).filter(Boolean);
     }
-    // Offline fallback: static preview config.
+    // Offline fallback: static preview config, display only.
     return DEMO_MENU.map((d) => ({
       id: d.id,
       name: d.name[lang],
@@ -106,6 +133,8 @@ function DemoMenuBody({
       signature: Boolean(d.signature),
       recommendationIds: d.recommendationIds,
       arAvailable: Boolean(d.arAvailable),
+      available: true,
+      orderable: false,
     }));
   }, [demoServices, pool, lang]);
 
@@ -115,27 +144,70 @@ function DemoMenuBody({
     return map;
   }, [pool, dishes]);
 
-  const selected = selectedId ? (byId.get(selectedId) ?? null) : null;
+  const lines = useMemo(
+    () =>
+      Object.entries(cart)
+        .map(([id, qty]) => ({ dish: byId.get(id), qty }))
+        .filter((l): l is { dish: Dish; qty: number } => Boolean(l.dish) && l.qty > 0),
+    [cart, byId],
+  );
 
-  const total = useMemo(() => {
-    if (!selected) return 0;
-    return (
-      selected.priceMad + addOns.reduce((sum, id) => sum + (byId.get(id)?.priceMad ?? 0), 0)
-    );
-  }, [selected, addOns, byId]);
+  const count = lines.reduce((n, l) => n + l.qty, 0);
+  const subtotal = lines.reduce((sum, l) => sum + l.dish.priceMad * l.qty, 0);
 
-  function choose(dish: Dish) {
-    setSelectedId(dish.id);
-    setAddOns([]);
-    setSummary(false);
-  }
+  /** Curated cross-sells for what is currently in the cart, minus unavailable. */
+  const recommendations = useMemo(() => {
+    const out: Dish[] = [];
+    for (const line of lines) {
+      for (const id of line.dish.recommendationIds) {
+        const rec = byId.get(id);
+        if (!rec || !rec.available || cart[id] || out.some((d) => d.id === id)) continue;
+        out.push(rec);
+      }
+    }
+    return out.slice(0, 3);
+  }, [lines, byId, cart]);
 
-  function toggle(id: string) {
-    setAddOns((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  function add(dish: Dish, delta = 1) {
+    if (!dish.available) return;
+    setCart((prev) => {
+      const next = { ...prev };
+      const qty = (next[dish.id] ?? 0) + delta;
+      if (qty <= 0) delete next[dish.id];
+      else next[dish.id] = Math.min(qty, 20);
+      return next;
+    });
   }
 
   function viewIn3d() {
     document.getElementById("caiat-3d-demo")?.scrollIntoView({ behavior: "smooth" });
+  }
+
+  async function send() {
+    if (lines.length === 0 || !token) return;
+    const payload = lines.filter((l) => l.dish.orderable);
+    if (payload.length === 0) {
+      toast.error(t("genericError"));
+      return;
+    }
+    setBusy(true);
+    try {
+      await submitPreviewOrder({
+        token,
+        items: payload.map((l) => ({ service_type_id: l.dish.id, quantity: l.qty })),
+        notes: notes.slice(0, 500),
+        timing,
+      });
+      setCart({});
+      setNotes("");
+      setTiming("asap");
+      setStep("menu");
+      toast.success(t("previewOrderSent"));
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -148,9 +220,9 @@ function DemoMenuBody({
           {t("demoMenuBadge")}
         </span>
       </div>
-      <p className="mt-1 text-xs text-muted-foreground">{t("demoMenuNote")}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{t("previewOrderBanner")}</p>
 
-      {!selected ? (
+      {step === "menu" ? (
         <div className="mt-3 space-y-4">
           {DEMO_CATEGORY_ORDER.map((cat) => {
             const list = dishes.filter((d) => d.category === cat);
@@ -161,152 +233,234 @@ function DemoMenuBody({
                   {t(CATEGORY_LABEL[cat])}
                 </p>
                 {list.map((d) => (
-                  <div key={d.id} className="rounded-xl border border-border bg-card p-3">
-                    <button
-                      type="button"
-                      onClick={() => choose(d)}
-                      className="tap-target flex w-full items-start gap-3 text-start"
-                    >
-                      <span className="min-w-0 flex-1">
-                        {d.signature ? (
-                          <span className="mb-1 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
-                            <Sparkles className="size-3" /> {t("caiatSignature")}
-                          </span>
-                        ) : null}
-                        <span className="block text-sm font-semibold">{d.name}</span>
-                        <span className="mt-0.5 block text-xs text-muted-foreground">
-                          {d.description}
-                        </span>
-                      </span>
-                      <span className="shrink-0 text-sm font-semibold">{mad(d.priceMad)}</span>
-                    </button>
-                    {d.arAvailable ? (
-                      <button
-                        type="button"
-                        onClick={viewIn3d}
-                        className="tap-target mt-1 inline-flex items-center gap-1.5 text-xs font-semibold text-primary"
-                      >
-                        <Box className="size-3.5" /> {t("viewIn3d")}
-                      </button>
-                    ) : null}
-                  </div>
+                  <DishRow
+                    key={d.id}
+                    dish={d}
+                    qty={cart[d.id] ?? 0}
+                    onAdd={() => add(d, 1)}
+                    onRemove={() => add(d, -1)}
+                    onView3d={d.arAvailable ? viewIn3d : undefined}
+                  />
                 ))}
               </div>
             );
           })}
+
+          {recommendations.length > 0 ? (
+            <div className="space-y-2 rounded-xl border border-primary/40 bg-primary/5 p-3">
+              <p className="text-sm font-semibold">{t("recommendedWith")}</p>
+              <p className="text-xs text-muted-foreground">{t("completeMeal")}</p>
+              {recommendations.map((rec) => (
+                <button
+                  key={rec.id}
+                  type="button"
+                  onClick={() => add(rec, 1)}
+                  className="tap-target flex w-full items-center gap-3 rounded-xl border border-border bg-card px-3 py-3 text-start"
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-semibold">{rec.name}</span>
+                    <span className="block text-xs text-muted-foreground">
+                      {t("addForPrice", { price: mad(rec.priceMad) })}
+                    </span>
+                  </span>
+                  <Plus className="size-4 shrink-0 text-primary" />
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
       ) : (
         <div className="mt-3 space-y-3">
           <button
             type="button"
-            onClick={() => {
-              setSelectedId(null);
-              setAddOns([]);
-              setSummary(false);
-            }}
+            onClick={() => setStep("menu")}
             className="tap-target -ms-2 flex items-center gap-1 rounded-lg px-2 py-2 text-sm font-semibold text-muted-foreground"
           >
-            <ChevronLeft className="size-4 rtl:rotate-180" /> {t("back")}
+            <ChevronLeft className="size-4 rtl:rotate-180" /> {t("backToMenu")}
           </button>
 
-          <div className="rounded-xl border border-primary bg-primary/5 p-3">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">
-              {t("demoMainItem")}
-            </p>
-            <div className="mt-0.5 flex items-start justify-between gap-3">
-              <p className="min-w-0 font-semibold">{selected.name}</p>
-              <p className="shrink-0 font-semibold">{mad(selected.priceMad)}</p>
-            </div>
-          </div>
-
-          {selected.recommendationIds.length > 0 ? (
-            <div className="space-y-2">
-              <p className="text-sm font-semibold">{t("recommendedWith")}</p>
-              <p className="text-xs text-muted-foreground">{t("completeMeal")}</p>
-              {selected.recommendationIds.slice(0, 3).map((id) => {
-                const rec = byId.get(id);
-                if (!rec) return null;
-                const on = addOns.includes(id);
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => toggle(id)}
-                    className={`tap-target flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-start ${
-                      on ? "border-primary bg-primary/5" : "border-border bg-card"
-                    }`}
-                  >
+          {lines.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t("cartEmpty")}</p>
+          ) : (
+            <>
+              <ul className="divide-y divide-border rounded-xl border border-border">
+                {lines.map(({ dish, qty }) => (
+                  <li key={dish.id} className="flex items-center gap-2 p-3">
                     <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-semibold">{rec.name}</span>
+                      <span className="block text-sm font-semibold">{dish.name}</span>
                       <span className="block text-xs text-muted-foreground">
-                        {on ? t("removeItem") : t("addForPrice", { price: mad(rec.priceMad) })}
+                        {qty} × {mad(dish.priceMad)}
                       </span>
                     </span>
-                    {on ? (
-                      <Check className="size-4 shrink-0 text-primary" />
-                    ) : (
-                      <Plus className="size-4 shrink-0 text-muted-foreground" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          ) : null}
+                    <Stepper
+                      qty={qty}
+                      onAdd={() => add(dish, 1)}
+                      onRemove={() => add(dish, -1)}
+                    />
+                    <span className="w-20 shrink-0 text-end text-sm font-semibold">
+                      {mad(dish.priceMad * qty)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
 
-          <div className="flex items-center justify-between gap-3 border-t border-border pt-3 text-sm">
-            <span className="font-semibold">{t("demoTotal")}</span>
-            <span className="font-semibold">{mad(total)}</span>
-          </div>
-
-          <Button
-            variant="outline"
-            className="tap-target w-full rounded-xl"
-            onClick={() => setSummary(true)}
-          >
-            {t("previewOrder")}
-          </Button>
-          <p className="text-xs text-muted-foreground">{t("demoNoCharge")}</p>
-
-          {summary ? (
-            <div className="rounded-xl border border-border bg-muted/40 p-3 text-sm">
-              <p className="font-semibold">{t("demoSummaryTitle")}</p>
-              <div className="mt-2 flex items-start justify-between gap-3">
-                <span className="min-w-0">{selected.name}</span>
-                <span className="shrink-0">{mad(selected.priceMad)}</span>
+              <div className="space-y-2">
+                <Label htmlFor="fo-timing">{t("requestedTiming")}</Label>
+                <select
+                  id="fo-timing"
+                  value={timing}
+                  onChange={(e) => setTiming(e.target.value as PreviewTiming)}
+                  className="min-h-11 w-full rounded-xl border border-border bg-card px-2 text-sm"
+                >
+                  {PREVIEW_TIMINGS.map((v) => (
+                    <option key={v} value={v}>
+                      {t(PREVIEW_TIMING_LABEL[v])}
+                    </option>
+                  ))}
+                </select>
               </div>
-              {addOns.length > 0 ? (
-                <>
-                  <p className="mt-2 text-xs uppercase tracking-wide text-muted-foreground">
-                    {t("demoAddOns")}
-                  </p>
-                  {addOns.map((id) => {
-                    const rec = byId.get(id);
-                    if (!rec) return null;
-                    return (
-                      <div key={id} className="flex items-start justify-between gap-3">
-                        <span className="min-w-0">{rec.name}</span>
-                        <span className="shrink-0">{mad(rec.priceMad)}</span>
-                      </div>
-                    );
-                  })}
-                </>
-              ) : null}
-              <div className="mt-2 flex items-center justify-between gap-3 border-t border-border pt-2 font-semibold">
-                <span>{t("demoTotal")}</span>
-                <span>{mad(total)}</span>
+
+              <div className="space-y-2">
+                <Label htmlFor="fo-notes">{`${t("orderNotes")} (${t("optional")})`}</Label>
+                <Textarea
+                  id="fo-notes"
+                  rows={2}
+                  maxLength={500}
+                  placeholder={t("orderNotesHint")}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                />
               </div>
-              <p className="mt-2 text-xs text-muted-foreground">{t("demoNoCharge")}</p>
+
+              <div className="flex items-center justify-between gap-3 border-t border-border pt-3 text-sm font-semibold">
+                <span>{t("subtotal")}</span>
+                <span>{mad(subtotal)}</span>
+              </div>
+
+              <Button
+                className="tap-target w-full rounded-xl"
+                disabled={busy}
+                onClick={() => void send()}
+              >
+                <Send className="me-2 size-4" /> {t("sendPreviewOrder")}
+              </Button>
               <Button
                 variant="ghost"
-                className="tap-target mt-2 w-full rounded-xl"
-                onClick={() => setSummary(false)}
+                className="tap-target w-full rounded-xl"
+                onClick={() => setCart({})}
               >
-                {t("close")}
+                {t("clearCart")}
               </Button>
-            </div>
-          ) : null}
+              <p className="text-xs text-muted-foreground">{t("demoNoCharge")}</p>
+            </>
+          )}
         </div>
       )}
+
+      {count > 0 && step === "menu" ? (
+        <div className="sticky bottom-2 mt-4">
+          <Button
+            className="tap-target flex w-full items-center justify-between rounded-xl"
+            onClick={() => setStep("review")}
+          >
+            <span className="flex items-center gap-2">
+              <ShoppingBag className="size-4" /> {t("cartCount", { count: String(count) })}
+            </span>
+            <span>{mad(subtotal)}</span>
+          </Button>
+        </div>
+      ) : null}
     </section>
+  );
+}
+
+function Stepper({
+  qty,
+  onAdd,
+  onRemove,
+}: {
+  qty: number;
+  onAdd: () => void;
+  onRemove: () => void;
+}) {
+  return (
+    <div className="flex shrink-0 items-center gap-1">
+      <button
+        type="button"
+        aria-label="-"
+        onClick={onRemove}
+        className="flex size-11 items-center justify-center rounded-xl border border-border"
+      >
+        <Minus className="size-4" />
+      </button>
+      <span className="w-6 text-center text-sm font-semibold">{qty}</span>
+      <button
+        type="button"
+        aria-label="+"
+        onClick={onAdd}
+        className="flex size-11 items-center justify-center rounded-xl border border-border"
+      >
+        <Plus className="size-4" />
+      </button>
+    </div>
+  );
+}
+
+function DishRow({
+  dish,
+  qty,
+  onAdd,
+  onRemove,
+  onView3d,
+}: {
+  dish: Dish;
+  qty: number;
+  onAdd: () => void;
+  onRemove: () => void;
+  onView3d?: () => void;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-3">
+      <div className="flex items-start gap-3">
+        <div className="min-w-0 flex-1">
+          {dish.signature ? (
+            <span className="mb-1 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+              <Sparkles className="size-3" /> {t("caiatSignature")}
+            </span>
+          ) : null}
+          <p className="text-sm font-semibold">{dish.name}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{dish.description}</p>
+          <p className="mt-1 text-sm font-semibold">{mad(dish.priceMad)}</p>
+          {!dish.available ? (
+            <p className="mt-1 text-xs font-semibold text-muted-foreground">
+              {t("unavailableToday")}
+            </p>
+          ) : null}
+        </div>
+        {dish.available ? (
+          qty > 0 ? (
+            <Stepper qty={qty} onAdd={onAdd} onRemove={onRemove} />
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              className="tap-target shrink-0 rounded-xl"
+              onClick={onAdd}
+            >
+              <Plus className="me-1 size-4" /> {t("addToCart")}
+            </Button>
+          )
+        ) : null}
+      </div>
+      {onView3d ? (
+        <button
+          type="button"
+          onClick={onView3d}
+          className="tap-target mt-1 inline-flex items-center gap-1.5 text-xs font-semibold text-primary"
+        >
+          <Box className="size-3.5" /> {t("viewIn3d")}
+        </button>
+      ) : null}
+    </div>
   );
 }
