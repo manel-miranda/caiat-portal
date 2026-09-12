@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { useAuth } from "@/lib/auth";
 import { t } from "@/lib/i18n";
 import { activeStaysQuery, pendingReservationsQuery, requestsQuery } from "@/lib/queries";
-import { previewOrdersQuery, useIsPreviewHost } from "@/lib/preview-orders";
+import { previewOrdersQuery } from "@/lib/preview-orders";
 import { buildTasks, taskCount } from "@/lib/tasks";
 import { inventoryStatusQuery, qty } from "@/lib/inventory";
 
@@ -22,24 +22,22 @@ export function TaskBell() {
   const stays = useQuery(activeStaysQuery);
   const requests = useQuery(requestsQuery);
   const pending = useQuery({ ...pendingReservationsQuery, enabled: canApprove });
-  const previewHost = useIsPreviewHost();
-  const orders = useQuery({ ...previewOrdersQuery, enabled: previewHost });
+  const orders = useQuery(previewOrdersQuery);
 
   const groups = buildTasks({
     canApprove,
     stays: stays.data ?? [],
     requests: requests.data ?? [],
     pendingReservations: canApprove ? (pending.data ?? []) : [],
-    pendingFoodOrders: previewHost
-      ? (orders.data ?? []).filter((o) => o.status === "requested")
-      : [],
+    pendingFoodOrders: (orders.data ?? []).filter((o) => o.status === "requested"),
   });
-  // Low stock alerts. On live hosts the seeded demo ingredients are excluded so
-  // the bell only surfaces real stock that needs buying.
+  // Low stock alerts. Seeded demo ingredients are excluded so the bell only
+  // surfaces real stock that needs buying.
   const stock = useQuery(inventoryStatusQuery);
   const lowStock = (stock.data ?? []).filter(
-    (i) => i.active && i.status !== "good" && (previewHost || !i.preview_only),
+    (i) => i.active && i.status !== "good" && !i.preview_only,
   );
+
   if (lowStock.length > 0) {
     groups.push({
       key: "stock",

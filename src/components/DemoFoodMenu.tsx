@@ -1,18 +1,17 @@
 /**
- * PREVIEW-ONLY demo food ordering prototype with curated cross-sell.
+ * Guest food & drinks menu with cart, cross-sell recommendations, notes,
+ * timing, review and submit.
  *
- * Rendered only on Lovable preview hosts, gated client-side after hydration and
- * defaulting to hidden. Submitting creates a row in the dedicated
- * `preview_food_orders` tables only: never a request, charge, payment or
- * PayPal session.
+ * Submitting creates a row in the dedicated food-order tables only: never a
+ * request, charge, payment or PayPal session. Staff advance the order in the
+ * Requests inbox and delivery deducts recipe ingredients from stock.
  *
- * Dishes come from the seeded `preview_only` catalogue rows returned by the
- * guest portal, so recommendations configured in the Catalogue manager
- * (including real items such as Pampa) can be demonstrated. The static config
- * in `src/lib/demo-menu.ts` is only a display fallback when those rows are
- * unavailable, and cannot be ordered.
+ * Dishes come from the catalogue rows returned by the guest portal, so
+ * recommendations configured in the Catalogue manager (including non-food
+ * items such as Pampa) resolve. The static config in `src/lib/demo-menu.ts`
+ * is only a display fallback when no dishes are returned.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Box, ChevronLeft, Plus, Minus, Sparkles, ShoppingBag, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,12 +27,7 @@ import {
   submitPreviewOrder,
   type PreviewTiming,
 } from "@/lib/preview-orders";
-import {
-  DEMO_CATEGORY_ORDER,
-  DEMO_MENU,
-  isDemoPreviewHost,
-  type DemoCategory,
-} from "@/lib/demo-menu";
+import { DEMO_CATEGORY_ORDER, DEMO_MENU, type DemoCategory } from "@/lib/demo-menu";
 
 const CATEGORY_LABEL: Record<DemoCategory, TranslationKey> = {
   signature: "catSignatureDishes",
@@ -42,7 +36,7 @@ const CATEGORY_LABEL: Record<DemoCategory, TranslationKey> = {
   desserts: "catDesserts",
 };
 
-/** Flattened dish shape shared by the seeded rows and the static fallback. */
+/** Flattened dish shape shared by the catalogue rows and the static fallback. */
 type Dish = {
   id: string;
   name: string;
@@ -53,7 +47,7 @@ type Dish = {
   recommendationIds: string[];
   arAvailable: boolean;
   available: boolean;
-  /** Only database-backed dishes can be ordered in the prototype. */
+  /** Only database-backed dishes can be ordered. */
   orderable: boolean;
 };
 
@@ -62,18 +56,18 @@ function categoryOf(value: string | null | undefined): DemoCategory {
   return "mains";
 }
 
+const MENU_SUBCATEGORIES = new Set(["signature", "mains", "drinks", "desserts"]);
+
+/** A catalogue row that belongs on the à-la-carte menu rather than the request list. */
+export function isMenuDish(s: GuestService): boolean {
+  return s.guest_category === "food" && MENU_SUBCATEGORIES.has(s.guest_subcategory ?? "");
+}
+
 export function DemoFoodMenu(props: {
   token?: string;
   services?: GuestService[];
   demoServices?: GuestService[];
 }) {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    setVisible(isDemoPreviewHost(window.location.hostname));
-  }, []);
-
-  if (!visible) return null;
   return (
     <DemoMenuBody
       token={props.token ?? ""}
@@ -82,6 +76,7 @@ export function DemoFoodMenu(props: {
     />
   );
 }
+
 
 function DemoMenuBody({
   token,
@@ -98,10 +93,10 @@ function DemoMenuBody({
   const [notes, setNotes] = useState("");
   const [timing, setTiming] = useState<PreviewTiming>("asap");
   const [busy, setBusy] = useState(false);
-  /** Reference of the last submitted preview order, shown as a confirmation. */
+  /** Reference of the last submitted order, shown as a confirmation. */
   const [confirmed, setConfirmed] = useState<string | null>(null);
 
-  // Every item a recommendation can point at: demo dishes plus real services.
+  // Every item a recommendation can point at: menu dishes plus other services.
   const pool = useMemo(() => {
     const map = new Map<string, Dish>();
     for (const s of [...demoServices, ...services]) {
@@ -122,10 +117,14 @@ function DemoMenuBody({
   }, [demoServices, services, lang]);
 
   const dishes = useMemo<Dish[]>(() => {
-    if (demoServices.length > 0) {
-      return demoServices.map((s) => pool.get(s.id)!).filter(Boolean);
-    }
-    // Offline fallback: static preview config, display only.
+    const rows = [...services.filter(isMenuDish), ...demoServices];
+    const seen = new Set<string>();
+    const fromDb = rows
+      .filter((s) => (seen.has(s.id) ? false : (seen.add(s.id), true)))
+      .map((s) => pool.get(s.id)!)
+      .filter(Boolean);
+    if (fromDb.length > 0) return fromDb;
+    // Offline fallback: static config, display only.
     return DEMO_MENU.map((d) => ({
       id: d.id,
       name: d.name[lang],
@@ -138,7 +137,8 @@ function DemoMenuBody({
       available: true,
       orderable: false,
     }));
-  }, [demoServices, pool, lang]);
+  }, [services, demoServices, pool, lang]);
+
 
   const byId = useMemo(() => {
     const map = new Map<string, Dish>(pool);
@@ -216,15 +216,10 @@ function DemoMenuBody({
 
   return (
     <section className="surface-card mt-4 p-3 sm:p-4">
-      <div className="flex items-start justify-between gap-2">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          {t("demoMenuSection")}
-        </h2>
-        <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold uppercase">
-          {t("demoMenuBadge")}
-        </span>
-      </div>
-      <p className="mt-1 text-xs text-muted-foreground">{t("previewOrderBanner")}</p>
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        {t("gcatFood")}
+      </h2>
+
 
       {confirmed ? (
         <div className="mt-3 rounded-xl border border-primary/40 bg-primary/5 p-3">
@@ -368,7 +363,6 @@ function DemoMenuBody({
               >
                 {t("clearCart")}
               </Button>
-              <p className="text-xs text-muted-foreground">{t("demoNoCharge")}</p>
             </>
           )}
         </div>

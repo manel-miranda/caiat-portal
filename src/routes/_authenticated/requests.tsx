@@ -12,7 +12,7 @@ import { statusLabel, t } from "@/lib/i18n";
 import { serviceLabel } from "@/lib/service-i18n";
 import { requestsQuery, serviceTypesQuery, type RequestRow } from "@/lib/queries";
 import { cancelRequest, completeRequest } from "@/lib/mutations";
-import { previewOrdersQuery, useIsPreviewHost } from "@/lib/preview-orders";
+import { previewOrdersQuery } from "@/lib/preview-orders";
 import { FoodOrderCard } from "@/components/FoodOrderCard";
 import { SheetDialog } from "./stays.$id";
 
@@ -30,14 +30,13 @@ function RequestsPage() {
   const services = useQuery(serviceTypesQuery);
   const [billing, setBilling] = useState<RequestRow | null>(null);
   const [busy, setBusy] = useState(false);
-  // Preview-only food orders share this inbox on preview hosts.
-  const previewHost = useIsPreviewHost();
-  const orders = useQuery({ ...previewOrdersQuery, enabled: previewHost });
+  // Food orders share this inbox with normal requests.
+  const orders = useQuery(previewOrdersQuery);
   const [filter, setFilter] = useState<"all" | "food" | "other">("all");
 
   const all = requests.data ?? [];
   const showOther = filter !== "food";
-  const showFood = previewHost && filter !== "other";
+  const showFood = filter !== "other";
   const pending = showOther ? all.filter((r) => r.status === "pending") : [];
   const history = showOther ? all.filter((r) => r.status !== "pending") : [];
   const allOrders = showFood ? (orders.data ?? []) : [];
@@ -103,23 +102,22 @@ function RequestsPage() {
 
   return (
     <AppShell title={t("navRequests")}>
-      {previewHost ? (
-        <div className="mb-3 flex gap-2">
-          {(["all", "food", "other"] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`min-h-[38px] rounded-full border px-3 text-xs font-semibold ${
-                filter === f
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card text-muted-foreground"
-              }`}
-            >
-              {t(f === "all" ? "filterAll" : f === "food" ? "typeFood" : "filterOther")}
-            </button>
-          ))}
-        </div>
-      ) : null}
+      <div className="mb-3 flex gap-2">
+        {(["all", "food", "other"] as const).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`min-h-[38px] rounded-full border px-3 text-xs font-semibold ${
+              filter === f
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-card text-muted-foreground"
+            }`}
+          >
+            {t(f === "all" ? "filterAll" : f === "food" ? "typeFood" : "filterOther")}
+          </button>
+        ))}
+      </div>
+
 
       <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
         {t("pendingRequests")}

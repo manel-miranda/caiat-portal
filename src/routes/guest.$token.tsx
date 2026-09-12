@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { DishViewer } from "@/components/DishViewer";
-import { DemoFoodMenu } from "@/components/DemoFoodMenu";
+import { DemoFoodMenu, isMenuDish } from "@/components/DemoFoodMenu";
 import { GuestCatalog, type CatalogSelection } from "@/components/GuestCatalog";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { CurrencySwitcher } from "@/components/CurrencySwitcher";
@@ -195,7 +195,7 @@ function Portal({ token, data }: { token: string; data: GuestPortalData }) {
       {/* ---- Menu 3D/AR prototype ---- */}
       <DishViewer />
 
-      {/* ---- Preview-only demo food menu (never on the live domain) ---- */}
+      {/* ---- Food & drinks menu with cart ---- */}
       <DemoFoodMenu
         token={token}
         services={data.services}
@@ -210,7 +210,7 @@ function Portal({ token, data }: { token: string; data: GuestPortalData }) {
         </h2>
         <form className="mt-3 space-y-4" onSubmit={submitRequest}>
           <GuestCatalog
-            services={data.services}
+            services={data.services.filter((s) => !isMenuDish(s))}
             selection={selection}
             onSelect={(next) => {
               setSelection(next);
