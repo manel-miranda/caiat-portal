@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
+import { RecipeSheet } from "@/components/RecipeSheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,7 @@ import { requireAdmin } from "@/lib/admin-guard";
 import { mad } from "@/lib/format";
 import { t, LANGUAGES, type Lang } from "@/lib/i18n";
 import { serviceLabel } from "@/lib/service-i18n";
+import { recipeComponentsQuery } from "@/lib/inventory";
 import {
   catalogErrorKey,
   catalogItemsQuery,
@@ -127,6 +129,11 @@ function toDraft(item: CatalogItem, recommended: string[], recommendedIn: string
 }
 
 const CATEGORIES = ["food", "transport", "visit", "outdoor", "route", "included", "other"];
+/** Dishes are the only items a stock recipe makes sense for. */
+function isFoodItem(item: CatalogItem): boolean {
+  return item.category === "food" || item.guest_category === "food";
+}
+
 const GUEST_CATEGORIES = ["", "food", "activities", "transport", "explore", "extras", "else"];
 
 function CataloguePage() {
@@ -657,6 +664,11 @@ function CataloguePage() {
           ) : null}
         </DialogContent>
       </Dialog>
+      <RecipeSheet
+        serviceTypeId={recipeFor?.id ?? null}
+        serviceLabel={recipeFor ? serviceLabel(recipeFor) : ""}
+        onClose={() => setRecipeFor(null)}
+      />
     </AppShell>
   );
 }
