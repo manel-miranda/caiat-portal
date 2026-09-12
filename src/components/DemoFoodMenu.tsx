@@ -225,6 +225,19 @@ function DemoMenuBody({
       </div>
       <p className="mt-1 text-xs text-muted-foreground">{t("previewOrderBanner")}</p>
 
+      {confirmed ? (
+        <div className="mt-3 rounded-xl border border-primary/40 bg-primary/5 p-3">
+          <p className="text-sm font-semibold">{t("previewOrderSent")}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {t("orderReference")}: <span className="font-mono">{confirmed.slice(0, 8)}</span>
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {t("orderStatusLabel")}: {t("foStatusRequested")}
+          </p>
+        </div>
+      ) : null}
+
+
       {step === "menu" ? (
         <div className="mt-3 space-y-4">
           {DEMO_CATEGORY_ORDER.map((cat) => {
