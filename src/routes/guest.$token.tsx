@@ -8,11 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { DishViewer } from "@/components/DishViewer";
+import { GuestCatalog, type CatalogSelection } from "@/components/GuestCatalog";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { CurrencySwitcher } from "@/components/CurrencySwitcher";
 import { mad, nights, shortDate } from "@/lib/format";
 import { statusLabel, t } from "@/lib/i18n";
-import { serviceLabel } from "@/lib/service-i18n";
 import { guestCreateRequest, guestPortalQuery, type GuestPortalData } from "@/lib/guest";
 import { paymentStatusQuery, startCheckout, type PaymentConfig } from "@/lib/payments";
 
@@ -70,7 +70,7 @@ function Portal({ token, data }: { token: string; data: GuestPortalData }) {
   const queryClient = useQueryClient();
   const paymentStatus = useQuery(paymentStatusQuery());
   const payment: PaymentConfig = paymentStatus.data ?? { available: false };
-  const [serviceId, setServiceId] = useState<string>("");
+  const [selection, setSelection] = useState<CatalogSelection>(null);
   const [customLabel, setCustomLabel] = useState("");
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
@@ -118,13 +118,13 @@ function Portal({ token, data }: { token: string; data: GuestPortalData }) {
     try {
       await guestCreateRequest({
         token,
-        serviceTypeId: serviceId || null,
+        serviceTypeId: selection?.kind === "item" ? selection.service.id : null,
         customLabel: customLabel.slice(0, 80),
         notes: notes.slice(0, 500),
       });
       setCustomLabel("");
       setNotes("");
-      setServiceId("");
+      setSelection(null);
       await refresh();
       toast.success(t("requestSent"));
     } catch (e2) {
