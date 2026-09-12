@@ -6,7 +6,9 @@
  * through a token-scoped SECURITY DEFINER RPC; staff read/update through
  * permission-gated policies and an audited status RPC.
  */
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { isDemoPreviewHost } from "./demo-menu";
 import type { TranslationKey } from "./i18n";
 
 export const PREVIEW_ORDER_STATUSES = [
@@ -148,4 +150,13 @@ export async function setPreviewOrderStatus(id: string, status: PreviewOrderStat
     p_status: status,
   });
   if (error) throw error;
+}
+
+/** True only on Lovable preview hosts, after hydration (defaults to hidden). */
+export function useIsPreviewHost(): boolean {
+  const [ok, setOk] = useState(false);
+  useEffect(() => {
+    setOk(isDemoPreviewHost(window.location.hostname));
+  }, []);
+  return ok;
 }
