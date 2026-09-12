@@ -22,6 +22,15 @@ export type GuestService = {
   default_price: number;
   billable: boolean;
   category: string;
+  /** Guest-facing catalogue placement (food, activities, transport, explore, extras, else). */
+  guest_category: string | null;
+  guest_subcategory: string | null;
+  short_description: string | null;
+  activity_mode: string | null;
+  difficulty: string | null;
+  featured: boolean;
+  signature: boolean;
+  display_order: number;
 };
 
 export type GuestPortalData = {
