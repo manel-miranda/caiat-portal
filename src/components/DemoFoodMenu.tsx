@@ -192,12 +192,13 @@ function DemoMenuBody({
     }
     setBusy(true);
     try {
-      await submitPreviewOrder({
+      const orderId = await submitPreviewOrder({
         token,
         items: payload.map((l) => ({ service_type_id: l.dish.id, quantity: l.qty })),
         notes: notes.slice(0, 500),
         timing,
       });
+      setConfirmed(orderId);
       setCart({});
       setNotes("");
       setTiming("asap");
