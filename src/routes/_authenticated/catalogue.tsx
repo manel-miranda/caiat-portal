@@ -189,7 +189,7 @@ function CataloguePage() {
     if (!draft) return;
     const price = Number(draft.price);
     if (!Number.isFinite(price) || price < 0) {
-      toast.error(t("invalidAmount"));
+      toast.error(t("amountPositive"));
       return;
     }
     setBusy(true);
