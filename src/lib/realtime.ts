@@ -19,6 +19,9 @@ const TABLE_KEYS: Record<string, string[][]> = {
   profiles: [["managed-users"]],
   user_roles: [["managed-users"]],
   user_permissions: [["managed-users"]],
+  // Preview stock prototype: purchases, corrections and order consumption.
+  inventory_movements: [["inventory"]],
+  inventory_recipe_components: [["inventory"]],
 };
 
 /**

@@ -2,7 +2,7 @@ import { t } from "@/lib/i18n";
 import { todayISO } from "@/lib/format";
 import type { RequestRow, StayRow } from "@/lib/queries";
 
-export type TaskGroupKey = "approvals" | "requests" | "arrivals" | "departures";
+export type TaskGroupKey = "approvals" | "requests" | "arrivals" | "departures" | "stock";
 
 export type TaskItem = {
   id: string;

@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
+import { RecipeSheet } from "@/components/RecipeSheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,7 @@ import { requireAdmin } from "@/lib/admin-guard";
 import { mad } from "@/lib/format";
 import { t, LANGUAGES, type Lang } from "@/lib/i18n";
 import { serviceLabel } from "@/lib/service-i18n";
+import { recipeComponentsQuery } from "@/lib/inventory";
 import {
   catalogErrorKey,
   catalogItemsQuery,
@@ -127,6 +129,11 @@ function toDraft(item: CatalogItem, recommended: string[], recommendedIn: string
 }
 
 const CATEGORIES = ["food", "transport", "visit", "outdoor", "route", "included", "other"];
+/** Dishes are the only items a stock recipe makes sense for. */
+function isFoodItem(item: CatalogItem): boolean {
+  return item.category === "food" || item.guest_category === "food";
+}
+
 const GUEST_CATEGORIES = ["", "food", "activities", "transport", "explore", "extras", "else"];
 
 function CataloguePage() {
@@ -139,6 +146,9 @@ function CataloguePage() {
   const [kind, setKind] = useState<"all" | "real" | "demo">("all");
   const [sortBy, setSortBy] = useState<"order" | "name" | "price">("order");
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [recipeFor, setRecipeFor] = useState<CatalogItem | null>(null);
+  const recipeComponents = useQuery(recipeComponentsQuery);
+  const recipeIds = new Set((recipeComponents.data ?? []).map((r) => r.service_type_id));
   const [busy, setBusy] = useState(false);
 
   const all = items.data ?? [];
@@ -376,6 +386,11 @@ function CataloguePage() {
                         {t("unavailableToday")}
                       </span>
                     )}
+                    {isFoodItem(item) && !recipeIds.has(item.id) ? (
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                        {t("recipeMissing")}
+                      </span>
+                    ) : null}
                     {item.preview_only ? (
                       <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold uppercase text-amber-700 dark:text-amber-400">
                         {t("catalogueDemoBadge")}
@@ -406,6 +421,16 @@ function CataloguePage() {
                   >
                     {item.active ? t("catalogueDeactivate") : t("catalogueReactivate")}
                   </Button>
+                  {isFoodItem(item) ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-xl"
+                      onClick={() => setRecipeFor(item)}
+                    >
+                      {t("recipeButton")}
+                    </Button>
+                  ) : null}
                   <Button
                     size="sm"
                     variant="outline"
@@ -639,6 +664,11 @@ function CataloguePage() {
           ) : null}
         </DialogContent>
       </Dialog>
+      <RecipeSheet
+        serviceTypeId={recipeFor?.id ?? null}
+        serviceLabel={recipeFor ? serviceLabel(recipeFor) : ""}
+        onClose={() => setRecipeFor(null)}
+      />
     </AppShell>
   );
 }

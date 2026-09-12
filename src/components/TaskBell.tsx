@@ -8,6 +8,7 @@ import { t } from "@/lib/i18n";
 import { activeStaysQuery, pendingReservationsQuery, requestsQuery } from "@/lib/queries";
 import { previewOrdersQuery, useIsPreviewHost } from "@/lib/preview-orders";
 import { buildTasks, taskCount } from "@/lib/tasks";
+import { inventoryStatusQuery, qty } from "@/lib/inventory";
 
 /**
  * Header bell showing outstanding work for the signed-in role. The badge is a
@@ -33,6 +34,28 @@ export function TaskBell() {
       ? (orders.data ?? []).filter((o) => o.status === "requested")
       : [],
   });
+  // Preview-only: ingredients that need buying, so Bernardo sees them here too.
+  const stock = useQuery({ ...inventoryStatusQuery, enabled: previewHost });
+  const lowStock = previewHost
+    ? (stock.data ?? []).filter((i) => i.active && i.status !== "good")
+    : [];
+  if (lowStock.length > 0) {
+    groups.push({
+      key: "stock",
+      label: t("stockTitle"),
+      items: lowStock.slice(0, 10).map((i) => ({
+        id: `stock:${i.id}`,
+        title: i.label,
+        detail: `${qty(i.estimated_stock)} ${i.unit}${
+          i.recommended_quantity > 0
+            ? ` · ${t("stockRecommended")} ${qty(i.recommended_quantity)} ${i.unit}`
+            : ""
+        }`,
+        to: "/stock",
+      })),
+    });
+  }
+
   const count = taskCount(groups);
 
   return (

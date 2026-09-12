@@ -22,6 +22,7 @@ import { Route as AuthenticatedFoodOrdersRouteImport } from './routes/_authentic
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedRequestsRouteImport } from './routes/_authenticated/requests'
 import { Route as AuthenticatedServicesRouteImport } from './routes/_authenticated/services'
+import { Route as AuthenticatedStockRouteImport } from './routes/_authenticated/stock'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as GuestTokenRouteImport } from './routes/guest.$token'
 import { Route as AuthenticatedCustomersIdRouteImport } from './routes/_authenticated/customers_.$id'
@@ -96,6 +97,11 @@ const AuthenticatedServicesRoute = AuthenticatedServicesRouteImport.update({
   path: '/services',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedStockRoute = AuthenticatedStockRouteImport.update({
+  id: '/stock',
+  path: '/stock',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -158,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/home': typeof AuthenticatedHomeRoute
   '/requests': typeof AuthenticatedRequestsRoute
   '/services': typeof AuthenticatedServicesRoute
+  '/stock': typeof AuthenticatedStockRoute
   '/users': typeof AuthenticatedUsersRoute
   '/guest/$token': typeof GuestTokenRoute
   '/customers/$id': typeof AuthenticatedCustomersIdRoute
@@ -181,6 +188,7 @@ export interface FileRoutesByTo {
   '/home': typeof AuthenticatedHomeRoute
   '/requests': typeof AuthenticatedRequestsRoute
   '/services': typeof AuthenticatedServicesRoute
+  '/stock': typeof AuthenticatedStockRoute
   '/users': typeof AuthenticatedUsersRoute
   '/guest/$token': typeof GuestTokenRoute
   '/customers/$id': typeof AuthenticatedCustomersIdRoute
@@ -206,6 +214,7 @@ export interface FileRoutesById {
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/requests': typeof AuthenticatedRequestsRoute
   '/_authenticated/services': typeof AuthenticatedServicesRoute
+  '/_authenticated/stock': typeof AuthenticatedStockRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/guest/$token': typeof GuestTokenRoute
   '/_authenticated/customers_/$id': typeof AuthenticatedCustomersIdRoute
@@ -231,6 +240,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/requests'
     | '/services'
+    | '/stock'
     | '/users'
     | '/guest/$token'
     | '/customers/$id'
@@ -254,6 +264,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/requests'
     | '/services'
+    | '/stock'
     | '/users'
     | '/guest/$token'
     | '/customers/$id'
@@ -278,6 +289,7 @@ export interface FileRouteTypes {
     | '/_authenticated/home'
     | '/_authenticated/requests'
     | '/_authenticated/services'
+    | '/_authenticated/stock'
     | '/_authenticated/users'
     | '/guest/$token'
     | '/_authenticated/customers_/$id'
@@ -391,6 +403,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedServicesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/stock': {
+      id: '/_authenticated/stock'
+      path: '/stock'
+      fullPath: '/stock'
+      preLoaderRoute: typeof AuthenticatedStockRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/users': {
       id: '/_authenticated/users'
       path: '/users'
@@ -469,6 +488,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedRequestsRoute: typeof AuthenticatedRequestsRoute
   AuthenticatedServicesRoute: typeof AuthenticatedServicesRoute
+  AuthenticatedStockRoute: typeof AuthenticatedStockRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedCustomersIdRoute: typeof AuthenticatedCustomersIdRoute
   AuthenticatedStaysIdRoute: typeof AuthenticatedStaysIdRoute
@@ -488,6 +508,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedRequestsRoute: AuthenticatedRequestsRoute,
   AuthenticatedServicesRoute: AuthenticatedServicesRoute,
+  AuthenticatedStockRoute: AuthenticatedStockRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedCustomersIdRoute: AuthenticatedCustomersIdRoute,
   AuthenticatedStaysIdRoute: AuthenticatedStaysIdRoute,

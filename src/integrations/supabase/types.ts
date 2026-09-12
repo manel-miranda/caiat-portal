@@ -244,6 +244,151 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_items: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          key: string
+          label: string
+          notes: string | null
+          preview_only: boolean
+          safety_stock: number
+          target_days: number
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          key: string
+          label: string
+          notes?: string | null
+          preview_only?: boolean
+          safety_stock?: number
+          target_days?: number
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          key?: string
+          label?: string
+          notes?: string | null
+          preview_only?: boolean
+          safety_stock?: number
+          target_days?: number
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      inventory_movements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          inventory_item_id: string
+          movement_type: string
+          notes: string | null
+          quantity: number
+          source_id: string | null
+          source_type: string
+          unit_cost: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          inventory_item_id: string
+          movement_type: string
+          notes?: string | null
+          quantity: number
+          source_id?: string | null
+          source_type?: string
+          unit_cost?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          inventory_item_id?: string
+          movement_type?: string
+          notes?: string | null
+          quantity?: number
+          source_id?: string | null
+          source_type?: string
+          unit_cost?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_movements_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_status"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_recipe_components: {
+        Row: {
+          created_at: string
+          id: string
+          inventory_item_id: string
+          qty_per_portion: number
+          service_type_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inventory_item_id: string
+          qty_per_portion: number
+          service_type_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inventory_item_id?: string
+          qty_per_portion?: number
+          service_type_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_recipe_components_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_recipe_components_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_status"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_recipe_components_service_type_id_fkey"
+            columns: ["service_type_id"]
+            isOneToOne: false
+            referencedRelation: "service_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_sessions: {
         Row: {
           amount_mad: number
@@ -839,7 +984,25 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      inventory_status: {
+        Row: {
+          active: boolean | null
+          avg_daily_usage: number | null
+          days_remaining: number | null
+          estimated_stock: number | null
+          id: string | null
+          key: string | null
+          label: string | null
+          notes: string | null
+          preview_only: boolean | null
+          recommended_quantity: number | null
+          safety_stock: number | null
+          status: string | null
+          target_days: number | null
+          unit: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       catalog_set_active: {
@@ -973,6 +1136,45 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      inventory_adjust: {
+        Args: { p_actual_quantity: number; p_item_id: string; p_notes: string }
+        Returns: string
+      }
+      inventory_consume_preview_order: {
+        Args: { p_order_id: string }
+        Returns: number
+      }
+      inventory_receive: {
+        Args: {
+          p_item_id: string
+          p_notes: string
+          p_quantity: number
+          p_unit_cost: number
+        }
+        Returns: string
+      }
+      inventory_set_recipe: {
+        Args: { p_components: Json; p_service_type_id: string }
+        Returns: number
+      }
+      inventory_upsert_item: {
+        Args: {
+          p_active: boolean
+          p_id: string
+          p_key: string
+          p_label: string
+          p_notes: string
+          p_preview_only: boolean
+          p_safety_stock: number
+          p_target_days: number
+          p_unit: string
+        }
+        Returns: string
+      }
+      inventory_waste: {
+        Args: { p_item_id: string; p_notes: string; p_quantity: number }
+        Returns: string
       }
       merge_customers: {
         Args: { p_keep_id: string; p_merge_id: string }
