@@ -172,6 +172,7 @@ function DemoMenuBody({
 
   function add(dish: Dish, delta = 1) {
     if (!dish.available) return;
+    setConfirmed(null);
     setCart((prev) => {
       const next = { ...prev };
       const qty = (next[dish.id] ?? 0) + delta;
