@@ -52,7 +52,7 @@ export const PREVIEW_TIMING_LABEL: Record<PreviewTiming, TranslationKey> = {
 
 /** The next status in the kitchen flow, or null when the order is finished. */
 export function nextStatus(status: PreviewOrderStatus): PreviewOrderStatus | null {
-  const flow: PreviewOrderStatus[] = ["requested", "accepted", "preparing", "ready", "delivered"];
+  const flow: PreviewOrderStatus[] = ["requested", "accepted", "preparing", "delivered"];
   const i = flow.indexOf(status);
   if (i < 0 || i === flow.length - 1) return null;
   return flow[i + 1] ?? null;
@@ -135,7 +135,7 @@ export const previewOrdersQuery = {
     return ((data ?? []) as unknown as OrderRow[]).map((row) => ({
       id: row.id,
       stay_id: row.stay_id,
-      status: row.status as PreviewOrderStatus,
+      status: normaliseStatus(row.status),
       timing: row.timing as PreviewTiming,
       notes: row.notes,
       subtotal: Number(row.subtotal ?? 0),
