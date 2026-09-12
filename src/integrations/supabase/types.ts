@@ -360,6 +360,101 @@ export type Database = {
           },
         ]
       }
+      preview_food_order_items: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          line_total: number
+          order_id: string
+          quantity: number
+          service_type_id: string
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label: string
+          line_total?: number
+          order_id: string
+          quantity?: number
+          service_type_id: string
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          line_total?: number
+          order_id?: string
+          quantity?: number
+          service_type_id?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "preview_food_order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "preview_food_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "preview_food_order_items_service_type_id_fkey"
+            columns: ["service_type_id"]
+            isOneToOne: false
+            referencedRelation: "service_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      preview_food_orders: {
+        Row: {
+          created_at: string
+          id: string
+          is_preview: boolean
+          notes: string | null
+          status: string
+          stay_id: string
+          subtotal: number
+          timing: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_preview?: boolean
+          notes?: string | null
+          status?: string
+          stay_id: string
+          subtotal?: number
+          timing?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_preview?: boolean
+          notes?: string | null
+          status?: string
+          stay_id?: string
+          subtotal?: number
+          timing?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "preview_food_orders_stay_id_fkey"
+            columns: ["stay_id"]
+            isOneToOne: false
+            referencedRelation: "stays"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           active: boolean
@@ -545,6 +640,7 @@ export type Database = {
         Row: {
           active: boolean
           activity_mode: string | null
+          available_today: boolean
           billable: boolean
           category: string
           created_at: string
@@ -570,6 +666,7 @@ export type Database = {
         Insert: {
           active?: boolean
           activity_mode?: string | null
+          available_today?: boolean
           billable?: boolean
           category?: string
           created_at?: string
@@ -595,6 +692,7 @@ export type Database = {
         Update: {
           active?: boolean
           activity_mode?: string | null
+          available_today?: boolean
           billable?: boolean
           category?: string
           created_at?: string
@@ -748,6 +846,10 @@ export type Database = {
         Args: { p_active: boolean; p_id: string }
         Returns: string
       }
+      catalog_set_available: {
+        Args: { p_available: boolean; p_id: string }
+        Returns: string
+      }
       catalog_set_incoming_recommendations: {
         Args: { p_id: string; p_source_ids: string[] }
         Returns: number
@@ -838,6 +940,15 @@ export type Database = {
         }
         Returns: string
       }
+      guest_create_preview_food_order: {
+        Args: {
+          p_items: Json
+          p_notes?: string
+          p_timing?: string
+          p_token: string
+        }
+        Returns: string
+      }
       guest_create_request: {
         Args: {
           p_custom_label: string
@@ -865,6 +976,10 @@ export type Database = {
       }
       merge_customers: {
         Args: { p_keep_id: string; p_merge_id: string }
+        Returns: string
+      }
+      preview_food_order_set_status: {
+        Args: { p_order_id: string; p_status: string }
         Returns: string
       }
       reject_reservation: { Args: { p_stay_id: string }; Returns: string }
