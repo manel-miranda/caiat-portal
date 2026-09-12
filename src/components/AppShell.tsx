@@ -9,7 +9,6 @@ import {
   BookOpen,
   ConciergeBell,
   Users,
-  UtensilsCrossed,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,7 +29,7 @@ type NavItem = { to: string; label: string; icon: typeof BedDouble; permission?:
 
 // Only routes that exist are listed. Hiding an entry is convenience only — the
 // routes and the database both re-check the permission.
-function desktopNavItems(previewHost: boolean): NavItem[] {
+function desktopNavItems(): NavItem[] {
   return [
     { to: "/home", label: t("navRooms"), icon: BedDouble },
     { to: "/requests", label: t("navRequests"), icon: Bell },
@@ -67,7 +66,7 @@ export function AppShell({ title, children }: { title?: string; children: ReactN
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const desktopItems = desktopNavItems(previewHost).filter((i) => !i.permission || can(i.permission));
+  const desktopItems = desktopNavItems().filter((i) => !i.permission || can(i.permission));
   const mobileItems = mobileNavItems(can("activity_view"));
   // One shared live-updates channel for every authenticated screen.
   useRealtimeSync();

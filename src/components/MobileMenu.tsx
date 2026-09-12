@@ -12,7 +12,6 @@ import {
   UserCog,
   UserRound,
   Users,
-  UtensilsCrossed,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
