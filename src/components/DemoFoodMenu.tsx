@@ -93,10 +93,10 @@ function DemoMenuBody({
   const [notes, setNotes] = useState("");
   const [timing, setTiming] = useState<PreviewTiming>("asap");
   const [busy, setBusy] = useState(false);
-  /** Reference of the last submitted preview order, shown as a confirmation. */
+  /** Reference of the last submitted order, shown as a confirmation. */
   const [confirmed, setConfirmed] = useState<string | null>(null);
 
-  // Every item a recommendation can point at: demo dishes plus real services.
+  // Every item a recommendation can point at: menu dishes plus other services.
   const pool = useMemo(() => {
     const map = new Map<string, Dish>();
     for (const s of [...demoServices, ...services]) {
@@ -117,10 +117,14 @@ function DemoMenuBody({
   }, [demoServices, services, lang]);
 
   const dishes = useMemo<Dish[]>(() => {
-    if (demoServices.length > 0) {
-      return demoServices.map((s) => pool.get(s.id)!).filter(Boolean);
-    }
-    // Offline fallback: static preview config, display only.
+    const rows = [...services.filter(isMenuDish), ...demoServices];
+    const seen = new Set<string>();
+    const fromDb = rows
+      .filter((s) => (seen.has(s.id) ? false : (seen.add(s.id), true)))
+      .map((s) => pool.get(s.id)!)
+      .filter(Boolean);
+    if (fromDb.length > 0) return fromDb;
+    // Offline fallback: static config, display only.
     return DEMO_MENU.map((d) => ({
       id: d.id,
       name: d.name[lang],
@@ -133,7 +137,8 @@ function DemoMenuBody({
       available: true,
       orderable: false,
     }));
-  }, [demoServices, pool, lang]);
+  }, [services, demoServices, pool, lang]);
+
 
   const byId = useMemo(() => {
     const map = new Map<string, Dish>(pool);
