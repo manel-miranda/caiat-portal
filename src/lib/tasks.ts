@@ -29,6 +29,8 @@ export function buildTasks(input: {
   stays: StayRow[];
   requests: RequestRow[];
   pendingReservations: StayRow[];
+  /** Preview-only food orders still waiting to be accepted. */
+  pendingFoodOrders?: { id: string; room_label: string | null; guest_first_name: string | null }[];
   today?: string;
   now?: Date;
 }): TaskGroup[] {
