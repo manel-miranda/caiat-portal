@@ -1,0 +1,1 @@
+ALTER VIEW public.inventory_status SET (security_invoker = true);
