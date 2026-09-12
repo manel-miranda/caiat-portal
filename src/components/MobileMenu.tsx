@@ -21,7 +21,6 @@ import { LANGUAGES, t, useLang, type Lang } from "@/lib/i18n";
 import { CURRENCIES, useCurrency, type Currency } from "@/lib/currency";
 import { roleLabel } from "@/lib/roles";
 import type { PermissionKey } from "@/lib/permissions";
-import { useIsPreviewHost } from "@/lib/preview-orders";
 
 type MenuLink = { to: string; label: string; icon: typeof Banknote; permission?: PermissionKey };
 
@@ -38,7 +37,6 @@ export function MobileMenu({ variant = "icon" }: { variant?: "icon" | "tab" }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const canDashboard = can("activity_view");
-  const previewHost = useIsPreviewHost();
 
   const links: MenuLink[] = ([
     // Customers moves into the More sheet for Dashboard-capable users because
@@ -51,10 +49,6 @@ export function MobileMenu({ variant = "icon" }: { variant?: "icon" | "tab" }) {
     { to: "/activity", label: t("navActivity"), icon: History, permission: "activity_view" },
     { to: "/catalogue", label: t("navCatalogue"), icon: BookOpen, permission: "users_manage" },
     { to: "/users", label: t("navUsers"), icon: UserCog, permission: "users_manage" },
-    // Prototype board: preview hosts only.
-    previewHost
-      ? ({ to: "/food-orders", label: t("navFoodOrders"), icon: UtensilsCrossed, permission: "requests_manage" } as MenuLink)
-      : null,
   ] as (MenuLink | null)[]).filter((l): l is MenuLink => Boolean(l) && (!l!.permission || can(l!.permission)));
 
   async function signOut() {

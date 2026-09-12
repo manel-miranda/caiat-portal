@@ -24,7 +24,6 @@ import { CurrencySwitcher } from "@/components/CurrencySwitcher";
 import { TaskBell } from "@/components/TaskBell";
 import { MobileMenu } from "@/components/MobileMenu";
 import { useRealtimeSync } from "@/lib/realtime";
-import { useIsPreviewHost } from "@/lib/preview-orders";
 import type { ReactNode } from "react";
 
 type NavItem = { to: string; label: string; icon: typeof BedDouble; permission?: PermissionKey };
@@ -68,7 +67,6 @@ export function AppShell({ title, children }: { title?: string; children: ReactN
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const previewHost = useIsPreviewHost();
   const desktopItems = desktopNavItems(previewHost).filter((i) => !i.permission || can(i.permission));
   const mobileItems = mobileNavItems(can("activity_view"));
   // One shared live-updates channel for every authenticated screen.
