@@ -26,10 +26,14 @@ export type DemoDish = {
 /** Only shown on Lovable preview hosts — never on the live domains. */
 export function isDemoPreviewHost(hostname: string): boolean {
   const h = hostname.toLowerCase();
-  if (h.endsWith("caiat-portal.com")) return false;
+  // Always hide on the published custom domains and normal Lovable production hosts.
+  if (h === "caiat-portal.com" || h === "www.caiat-portal.com") return false;
+  if (h === "caiat-portal.lovable.app") return false;
+  if (h.endsWith(".lovable.app")) return false;
+  // Development / Lovable preview drafts only.
   if (h === "localhost" || h === "127.0.0.1") return true;
   if (h.includes("id-preview--")) return true;
-  return h.endsWith("-dev.lovable.app") || h.endsWith(".lovable.app");
+  return false;
 }
 
 export const DEMO_MENU: DemoDish[] = [
