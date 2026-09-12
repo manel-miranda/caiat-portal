@@ -94,11 +94,21 @@ const SERVICE_LABELS: Record<Exclude<Lang, "en">, ServiceDict> = {
 
 /** Display name for a catalogue service in the active language. */
 export function serviceLabel(
-  service: { key?: string | null; label: string } | null | undefined,
+  service:
+    | { key?: string | null; label: string; name_i18n?: Record<string, string> | null }
+    | null
+    | undefined,
 ): string {
   if (!service) return "—";
   const key = service.key ?? "";
   const lang = getLang();
+  // Custom catalogue items carry their own translations: current language,
+  // then English, then the stored label. Predefined keys are untouched.
+  const custom = service.name_i18n ?? null;
+  if (custom) {
+    const value = (custom[lang] ?? custom["en"] ?? "").trim();
+    if (value) return value;
+  }
   if (key.startsWith("route_")) {
     const place = service.label.replace(/^Route:\s*/i, "");
     return `${t("routePrefix")}: ${place}`;
@@ -120,4 +130,20 @@ export function difficultyLabel(value: string | null | undefined): string | null
   if (/medium/i.test(value)) return t("diffMedium");
   if (/expert|hard/i.test(value)) return t("diffExpert");
   return value;
+}
+
+/** Short description for a catalogue item, with language -> English fallback. */
+export function serviceDescription(
+  service:
+    | { short_description?: string | null; description_i18n?: Record<string, string> | null }
+    | null
+    | undefined,
+): string | null {
+  if (!service) return null;
+  const dict = service.description_i18n ?? null;
+  if (dict) {
+    const value = (dict[getLang()] ?? dict["en"] ?? "").trim();
+    if (value) return value;
+  }
+  return service.short_description ?? null;
 }
