@@ -196,7 +196,11 @@ function Portal({ token, data }: { token: string; data: GuestPortalData }) {
       <DishViewer />
 
       {/* ---- Preview-only demo food menu (never on the live domain) ---- */}
-      <DemoFoodMenu services={data.services} demoServices={data.demo_services ?? []} />
+      <DemoFoodMenu
+        token={token}
+        services={data.services}
+        demoServices={data.demo_services ?? []}
+      />
 
 
       {/* ---- Request something ---- */}

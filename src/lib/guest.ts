@@ -34,6 +34,8 @@ export type GuestService = {
   difficulty: string | null;
   featured: boolean;
   signature: boolean;
+  /** Preview prototype availability switch; absent means available. */
+  available_today?: boolean;
   display_order: number;
 };
 

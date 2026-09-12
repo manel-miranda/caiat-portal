@@ -17,6 +17,7 @@ import {
   catalogRecommendationsQuery,
   saveCatalogItem,
   setCatalogItemActive,
+  setCatalogItemAvailable,
   setCatalogRecommendations,
   setCatalogIncomingRecommendations,
   type CatalogItem,
@@ -179,7 +180,7 @@ function CataloguePage() {
     else if (sortBy === "price") list.sort((a, b) => Number(b.default_price) - Number(a.default_price));
     else list.sort((a, b) => a.display_order - b.display_order || a.sort_order - b.sort_order);
     return list;
-  }, [all, search, status, category, sortBy]);
+  }, [all, search, status, category, kind, sortBy]);
 
   async function refresh() {
     await queryClient.invalidateQueries({ queryKey: ["catalog"] });
@@ -195,6 +196,18 @@ function CataloguePage() {
     setBusy(true);
     try {
       await setCatalogItemActive(item.id, !item.active);
+      await refresh();
+      toast.success(t("catalogueSaved"));
+    } catch (e) {
+      fail(e);
+    }
+    setBusy(false);
+  }
+
+  async function toggleAvailable(item: CatalogItem) {
+    setBusy(true);
+    try {
+      await setCatalogItemAvailable(item.id, !item.available_today);
       await refresh();
       toast.success(t("catalogueSaved"));
     } catch (e) {
@@ -356,6 +369,13 @@ function CataloguePage() {
                     {item.signature ? <Tag>{t("catalogueSignature")}</Tag> : null}
                     {item.requestable ? <Tag>{t("catalogueRequestable")}</Tag> : null}
                     {item.guest_visible ? <Tag>{t("catalogueGuestVisible")}</Tag> : null}
+                    {item.available_today ? (
+                      <Tag>{t("catalogueAvailableToday")}</Tag>
+                    ) : (
+                      <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-semibold text-destructive">
+                        {t("unavailableToday")}
+                      </span>
+                    )}
                     {item.preview_only ? (
                       <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold uppercase text-amber-700 dark:text-amber-400">
                         {t("catalogueDemoBadge")}
@@ -385,6 +405,17 @@ function CataloguePage() {
                     onClick={() => void toggleActive(item)}
                   >
                     {item.active ? t("catalogueDeactivate") : t("catalogueReactivate")}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-xl"
+                    disabled={busy}
+                    onClick={() => void toggleAvailable(item)}
+                  >
+                    {item.available_today
+                      ? t("catalogueMarkUnavailable")
+                      : t("catalogueMarkAvailable")}
                   </Button>
                 </div>
               </div>
