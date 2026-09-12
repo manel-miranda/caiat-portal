@@ -98,6 +98,8 @@ function DemoMenuBody({
   const [notes, setNotes] = useState("");
   const [timing, setTiming] = useState<PreviewTiming>("asap");
   const [busy, setBusy] = useState(false);
+  /** Reference of the last submitted preview order, shown as a confirmation. */
+  const [confirmed, setConfirmed] = useState<string | null>(null);
 
   // Every item a recommendation can point at: demo dishes plus real services.
   const pool = useMemo(() => {
@@ -170,6 +172,7 @@ function DemoMenuBody({
 
   function add(dish: Dish, delta = 1) {
     if (!dish.available) return;
+    setConfirmed(null);
     setCart((prev) => {
       const next = { ...prev };
       const qty = (next[dish.id] ?? 0) + delta;
@@ -192,12 +195,13 @@ function DemoMenuBody({
     }
     setBusy(true);
     try {
-      await submitPreviewOrder({
+      const orderId = await submitPreviewOrder({
         token,
         items: payload.map((l) => ({ service_type_id: l.dish.id, quantity: l.qty })),
         notes: notes.slice(0, 500),
         timing,
       });
+      setConfirmed(orderId);
       setCart({});
       setNotes("");
       setTiming("asap");
@@ -221,6 +225,19 @@ function DemoMenuBody({
         </span>
       </div>
       <p className="mt-1 text-xs text-muted-foreground">{t("previewOrderBanner")}</p>
+
+      {confirmed ? (
+        <div className="mt-3 rounded-xl border border-primary/40 bg-primary/5 p-3">
+          <p className="text-sm font-semibold">{t("previewOrderSent")}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {t("orderReference")}: <span className="font-mono">{confirmed.slice(0, 8)}</span>
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {t("orderStatusLabel")}: {t("foStatusRequested")}
+          </p>
+        </div>
+      ) : null}
+
 
       {step === "menu" ? (
         <div className="mt-3 space-y-4">
