@@ -56,10 +56,8 @@ export function FoodOrderCard({ order }: { order: PreviewOrder }) {
           <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold uppercase">
             {t(PREVIEW_STATUS_LABEL[order.status])}
           </span>
-          <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase text-amber-700 dark:text-amber-400">
-            {t("previewBadge")}
-          </span>
         </div>
+
       </div>
 
       <ul className="mt-2 space-y-1 text-sm">
