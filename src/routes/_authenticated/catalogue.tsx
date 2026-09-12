@@ -258,6 +258,17 @@ function CataloguePage() {
     });
   }
 
+  function toggleRecommendedIn(id: string) {
+    setDraft((d) => {
+      if (!d) return d;
+      const has = d.recommendedIn.includes(id);
+      return {
+        ...d,
+        recommendedIn: has ? d.recommendedIn.filter((x) => x !== id) : [...d.recommendedIn, id],
+      };
+    });
+  }
+
   return (
     <AppShell title={t("catalogueTitle")}>
       <p className="text-sm text-muted-foreground">{t("catalogueIntro")}</p>
@@ -302,6 +313,16 @@ function CataloguePage() {
             <option value="order">{t("catalogueSortOrder")}</option>
             <option value="name">{t("catalogueSortName")}</option>
             <option value="price">{t("catalogueSortPrice")}</option>
+          </select>
+          <select
+            aria-label={t("catalogueDemoBadge")}
+            value={kind}
+            onChange={(e) => setKind(e.target.value as typeof kind)}
+            className="min-h-11 flex-1 rounded-xl border border-border bg-card px-2 text-sm"
+          >
+            <option value="all">{t("catalogueFilterAll")}</option>
+            <option value="real">{t("catalogueFilterReal")}</option>
+            <option value="demo">{t("catalogueFilterDemo")}</option>
           </select>
         </div>
         <Button className="w-full rounded-xl" onClick={() => setDraft(emptyDraft())}>
