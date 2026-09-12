@@ -33,7 +33,7 @@ const CATEGORIES: CategoryDef[] = [
   {
     key: "food",
     icon: UtensilsCrossed,
-    labelKey: "catFood",
+    labelKey: "gcatFood",
     subs: ["breakfast", "meals", "room_service"],
   },
   {
@@ -42,7 +42,7 @@ const CATEGORIES: CategoryDef[] = [
     labelKey: "catActivities",
     subs: ["hiking", "cycling", "climbing", "wellness", "other"],
   },
-  { key: "transport", icon: Car, labelKey: "catTransport", subs: [] },
+  { key: "transport", icon: Car, labelKey: "gcatTransport", subs: [] },
   { key: "explore", icon: Compass, labelKey: "catExplore", subs: [] },
   { key: "extras", icon: Sparkles, labelKey: "catExtras", subs: [] },
   { key: "else", icon: MessageCircle, labelKey: "catElse", subs: [] },
