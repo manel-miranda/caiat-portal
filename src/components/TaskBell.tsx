@@ -21,12 +21,17 @@ export function TaskBell() {
   const stays = useQuery(activeStaysQuery);
   const requests = useQuery(requestsQuery);
   const pending = useQuery({ ...pendingReservationsQuery, enabled: canApprove });
+  const previewHost = useIsPreviewHost();
+  const orders = useQuery({ ...previewOrdersQuery, enabled: previewHost });
 
   const groups = buildTasks({
     canApprove,
     stays: stays.data ?? [],
     requests: requests.data ?? [],
     pendingReservations: canApprove ? (pending.data ?? []) : [],
+    pendingFoodOrders: previewHost
+      ? (orders.data ?? []).filter((o) => o.status === "requested")
+      : [],
   });
   const count = taskCount(groups);
 
