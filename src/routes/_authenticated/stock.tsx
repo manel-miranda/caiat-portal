@@ -1,11 +1,11 @@
 /**
- * PREVIEW-ONLY stock & groceries screen.
+ * Stock & groceries screen for signed-in staff (available on every host).
  *
- * Reachable only on Lovable preview hosts / localhost (same gate as the demo
- * food menu), so the live guesthouse app is unaffected. Every write goes
- * through a permission-checked RPC; nothing here creates charges or payments.
+ * Every write goes through a permission-checked RPC; nothing here creates
+ * charges or payments. Seeded demo ingredients stay visible with their Demo
+ * label so the owner can try the flow safely.
  */
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -17,7 +17,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { useAuth } from "@/lib/auth";
 import { t } from "@/lib/i18n";
 import { shortDateTime } from "@/lib/format";
-import { isDemoPreviewHost } from "@/lib/demo-menu";
 import {
   adjustStock,
   inventoryErrorKey,
@@ -33,11 +32,6 @@ import {
 } from "@/lib/inventory";
 
 export const Route = createFileRoute("/_authenticated/stock")({
-  beforeLoad: () => {
-    if (typeof window !== "undefined" && !isDemoPreviewHost(window.location.hostname)) {
-      throw redirect({ to: "/home", replace: true });
-    }
-  },
   head: () => ({
     meta: [
       { title: "Stock & groceries — Caiat Operations" },
