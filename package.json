@@ -8,7 +8,10 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint .",
+    "check": "bun run typecheck && bun run build",
+    "check:full": "bun run typecheck && bun run lint && bun run build",
     "format": "prettier --write ."
   },
   "overrides": {
