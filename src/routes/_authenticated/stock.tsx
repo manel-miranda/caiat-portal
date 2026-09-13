@@ -74,10 +74,11 @@ function StockPage() {
   const canWrite = can("requests_manage");
   const queryClient = useQueryClient();
   const status = useQuery(inventoryStatusQuery);
-  const [tab, setTab] = useState<"stock" | "shopping">("stock");
+  const [tab, setTab] = useState<"stock" | "shopping" | "purchases" | "suppliers">("stock");
   const [filter, setFilter] = useState<"all" | StockStatus>("all");
   const [search, setSearch] = useState("");
   const [action, setAction] = useState<Action | null>(null);
+  const [purchase, setPurchase] = useState<DraftLine[] | null>(null);
 
   const rows = useMemo(() => {
     const list = (status.data ?? []).filter((r) => r.active);
