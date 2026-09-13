@@ -215,22 +215,28 @@ export async function saveSupplier(input: {
   notes: string;
   active: boolean;
 }) {
-  const { error } = await supabase.rpc("supplier_upsert" as never, {
-    p_id: input.id,
-    p_name: input.name,
-    p_phone: input.phone,
-    p_location: input.location,
-    p_notes: input.notes,
-    p_active: input.active,
-  } as never);
+  const { error } = await supabase.rpc(
+    "supplier_upsert" as never,
+    {
+      p_id: input.id,
+      p_name: input.name,
+      p_phone: input.phone,
+      p_location: input.location,
+      p_notes: input.notes,
+      p_active: input.active,
+    } as never,
+  );
   if (error) throw error;
 }
 
 export async function setSupplierActive(id: string, active: boolean) {
-  const { error } = await supabase.rpc("supplier_set_active" as never, {
-    p_id: id,
-    p_active: active,
-  } as never);
+  const { error } = await supabase.rpc(
+    "supplier_set_active" as never,
+    {
+      p_id: id,
+      p_active: active,
+    } as never,
+  );
   if (error) throw error;
 }
 
@@ -241,12 +247,15 @@ export async function createPurchase(input: {
   notes: string;
   lines: { inventory_item_id: string; quantity: number; line_total: number }[];
 }) {
-  const { error } = await supabase.rpc("purchase_create" as never, {
-    p_supplier_id: input.supplierId,
-    p_purchase_date: input.purchaseDate,
-    p_notes: input.notes,
-    p_lines: input.lines,
-  } as never);
+  const { error } = await supabase.rpc(
+    "purchase_create" as never,
+    {
+      p_supplier_id: input.supplierId,
+      p_purchase_date: input.purchaseDate,
+      p_notes: input.notes,
+      p_lines: input.lines,
+    } as never,
+  );
   if (error) throw error;
 }
 
@@ -258,31 +267,40 @@ export async function receiveStock(
   unitCost: number | null,
   notes: string,
 ) {
-  const { error } = await supabase.rpc("inventory_receive" as never, {
-    p_item_id: itemId,
-    p_quantity: quantity,
-    p_unit_cost: unitCost,
-    p_notes: notes,
-  } as never);
+  const { error } = await supabase.rpc(
+    "inventory_receive" as never,
+    {
+      p_item_id: itemId,
+      p_quantity: quantity,
+      p_unit_cost: unitCost,
+      p_notes: notes,
+    } as never,
+  );
   if (error) throw error;
 }
 
 /** Writes the DIFFERENCE as an adjustment movement; history is never rewritten. */
 export async function adjustStock(itemId: string, actualQuantity: number, notes: string) {
-  const { error } = await supabase.rpc("inventory_adjust" as never, {
-    p_item_id: itemId,
-    p_actual_quantity: actualQuantity,
-    p_notes: notes,
-  } as never);
+  const { error } = await supabase.rpc(
+    "inventory_adjust" as never,
+    {
+      p_item_id: itemId,
+      p_actual_quantity: actualQuantity,
+      p_notes: notes,
+    } as never,
+  );
   if (error) throw error;
 }
 
 export async function recordWaste(itemId: string, quantity: number, notes: string) {
-  const { error } = await supabase.rpc("inventory_waste" as never, {
-    p_item_id: itemId,
-    p_quantity: quantity,
-    p_notes: notes,
-  } as never);
+  const { error } = await supabase.rpc(
+    "inventory_waste" as never,
+    {
+      p_item_id: itemId,
+      p_quantity: quantity,
+      p_notes: notes,
+    } as never,
+  );
   if (error) throw error;
 }
 
@@ -290,10 +308,13 @@ export async function saveRecipe(
   serviceTypeId: string,
   components: { inventory_item_id: string; qty_per_portion: number }[],
 ) {
-  const { error } = await supabase.rpc("inventory_set_recipe" as never, {
-    p_service_type_id: serviceTypeId,
-    p_components: components,
-  } as never);
+  const { error } = await supabase.rpc(
+    "inventory_set_recipe" as never,
+    {
+      p_service_type_id: serviceTypeId,
+      p_components: components,
+    } as never,
+  );
   if (error) throw error;
 }
 

@@ -142,136 +142,140 @@ function StockPage() {
         <SuppliersTab canWrite={canWrite} onChanged={refresh} />
       ) : (
         <>
-      <div className="surface-card mt-3 space-y-2 p-3">
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t("stockSearch")}
-          aria-label={t("stockSearch")}
-        />
-        {tab === "stock" ? (
-          <div className="flex flex-wrap gap-2">
-            {(["all", "buy", "low", "good"] as const).map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`min-h-9 rounded-full border px-3 text-xs font-medium ${
-                  filter === f
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border text-muted-foreground"
-                }`}
-              >
-                {f === "all"
-                  ? t("filterAll")
-                  : f === "buy"
-                    ? t("stockStatusBuy")
-                    : f === "low"
-                      ? t("stockStatusLow")
-                      : t("stockStatusGood")}
-              </button>
-            ))}
+          <div className="surface-card mt-3 space-y-2 p-3">
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t("stockSearch")}
+              aria-label={t("stockSearch")}
+            />
+            {tab === "stock" ? (
+              <div className="flex flex-wrap gap-2">
+                {(["all", "buy", "low", "good"] as const).map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => setFilter(f)}
+                    className={`min-h-9 rounded-full border px-3 text-xs font-medium ${
+                      filter === f
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border text-muted-foreground"
+                    }`}
+                  >
+                    {f === "all"
+                      ? t("filterAll")
+                      : f === "buy"
+                        ? t("stockStatusBuy")
+                        : f === "low"
+                          ? t("stockStatusLow")
+                          : t("stockStatusGood")}
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </div>
-        ) : null}
-      </div>
 
-      {status.isLoading ? (
-        <p className="surface-card mt-3 p-3 text-sm text-muted-foreground">{t("loading")}</p>
-      ) : visible.length === 0 ? (
-        <p className="surface-card mt-3 p-3 text-sm text-muted-foreground">
-          {tab === "shopping" ? t("stockShoppingEmpty") : t("noResults")}
-        </p>
-      ) : (
-        <ul className="surface-card mt-3 divide-y divide-border">
-          {visible.map((row) => (
-            <li key={row.id} className="p-3">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">
-                    {row.label}
-                    {row.preview_only ? (
-                      <span className="ms-2 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold uppercase text-amber-700 dark:text-amber-400">
-                        {t("stockDemoBadge")}
-                      </span>
+          {status.isLoading ? (
+            <p className="surface-card mt-3 p-3 text-sm text-muted-foreground">{t("loading")}</p>
+          ) : visible.length === 0 ? (
+            <p className="surface-card mt-3 p-3 text-sm text-muted-foreground">
+              {tab === "shopping" ? t("stockShoppingEmpty") : t("noResults")}
+            </p>
+          ) : (
+            <ul className="surface-card mt-3 divide-y divide-border">
+              {visible.map((row) => (
+                <li key={row.id} className="p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold">
+                        {row.label}
+                        {row.preview_only ? (
+                          <span className="ms-2 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold uppercase text-amber-700 dark:text-amber-400">
+                            {t("stockDemoBadge")}
+                          </span>
+                        ) : null}
+                      </p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {t("stockEstimated")}: {qty(row.estimated_stock)} {row.unit} ·{" "}
+                        {row.days_remaining != null
+                          ? `~${qty(row.days_remaining)} ${t("stockDaysLeft")}`
+                          : t("stockNoHistory")}
+                      </p>
+                      {row.recommended_quantity > 0 ? (
+                        <p className="mt-0.5 text-xs font-medium text-foreground">
+                          {t("stockRecommended")} {qty(row.recommended_quantity)} {row.unit}
+                          <span className="ms-1 font-normal text-muted-foreground">
+                            (
+                            {row.estimated_stock <= row.safety_stock
+                              ? t("stockReasonBelowSafety")
+                              : t("stockReasonDaysLeft")}
+                            )
+                          </span>
+                        </p>
+                      ) : null}
+                    </div>
+                    <StatusPill status={row.status} />
+                  </div>
+
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {canWrite ? (
+                      <>
+                        <Button
+                          size="sm"
+                          className="rounded-xl"
+                          onClick={() => setAction({ row, kind: "receive" })}
+                        >
+                          {t("stockReceive")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl"
+                          onClick={() => setAction({ row, kind: "adjust" })}
+                        >
+                          {t("stockAdjust")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl"
+                          onClick={() => setAction({ row, kind: "waste" })}
+                        >
+                          {t("stockWaste")}
+                        </Button>
+                      </>
                     ) : null}
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {t("stockEstimated")}: {qty(row.estimated_stock)} {row.unit} ·{" "}
-                    {row.days_remaining != null
-                      ? `~${qty(row.days_remaining)} ${t("stockDaysLeft")}`
-                      : t("stockNoHistory")}
-                  </p>
-                  {row.recommended_quantity > 0 ? (
-                    <p className="mt-0.5 text-xs font-medium text-foreground">
-                      {t("stockRecommended")} {qty(row.recommended_quantity)} {row.unit}
-                      <span className="ms-1 font-normal text-muted-foreground">
-                        (
-                        {row.estimated_stock <= row.safety_stock
-                          ? t("stockReasonBelowSafety")
-                          : t("stockReasonDaysLeft")}
-                        )
-                      </span>
-                    </p>
-                  ) : null}
-                </div>
-                <StatusPill status={row.status} />
-              </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="rounded-xl"
+                      onClick={() => setAction({ row, kind: "history" })}
+                    >
+                      {t("stockHistory")}
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
 
-              <div className="mt-2 flex flex-wrap gap-2">
-                {canWrite ? (
-                  <>
-                    <Button
-                      size="sm"
-                      className="rounded-xl"
-                      onClick={() => setAction({ row, kind: "receive" })}
-                    >
-                      {t("stockReceive")}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="rounded-xl"
-                      onClick={() => setAction({ row, kind: "adjust" })}
-                    >
-                      {t("stockAdjust")}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="rounded-xl"
-                      onClick={() => setAction({ row, kind: "waste" })}
-                    >
-                      {t("stockWaste")}
-                    </Button>
-                  </>
-                ) : null}
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="rounded-xl"
-                  onClick={() => setAction({ row, kind: "history" })}
-                >
-                  {t("stockHistory")}
-                </Button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {tab === "shopping" && canWrite && visible.length > 0 ? (
-        <Button
-          className="mt-3 w-full rounded-xl"
-          onClick={() =>
-            setPurchase(
-              visible
-                .filter((r) => r.recommended_quantity > 0)
-                .map((r) => ({ itemId: r.id, quantity: qty(r.recommended_quantity), cost: "" })),
-            )
-          }
-        >
-          {t("purchasePrefill")}
-        </Button>
-      ) : null}
+          {tab === "shopping" && canWrite && visible.length > 0 ? (
+            <Button
+              className="mt-3 w-full rounded-xl"
+              onClick={() =>
+                setPurchase(
+                  visible
+                    .filter((r) => r.recommended_quantity > 0)
+                    .map((r) => ({
+                      itemId: r.id,
+                      quantity: qty(r.recommended_quantity),
+                      cost: "",
+                    })),
+                )
+              }
+            >
+              {t("purchasePrefill")}
+            </Button>
+          ) : null}
         </>
       )}
 
@@ -461,7 +465,11 @@ function StatusPill({ status }: { status: StockStatus }) {
     good: "bg-muted text-muted-foreground",
   };
   const label =
-    status === "buy" ? t("stockStatusBuy") : status === "low" ? t("stockStatusLow") : t("stockStatusGood");
+    status === "buy"
+      ? t("stockStatusBuy")
+      : status === "low"
+        ? t("stockStatusLow")
+        : t("stockStatusGood");
   return (
     <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${map[status]}`}>
       {label}
