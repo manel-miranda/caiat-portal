@@ -413,6 +413,7 @@ function HistoryList({ itemId, unit }: { itemId: string; unit: string }) {
             <span className="block truncate text-xs text-muted-foreground">
               {shortDateTime(m.created_at)}
               {m.source_type === "preview_food_order" ? ` · ${t("stockSourceOrder")}` : ""}
+              {m.source_type === "purchase" ? ` · ${t("stockSourcePurchase")}` : ""}
               {m.notes ? ` · ${m.notes}` : ""}
             </span>
           </span>
