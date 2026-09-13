@@ -16,7 +16,6 @@
 - Codex, Claude Code, and manual engineering work should start from the latest `main` on a dedicated branch such as `feature/...`, `fix/...`, `refactor/...`, or `chore/...`.
 - Open a pull request back to `main`; do not force-push or rewrite published history.
 - Before a pull request is considered ready, run `bun install --frozen-lockfile` and `bun run check`.
-- Run `bun run lint` too and review its output. Lint is temporarily non-blocking in CI because the repository has pre-existing lint debt; do not introduce new lint errors in files you touch.
 - Keep database migrations additive and backward-compatible unless an explicitly reviewed migration requires otherwise.
 - Never commit private credentials, service-role keys, passwords, PINs, guest bearer tokens, or payment secrets.
 - Changes touching payments, checkout, permissions/auth, cash reconciliation, or inventory-consumption idempotency are high risk: preserve existing behavior and add focused verification/tests when modifying them.
