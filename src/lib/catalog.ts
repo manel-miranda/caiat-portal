@@ -96,7 +96,9 @@ export type CatalogInput = {
 /** Stable error codes the screen translates. */
 export function catalogErrorKey(raw: string): string {
   if (raw.includes("KEY_TAKEN")) return "catalogueKeyTaken";
+  if (raw.includes("KEY_IMMUTABLE")) return "catalogueKeyImmutable";
   if (raw.includes("KEY_INVALID") || raw.includes("KEY_REQUIRED")) return "catalogueKeyInvalid";
+
   if (raw.includes("TOO_MANY_RECOMMENDATIONS")) return "catalogueTooManyRecommendations";
   if (raw.includes("PERMISSION_DENIED")) return "adminOnly";
   return "";

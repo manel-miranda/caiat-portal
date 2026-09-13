@@ -81,9 +81,10 @@ function emptyDraft(): Draft {
     label: "",
     price: "0",
     billable: true,
-    requestable: true,
-    active: true,
-    guestVisible: true,
+    requestable: false,
+    active: false,
+    guestVisible: false,
+
     category: "food",
     guestCategory: "food",
     guestSubcategory: "",
@@ -464,12 +465,23 @@ function CataloguePage() {
                   onChange={(e) => setDraft({ ...draft, label: e.target.value })}
                 />
               </Field>
-              <Field label={t("catalogueKey")} hint={t("catalogueKeyHint")}>
+              <Field
+                label={t("catalogueKey")}
+                hint={draft.id ? t("catalogueKeyLocked") : t("catalogueKeyHint")}
+              >
                 <Input
                   value={draft.key}
+                  readOnly={!!draft.id}
+                  disabled={!!draft.id}
                   onChange={(e) => setDraft({ ...draft, key: e.target.value })}
                 />
               </Field>
+              {!draft.id ? (
+                <p className="rounded-xl bg-muted p-3 text-xs text-muted-foreground">
+                  {t("catalogueDraftHint")}
+                </p>
+              ) : null}
+
               <div className="grid grid-cols-2 gap-3">
                 <Field label={t("cataloguePrice")}>
                   <Input
@@ -537,18 +549,22 @@ function CataloguePage() {
                 <Toggle
                   label={t("catalogueRequestable")}
                   checked={draft.requestable}
+                  disabled={!draft.id}
                   onChange={(v) => setDraft({ ...draft, requestable: v })}
                 />
                 <Toggle
                   label={t("catalogueActive")}
                   checked={draft.active}
+                  disabled={!draft.id}
                   onChange={(v) => setDraft({ ...draft, active: v })}
                 />
                 <Toggle
                   label={t("catalogueGuestVisible")}
                   checked={draft.guestVisible}
+                  disabled={!draft.id}
                   onChange={(v) => setDraft({ ...draft, guestVisible: v })}
                 />
+
                 <Toggle
                   label={t("catalogueFeatured")}
                   checked={draft.featured}
@@ -712,14 +728,25 @@ function Toggle({
   label,
   checked,
   onChange,
+  disabled,
 }: {
   label: string;
   checked: boolean;
   onChange: (value: boolean) => void;
+  disabled?: boolean;
 }) {
   return (
-    <label className="flex min-h-11 items-center gap-2 rounded-xl border border-border px-3 text-sm">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+    <label
+      className={`flex min-h-11 items-center gap-2 rounded-xl border border-border px-3 text-sm ${
+        disabled ? "opacity-50" : ""
+      }`}
+    >
+      <input
+        type="checkbox"
+        checked={checked}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.checked)}
+      />
       <span className="min-w-0 truncate">{label}</span>
     </label>
   );
