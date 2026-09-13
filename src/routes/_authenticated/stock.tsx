@@ -16,19 +16,27 @@ import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useAuth } from "@/lib/auth";
 import { t } from "@/lib/i18n";
-import { shortDateTime } from "@/lib/format";
+import { mad, shortDate, shortDateTime, todayISO } from "@/lib/format";
 import {
   adjustStock,
+  createPurchase,
   inventoryErrorKey,
   inventoryMovementsQuery,
   inventoryStatusQuery,
+  purchaseLinesQuery,
+  purchasesQuery,
   qty,
   receiveStock,
   recordWaste,
+  saveSupplier,
+  setSupplierActive,
   statusRank,
+  suppliersQuery,
   type InventoryStatusRow,
   type MovementType,
+  type Purchase,
   type StockStatus,
+  type Supplier,
 } from "@/lib/inventory";
 
 export const Route = createFileRoute("/_authenticated/stock")({
@@ -66,10 +74,11 @@ function StockPage() {
   const canWrite = can("requests_manage");
   const queryClient = useQueryClient();
   const status = useQuery(inventoryStatusQuery);
-  const [tab, setTab] = useState<"stock" | "shopping">("stock");
+  const [tab, setTab] = useState<"stock" | "shopping" | "purchases" | "suppliers">("stock");
   const [filter, setFilter] = useState<"all" | StockStatus>("all");
   const [search, setSearch] = useState("");
   const [action, setAction] = useState<Action | null>(null);
+  const [purchase, setPurchase] = useState<DraftLine[] | null>(null);
 
   const rows = useMemo(() => {
     const list = (status.data ?? []).filter((r) => r.active);
@@ -107,129 +116,167 @@ function StockPage() {
         <Counter label={t("stockStatusGood")} value={counts.good} tone="muted" />
       </div>
 
-      <div className="mt-3 flex gap-2">
+      <div className="mt-3 flex flex-wrap gap-2">
         <TabButton active={tab === "stock"} onClick={() => setTab("stock")}>
           {t("stockItems")}
         </TabButton>
         <TabButton active={tab === "shopping"} onClick={() => setTab("shopping")}>
           {t("stockShoppingList")}
         </TabButton>
+        <TabButton active={tab === "purchases"} onClick={() => setTab("purchases")}>
+          {t("stockPurchases")}
+        </TabButton>
+        <TabButton active={tab === "suppliers"} onClick={() => setTab("suppliers")}>
+          {t("stockSuppliers")}
+        </TabButton>
       </div>
 
-      <div className="surface-card mt-3 space-y-2 p-3">
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t("stockSearch")}
-          aria-label={t("stockSearch")}
+      {tab === "purchases" ? (
+        <PurchasesTab
+          canWrite={canWrite}
+          items={rows}
+          onRecord={() => setPurchase([])}
+          onChanged={refresh}
         />
-        {tab === "stock" ? (
-          <div className="flex flex-wrap gap-2">
-            {(["all", "buy", "low", "good"] as const).map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`min-h-9 rounded-full border px-3 text-xs font-medium ${
-                  filter === f
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border text-muted-foreground"
-                }`}
-              >
-                {f === "all"
-                  ? t("filterAll")
-                  : f === "buy"
-                    ? t("stockStatusBuy")
-                    : f === "low"
-                      ? t("stockStatusLow")
-                      : t("stockStatusGood")}
-              </button>
-            ))}
-          </div>
-        ) : null}
-      </div>
-
-      {status.isLoading ? (
-        <p className="surface-card mt-3 p-3 text-sm text-muted-foreground">{t("loading")}</p>
-      ) : visible.length === 0 ? (
-        <p className="surface-card mt-3 p-3 text-sm text-muted-foreground">
-          {tab === "shopping" ? t("stockShoppingEmpty") : t("noResults")}
-        </p>
+      ) : tab === "suppliers" ? (
+        <SuppliersTab canWrite={canWrite} onChanged={refresh} />
       ) : (
-        <ul className="surface-card mt-3 divide-y divide-border">
-          {visible.map((row) => (
-            <li key={row.id} className="p-3">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">
-                    {row.label}
-                    {row.preview_only ? (
-                      <span className="ms-2 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold uppercase text-amber-700 dark:text-amber-400">
-                        {t("stockDemoBadge")}
-                      </span>
-                    ) : null}
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {t("stockEstimated")}: {qty(row.estimated_stock)} {row.unit} ·{" "}
-                    {row.days_remaining != null
-                      ? `~${qty(row.days_remaining)} ${t("stockDaysLeft")}`
-                      : t("stockNoHistory")}
-                  </p>
-                  {row.recommended_quantity > 0 ? (
-                    <p className="mt-0.5 text-xs font-medium text-foreground">
-                      {t("stockRecommended")} {qty(row.recommended_quantity)} {row.unit}
-                      <span className="ms-1 font-normal text-muted-foreground">
-                        (
-                        {row.estimated_stock <= row.safety_stock
-                          ? t("stockReasonBelowSafety")
-                          : t("stockReasonDaysLeft")}
-                        )
-                      </span>
-                    </p>
-                  ) : null}
-                </div>
-                <StatusPill status={row.status} />
+        <>
+          <div className="surface-card mt-3 space-y-2 p-3">
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t("stockSearch")}
+              aria-label={t("stockSearch")}
+            />
+            {tab === "stock" ? (
+              <div className="flex flex-wrap gap-2">
+                {(["all", "buy", "low", "good"] as const).map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => setFilter(f)}
+                    className={`min-h-9 rounded-full border px-3 text-xs font-medium ${
+                      filter === f
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border text-muted-foreground"
+                    }`}
+                  >
+                    {f === "all"
+                      ? t("filterAll")
+                      : f === "buy"
+                        ? t("stockStatusBuy")
+                        : f === "low"
+                          ? t("stockStatusLow")
+                          : t("stockStatusGood")}
+                  </button>
+                ))}
               </div>
+            ) : null}
+          </div>
 
-              <div className="mt-2 flex flex-wrap gap-2">
-                {canWrite ? (
-                  <>
+          {status.isLoading ? (
+            <p className="surface-card mt-3 p-3 text-sm text-muted-foreground">{t("loading")}</p>
+          ) : visible.length === 0 ? (
+            <p className="surface-card mt-3 p-3 text-sm text-muted-foreground">
+              {tab === "shopping" ? t("stockShoppingEmpty") : t("noResults")}
+            </p>
+          ) : (
+            <ul className="surface-card mt-3 divide-y divide-border">
+              {visible.map((row) => (
+                <li key={row.id} className="p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold">
+                        {row.label}
+                        {row.preview_only ? (
+                          <span className="ms-2 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold uppercase text-amber-700 dark:text-amber-400">
+                            {t("stockDemoBadge")}
+                          </span>
+                        ) : null}
+                      </p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {t("stockEstimated")}: {qty(row.estimated_stock)} {row.unit} ·{" "}
+                        {row.days_remaining != null
+                          ? `~${qty(row.days_remaining)} ${t("stockDaysLeft")}`
+                          : t("stockNoHistory")}
+                      </p>
+                      {row.recommended_quantity > 0 ? (
+                        <p className="mt-0.5 text-xs font-medium text-foreground">
+                          {t("stockRecommended")} {qty(row.recommended_quantity)} {row.unit}
+                          <span className="ms-1 font-normal text-muted-foreground">
+                            (
+                            {row.estimated_stock <= row.safety_stock
+                              ? t("stockReasonBelowSafety")
+                              : t("stockReasonDaysLeft")}
+                            )
+                          </span>
+                        </p>
+                      ) : null}
+                    </div>
+                    <StatusPill status={row.status} />
+                  </div>
+
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {canWrite ? (
+                      <>
+                        <Button
+                          size="sm"
+                          className="rounded-xl"
+                          onClick={() => setAction({ row, kind: "receive" })}
+                        >
+                          {t("stockReceive")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl"
+                          onClick={() => setAction({ row, kind: "adjust" })}
+                        >
+                          {t("stockAdjust")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl"
+                          onClick={() => setAction({ row, kind: "waste" })}
+                        >
+                          {t("stockWaste")}
+                        </Button>
+                      </>
+                    ) : null}
                     <Button
                       size="sm"
+                      variant="ghost"
                       className="rounded-xl"
-                      onClick={() => setAction({ row, kind: "receive" })}
+                      onClick={() => setAction({ row, kind: "history" })}
                     >
-                      {t("stockReceive")}
+                      {t("stockHistory")}
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="rounded-xl"
-                      onClick={() => setAction({ row, kind: "adjust" })}
-                    >
-                      {t("stockAdjust")}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="rounded-xl"
-                      onClick={() => setAction({ row, kind: "waste" })}
-                    >
-                      {t("stockWaste")}
-                    </Button>
-                  </>
-                ) : null}
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="rounded-xl"
-                  onClick={() => setAction({ row, kind: "history" })}
-                >
-                  {t("stockHistory")}
-                </Button>
-              </div>
-            </li>
-          ))}
-        </ul>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {tab === "shopping" && canWrite && visible.length > 0 ? (
+            <Button
+              className="mt-3 w-full rounded-xl"
+              onClick={() =>
+                setPurchase(
+                  visible
+                    .filter((r) => r.recommended_quantity > 0)
+                    .map((r) => ({
+                      itemId: r.id,
+                      quantity: qty(r.recommended_quantity),
+                      cost: "",
+                    })),
+                )
+              }
+            >
+              {t("purchasePrefill")}
+            </Button>
+          ) : null}
+        </>
       )}
 
       <Sheet open={Boolean(action)} onOpenChange={(open) => !open && setAction(null)}>
@@ -260,6 +307,24 @@ function StockPage() {
                 />
               )}
             </>
+          ) : null}
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={purchase !== null} onOpenChange={(open) => !open && setPurchase(null)}>
+        <SheetContent side="bottom" className="max-h-[90dvh] overflow-y-auto rounded-t-2xl">
+          <SheetHeader className="text-start">
+            <SheetTitle className="text-base">{t("purchaseNew")}</SheetTitle>
+          </SheetHeader>
+          {purchase !== null ? (
+            <PurchaseForm
+              items={rows}
+              initialLines={purchase}
+              onDone={async () => {
+                setPurchase(null);
+                await refresh();
+              }}
+            />
           ) : null}
         </SheetContent>
       </Sheet>
@@ -352,6 +417,7 @@ function HistoryList({ itemId, unit }: { itemId: string; unit: string }) {
             <span className="block truncate text-xs text-muted-foreground">
               {shortDateTime(m.created_at)}
               {m.source_type === "preview_food_order" ? ` · ${t("stockSourceOrder")}` : ""}
+              {m.source_type === "purchase" ? ` · ${t("stockSourcePurchase")}` : ""}
               {m.notes ? ` · ${m.notes}` : ""}
             </span>
           </span>
@@ -399,7 +465,11 @@ function StatusPill({ status }: { status: StockStatus }) {
     good: "bg-muted text-muted-foreground",
   };
   const label =
-    status === "buy" ? t("stockStatusBuy") : status === "low" ? t("stockStatusLow") : t("stockStatusGood");
+    status === "buy"
+      ? t("stockStatusBuy")
+      : status === "low"
+        ? t("stockStatusLow")
+        : t("stockStatusGood");
   return (
     <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${map[status]}`}>
       {label}
@@ -425,5 +495,428 @@ function TabButton({
     >
       {children}
     </button>
+  );
+}
+
+/* ---------------- purchases & suppliers ---------------- */
+
+type DraftLine = { itemId: string; quantity: string; cost: string };
+
+function PurchasesTab({
+  canWrite,
+  items,
+  onRecord,
+  onChanged,
+}: {
+  canWrite: boolean;
+  items: InventoryStatusRow[];
+  onRecord: () => void;
+  onChanged: () => Promise<void>;
+}) {
+  const purchases = useQuery(purchasesQuery);
+  const suppliers = useQuery(suppliersQuery);
+  const [open, setOpen] = useState<Purchase | null>(null);
+  const supplierName = (id: string | null) =>
+    (suppliers.data ?? []).find((s) => s.id === id)?.name ?? t("purchaseNoSupplier");
+  const list = purchases.data ?? [];
+
+  return (
+    <div className="mt-3 space-y-3">
+      {canWrite ? (
+        <Button className="w-full rounded-xl" onClick={onRecord}>
+          {t("purchaseNew")}
+        </Button>
+      ) : null}
+      <p className="text-xs text-muted-foreground">{t("purchaseHint")}</p>
+
+      {purchases.isLoading ? (
+        <p className="surface-card p-3 text-sm text-muted-foreground">{t("loading")}</p>
+      ) : list.length === 0 ? (
+        <p className="surface-card p-3 text-sm text-muted-foreground">{t("purchaseEmpty")}</p>
+      ) : (
+        <ul className="surface-card divide-y divide-border">
+          {list.map((p) => (
+            <li key={p.id}>
+              <button
+                onClick={() => setOpen(p)}
+                className="flex w-full items-center justify-between gap-3 p-3 text-start"
+              >
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-semibold">
+                    {supplierName(p.supplier_id)}
+                  </span>
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {shortDate(p.purchase_date)} · {p.line_count} {t("purchaseItemsCount")}
+                  </span>
+                </span>
+                <span className="shrink-0 text-sm font-semibold">{mad(p.total_cost)}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <Sheet open={open !== null} onOpenChange={(o) => !o && setOpen(null)}>
+        <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto rounded-t-2xl">
+          <SheetHeader className="text-start">
+            <SheetTitle className="text-base">{t("purchaseDetails")}</SheetTitle>
+          </SheetHeader>
+          {open ? (
+            <PurchaseDetails
+              purchase={open}
+              items={items}
+              supplier={supplierName(open.supplier_id)}
+              onChanged={onChanged}
+            />
+          ) : null}
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+}
+
+function PurchaseDetails({
+  purchase,
+  items,
+  supplier,
+}: {
+  purchase: Purchase;
+  items: InventoryStatusRow[];
+  supplier: string;
+  onChanged: () => Promise<void>;
+}) {
+  const lines = useQuery(purchaseLinesQuery(purchase.id));
+  const label = (id: string) => items.find((i) => i.id === id)?.label ?? id;
+  const unit = (id: string) => items.find((i) => i.id === id)?.unit ?? "";
+  return (
+    <div className="mt-2 space-y-2 pb-6">
+      <p className="text-sm text-muted-foreground">
+        {shortDate(purchase.purchase_date)} · {supplier}
+      </p>
+      {purchase.notes ? <p className="text-sm">{purchase.notes}</p> : null}
+      {lines.isLoading ? (
+        <p className="text-sm text-muted-foreground">{t("loading")}</p>
+      ) : (
+        <ul className="divide-y divide-border">
+          {(lines.data ?? []).map((l) => (
+            <li key={l.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+              <span className="min-w-0 truncate">
+                {label(l.inventory_item_id)} · {qty(l.quantity)} {unit(l.inventory_item_id)}
+              </span>
+              <span className="shrink-0 font-medium">{mad(l.line_total)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="flex items-center justify-between border-t border-border pt-2 text-sm font-semibold">
+        <span>{t("purchaseTotal")}</span>
+        <span>{mad(purchase.total_cost)}</span>
+      </p>
+    </div>
+  );
+}
+
+function PurchaseForm({
+  items,
+  initialLines,
+  onDone,
+}: {
+  items: InventoryStatusRow[];
+  initialLines: DraftLine[];
+  onDone: () => Promise<void>;
+}) {
+  const suppliers = useQuery(suppliersQuery);
+  const [supplierId, setSupplierId] = useState("");
+  const [date, setDate] = useState(todayISO());
+  const [notes, setNotes] = useState("");
+  const [lines, setLines] = useState<DraftLine[]>(
+    initialLines.length > 0 ? initialLines : [{ itemId: "", quantity: "", cost: "" }],
+  );
+  const [busy, setBusy] = useState(false);
+
+  const total = lines.reduce((sum, l) => sum + (Number(l.cost) || 0), 0);
+
+  function update(index: number, patch: Partial<DraftLine>) {
+    setLines((prev) => prev.map((l, i) => (i === index ? { ...l, ...patch } : l)));
+  }
+
+  async function submit() {
+    // Duplicate items are aggregated server-side; empty rows are dropped here.
+    const payload = lines
+      .filter((l) => l.itemId && Number(l.quantity) > 0)
+      .map((l) => ({
+        inventory_item_id: l.itemId,
+        quantity: Number(l.quantity),
+        line_total: Math.max(Number(l.cost) || 0, 0),
+      }));
+    if (payload.length === 0) {
+      toast.error(t("purchaseLinesRequired"));
+      return;
+    }
+    setBusy(true);
+    try {
+      await createPurchase({
+        supplierId: supplierId || null,
+        purchaseDate: date,
+        notes,
+        lines: payload,
+      });
+      toast.success(t("purchaseSaved"));
+      await onDone();
+    } catch (e) {
+      const key = inventoryErrorKey((e as Error).message);
+      toast.error(key ? t(key as never) : (e as Error).message);
+    }
+    setBusy(false);
+  }
+
+  return (
+    <div className="mt-2 grid gap-3 pb-6">
+      <div className="grid gap-1">
+        <Label className="text-sm">{t("purchaseSupplier")}</Label>
+        <select
+          value={supplierId}
+          onChange={(e) => setSupplierId(e.target.value)}
+          className="min-h-11 rounded-xl border border-border bg-background px-3 text-sm"
+        >
+          <option value="">{t("purchaseNoSupplier")}</option>
+          {(suppliers.data ?? [])
+            .filter((s) => s.active)
+            .map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+        </select>
+      </div>
+      <div className="grid gap-1">
+        <Label className="text-sm">{t("purchaseDate")}</Label>
+        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+      </div>
+
+      <Label className="text-sm">{t("purchaseLinesLabel")}</Label>
+      {lines.map((line, index) => (
+        <div key={index} className="grid gap-2 rounded-xl border border-border p-2">
+          <select
+            value={line.itemId}
+            onChange={(e) => update(index, { itemId: e.target.value })}
+            className="min-h-11 rounded-xl border border-border bg-background px-3 text-sm"
+          >
+            <option value="">—</option>
+            {items.map((i) => (
+              <option key={i.id} value={i.id}>
+                {i.label} ({i.unit})
+              </option>
+            ))}
+          </select>
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              inputMode="decimal"
+              placeholder={t("stockQuantity")}
+              aria-label={t("stockQuantity")}
+              value={line.quantity}
+              onChange={(e) => update(index, { quantity: e.target.value })}
+            />
+            <Input
+              inputMode="decimal"
+              placeholder={t("purchaseLineTotal")}
+              aria-label={t("purchaseLineTotal")}
+              value={line.cost}
+              onChange={(e) => update(index, { cost: e.target.value })}
+            />
+          </div>
+          {lines.length > 1 ? (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="justify-self-start rounded-xl"
+              onClick={() => setLines((prev) => prev.filter((_, i) => i !== index))}
+            >
+              {t("purchaseRemoveLine")}
+            </Button>
+          ) : null}
+        </div>
+      ))}
+      <Button
+        size="sm"
+        variant="outline"
+        className="rounded-xl"
+        onClick={() => setLines((prev) => [...prev, { itemId: "", quantity: "", cost: "" }])}
+      >
+        {t("purchaseAddLine")}
+      </Button>
+
+      <div className="grid gap-1">
+        <Label className="text-sm">{t("stockNote")}</Label>
+        <Input value={notes} onChange={(e) => setNotes(e.target.value)} />
+      </div>
+      <p className="flex items-center justify-between text-sm font-semibold">
+        <span>{t("purchaseTotal")}</span>
+        <span>{mad(total)}</span>
+      </p>
+      <Button className="w-full rounded-xl" disabled={busy} onClick={() => void submit()}>
+        {t("save")}
+      </Button>
+    </div>
+  );
+}
+
+function SuppliersTab({
+  canWrite,
+  onChanged,
+}: {
+  canWrite: boolean;
+  onChanged: () => Promise<void>;
+}) {
+  const suppliers = useQuery(suppliersQuery);
+  const [draft, setDraft] = useState<Supplier | "new" | null>(null);
+  const list = suppliers.data ?? [];
+
+  async function toggle(supplier: Supplier) {
+    try {
+      await setSupplierActive(supplier.id, !supplier.active);
+      toast.success(t("supplierSaved"));
+      await onChanged();
+    } catch (e) {
+      const key = inventoryErrorKey((e as Error).message);
+      toast.error(key ? t(key as never) : (e as Error).message);
+    }
+  }
+
+  return (
+    <div className="mt-3 space-y-3">
+      {canWrite ? (
+        <Button className="w-full rounded-xl" onClick={() => setDraft("new")}>
+          {t("supplierNew")}
+        </Button>
+      ) : null}
+
+      {suppliers.isLoading ? (
+        <p className="surface-card p-3 text-sm text-muted-foreground">{t("loading")}</p>
+      ) : list.length === 0 ? (
+        <p className="surface-card p-3 text-sm text-muted-foreground">{t("supplierEmpty")}</p>
+      ) : (
+        <ul className="surface-card divide-y divide-border">
+          {list.map((s) => (
+            <li key={s.id} className="p-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold">{s.name}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {[s.phone, s.location].filter(Boolean).join(" · ")}
+                  </p>
+                </div>
+                {!s.active ? (
+                  <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                    {t("supplierInactive")}
+                  </span>
+                ) : null}
+              </div>
+              {canWrite ? (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-xl"
+                    onClick={() => setDraft(s)}
+                  >
+                    {t("supplierEdit")}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="rounded-xl"
+                    onClick={() => void toggle(s)}
+                  >
+                    {s.active ? t("supplierDeactivate") : t("supplierActivate")}
+                  </Button>
+                </div>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <Sheet open={draft !== null} onOpenChange={(o) => !o && setDraft(null)}>
+        <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto rounded-t-2xl">
+          <SheetHeader className="text-start">
+            <SheetTitle className="text-base">
+              {draft === "new" ? t("supplierNew") : t("supplierEdit")}
+            </SheetTitle>
+          </SheetHeader>
+          {draft !== null ? (
+            <SupplierForm
+              supplier={draft === "new" ? null : draft}
+              onDone={async () => {
+                setDraft(null);
+                await onChanged();
+              }}
+            />
+          ) : null}
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+}
+
+function SupplierForm({
+  supplier,
+  onDone,
+}: {
+  supplier: Supplier | null;
+  onDone: () => Promise<void>;
+}) {
+  const [name, setName] = useState(supplier?.name ?? "");
+  const [phone, setPhone] = useState(supplier?.phone ?? "");
+  const [location, setLocation] = useState(supplier?.location ?? "");
+  const [notes, setNotes] = useState(supplier?.notes ?? "");
+  const [busy, setBusy] = useState(false);
+
+  async function submit() {
+    if (!name.trim()) {
+      toast.error(t("supplierNameRequired"));
+      return;
+    }
+    setBusy(true);
+    try {
+      await saveSupplier({
+        id: supplier?.id ?? null,
+        name,
+        phone,
+        location,
+        notes,
+        active: supplier?.active ?? true,
+      });
+      toast.success(t("supplierSaved"));
+      await onDone();
+    } catch (e) {
+      const key = inventoryErrorKey((e as Error).message);
+      toast.error(key ? t(key as never) : (e as Error).message);
+    }
+    setBusy(false);
+  }
+
+  return (
+    <div className="mt-2 grid gap-3 pb-6">
+      <div className="grid gap-1">
+        <Label className="text-sm">{t("supplierName")}</Label>
+        <Input value={name} onChange={(e) => setName(e.target.value)} />
+      </div>
+      <div className="grid gap-1">
+        <Label className="text-sm">{t("supplierPhone")}</Label>
+        <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+      </div>
+      <div className="grid gap-1">
+        <Label className="text-sm">{t("supplierLocation")}</Label>
+        <Input value={location} onChange={(e) => setLocation(e.target.value)} />
+      </div>
+      <div className="grid gap-1">
+        <Label className="text-sm">{t("supplierNotes")}</Label>
+        <Input value={notes} onChange={(e) => setNotes(e.target.value)} />
+      </div>
+      <Button className="w-full rounded-xl" disabled={busy} onClick={() => void submit()}>
+        {t("save")}
+      </Button>
+    </div>
   );
 }
