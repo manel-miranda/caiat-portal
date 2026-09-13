@@ -6,8 +6,8 @@ Describe what changed and why.
 
 - [ ] `bun install --frozen-lockfile`
 - [ ] `bun run typecheck`
-- [ ] `bun run lint`
 - [ ] `bun run build`
+- [ ] `bun run lint` reviewed; any existing baseline issues are not worsened by this PR
 
 ## Risk check
 
