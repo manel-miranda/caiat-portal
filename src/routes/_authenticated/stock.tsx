@@ -74,7 +74,8 @@ function StockPage() {
   const canWrite = can("requests_manage");
   const queryClient = useQueryClient();
   const status = useQuery(inventoryStatusQuery);
-  const [tab, setTab] = useState<"stock" | "shopping" | "purchases" | "suppliers">("stock");
+  const context = useQuery(purchaseContextQuery);
+  const [tab, setTab] = useState<"stock" | "shopping" | "purchases">("stock");
   const [filter, setFilter] = useState<"all" | StockStatus>("all");
   const [search, setSearch] = useState("");
   const [action, setAction] = useState<Action | null>(null);
@@ -126,9 +127,6 @@ function StockPage() {
         <TabButton active={tab === "purchases"} onClick={() => setTab("purchases")}>
           {t("stockPurchases")}
         </TabButton>
-        <TabButton active={tab === "suppliers"} onClick={() => setTab("suppliers")}>
-          {t("stockSuppliers")}
-        </TabButton>
       </div>
 
       {tab === "purchases" ? (
@@ -138,8 +136,6 @@ function StockPage() {
           onRecord={() => setPurchase([])}
           onChanged={refresh}
         />
-      ) : tab === "suppliers" ? (
-        <SuppliersTab canWrite={canWrite} onChanged={refresh} />
       ) : (
         <>
           <div className="surface-card mt-3 space-y-2 p-3">
@@ -215,6 +211,13 @@ function StockPage() {
                     </div>
                     <StatusPill status={row.status} />
                   </div>
+
+                  {tab === "shopping" ? (
+                    <ShoppingHint
+                      row={row}
+                      context={(context.data ?? []).find((c) => c.inventory_item_id === row.id)}
+                    />
+                  ) : null}
 
                   <div className="mt-2 flex flex-wrap gap-2">
                     {canWrite ? (
@@ -320,6 +323,7 @@ function StockPage() {
             <PurchaseForm
               items={rows}
               initialLines={purchase}
+              context={context.data ?? []}
               onDone={async () => {
                 setPurchase(null);
                 await refresh();
