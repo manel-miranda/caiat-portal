@@ -50,7 +50,7 @@ suite("food order delivery → inventory consumption", () => {
     sql = db.sql;
     staffId = await createStaffUser(sql, "kitchen_staff");
     await actAs(sql, staffId);
-  });
+  }, 15_000);
 
   afterAll(async () => {
     await db?.drop();
@@ -79,7 +79,6 @@ suite("food order delivery → inventory consumption", () => {
       expect(round(movement.quantity)).toBe(round(-(expected[movement.item_key] ?? 0)));
     }
 
-    // The forecast view the Stock screen reads moves by exactly the same amount.
     const after = await stockByKey(sql);
     for (const [key, used] of Object.entries(expected)) {
       expect(round((after[key] ?? 0) - (before[key] ?? 0))).toBe(round(-used));
@@ -96,7 +95,6 @@ suite("food order delivery → inventory consumption", () => {
     await sql`SELECT public.preview_food_order_set_status(${orderId}, 'delivered')`;
     await sql`SELECT public.preview_food_order_set_status(${orderId}, 'delivered')`;
 
-    // Same ledger rows, not replacements: no row was added, removed or rewritten.
     expect(await movementIdsForOrder(sql, orderId)).toEqual(idsAfterFirst);
     expect(await stockByKey(sql)).toEqual(stockAfterFirst);
   });
@@ -112,8 +110,6 @@ suite("food order delivery → inventory consumption", () => {
     const idsAfterFirst = await movementIdsForOrder(sql, orderId);
     const stockAfterFirst = await stockByKey(sql);
 
-    // Whatever replays the consumption — a retried RPC, a reload that re-fires
-    // the mutation, a server-side reprocess — writes nothing further.
     for (let attempt = 0; attempt < 3; attempt += 1) {
       const [replay] =
         await sql`SELECT public.inventory_consume_preview_order(${orderId}) AS inserted`;
@@ -180,8 +176,6 @@ suite("food order delivery → inventory consumption", () => {
     const itemId = String((item as { id: string }).id);
     const before = (await stockByKey(sql))["demo_onions"] ?? 0;
 
-    // Manual movements carry source_id IS NULL, which the partial unique index
-    // deliberately excludes — two identical receipts must both land.
     await sql`SELECT public.inventory_receive(${itemId}, 3, NULL, 'market run')`;
     await sql`SELECT public.inventory_receive(${itemId}, 3, NULL, 'market run')`;
 
@@ -192,12 +186,8 @@ suite("food order delivery → inventory consumption", () => {
 
 /**
  * Current behaviour on cancellation, pinned so a future change is a deliberate one.
- *
- * The implementation has no reversal path: `preview_food_order_set_status`
- * consumes on `delivered` and does nothing on `cancelled`. Cancelling an order
- * that was already delivered therefore leaves the consumption in the ledger,
- * and re-delivering it does not deduct again. Reversal, if it is ever wanted,
- * is a product decision — these tests only record what happens today.
+ * The implementation has no reversal path: delivery consumes, cancellation does
+ * not reverse it, and re-delivery is still idempotent.
  */
 suite("cancelling after delivery (no reversal implemented)", () => {
   let db: TestDatabase;
@@ -207,7 +197,7 @@ suite("cancelling after delivery (no reversal implemented)", () => {
     db = await createTestDatabase();
     sql = db.sql;
     await actAs(sql, await createStaffUser(sql, "kitchen_staff"));
-  });
+  }, 15_000);
 
   afterAll(async () => {
     await db?.drop();
@@ -222,7 +212,6 @@ suite("cancelling after delivery (no reversal implemented)", () => {
 
     await sql`SELECT public.preview_food_order_set_status(${orderId}, 'cancelled')`;
 
-    // No reversal movement is written, and nothing is deleted either.
     expect(await movementIdsForOrder(sql, orderId)).toEqual(idsAfterDelivery);
     expect(await stockByKey(sql)).toEqual(stockAfterDelivery);
   });
