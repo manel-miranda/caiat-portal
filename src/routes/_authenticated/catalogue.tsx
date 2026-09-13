@@ -464,12 +464,23 @@ function CataloguePage() {
                   onChange={(e) => setDraft({ ...draft, label: e.target.value })}
                 />
               </Field>
-              <Field label={t("catalogueKey")} hint={t("catalogueKeyHint")}>
+              <Field
+                label={t("catalogueKey")}
+                hint={draft.id ? t("catalogueKeyLocked") : t("catalogueKeyHint")}
+              >
                 <Input
                   value={draft.key}
+                  readOnly={!!draft.id}
+                  disabled={!!draft.id}
                   onChange={(e) => setDraft({ ...draft, key: e.target.value })}
                 />
               </Field>
+              {!draft.id ? (
+                <p className="rounded-xl bg-muted p-3 text-xs text-muted-foreground">
+                  {t("catalogueDraftHint")}
+                </p>
+              ) : null}
+
               <div className="grid grid-cols-2 gap-3">
                 <Field label={t("cataloguePrice")}>
                   <Input
