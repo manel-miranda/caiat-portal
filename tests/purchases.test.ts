@@ -13,6 +13,7 @@ import {
   createStaffUser,
   createTestDatabase,
   databaseAvailable,
+  round,
   stockByKey,
   type TestDatabase,
 } from "./support/preview-db";
@@ -87,14 +88,14 @@ suite("suppliers and purchases", () => {
     ]);
 
     const movements = await movementsFor(purchaseId);
-    expect(movements).toHaveLength(1);
+    expect(movements.length).toBe(1);
     expect(movements[0]?.movement_type).toBe("receipt");
     expect(movements[0]?.source_type).toBe("purchase");
     expect(movements[0]?.quantity).toBe(4);
     expect(movements[0]?.unit_cost).toBe(15);
 
     const after = (await stockByKey(sql))["demo_onions"] ?? 0;
-    expect(after - before).toBeCloseTo(4, 6);
+    expect(round(after - before)).toBe(4);
 
     const [purchase] = await sql`
       SELECT total_cost::float8 AS total_cost, line_count FROM public.purchases WHERE id = ${purchaseId}
@@ -141,13 +142,13 @@ suite("suppliers and purchases", () => {
     ]);
 
     const movements = await movementsFor(purchaseId);
-    expect(movements).toHaveLength(1);
+    expect(movements.length).toBe(1);
     expect(movements[0]?.quantity).toBe(8);
 
     const lines = await sql`
       SELECT quantity::float8 AS quantity FROM public.purchase_lines WHERE purchase_id = ${purchaseId}
     `;
-    expect(lines).toHaveLength(1);
+    expect(lines.length).toBe(1);
     expect((lines as unknown as { quantity: number }[])[0]?.quantity).toBe(8);
   });
 
@@ -175,10 +176,10 @@ suite("suppliers and purchases", () => {
     }
     expect(purchaseDenied).toBe(true);
 
-    const [{ count }] = (await sql`
+    const sneaky = (await sql`
       SELECT count(*)::int AS count FROM public.suppliers WHERE name = 'Sneaky'
     `) as unknown as { count: number }[];
-    expect(count).toBe(0);
+    expect(sneaky[0]?.count).toBe(0);
   });
 
   test("anonymous callers cannot execute the new RPCs", async () => {
