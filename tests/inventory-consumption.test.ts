@@ -61,9 +61,6 @@ suite("food order delivery → inventory consumption", () => {
     const expected = await expectedConsumption(sql, ORDER);
     const before = await stockByKey(sql);
 
-    // Anchor against hand-computed values from the seeded demo recipes, so the
-    // test does not simply agree with itself: 2 × tajine needs 0.70 kg chicken,
-    // and onions (0.10/portion in both dishes) roll up to 2 × 0.10 + 1 × 0.10.
     expect(round(expected["demo_chicken"] ?? 0)).toBe(0.7);
     expect(round(expected["demo_onions"] ?? 0)).toBe(0.3);
 
@@ -79,7 +76,6 @@ suite("food order delivery → inventory consumption", () => {
       expect(round(movement.quantity)).toBe(round(-(expected[movement.item_key] ?? 0)));
     }
 
-    // The forecast view the Stock screen reads moves by exactly the same amount.
     const after = await stockByKey(sql);
     for (const [key, used] of Object.entries(expected)) {
       expect(round((after[key] ?? 0) - (before[key] ?? 0))).toBe(round(-used));
@@ -96,7 +92,6 @@ suite("food order delivery → inventory consumption", () => {
     await sql`SELECT public.preview_food_order_set_status(${orderId}, 'delivered')`;
     await sql`SELECT public.preview_food_order_set_status(${orderId}, 'delivered')`;
 
-    // Same ledger rows, not replacements: no row was added, removed or rewritten.
     expect(await movementIdsForOrder(sql, orderId)).toEqual(idsAfterFirst);
     expect(await stockByKey(sql)).toEqual(stockAfterFirst);
   });
@@ -112,8 +107,6 @@ suite("food order delivery → inventory consumption", () => {
     const idsAfterFirst = await movementIdsForOrder(sql, orderId);
     const stockAfterFirst = await stockByKey(sql);
 
-    // Whatever replays the consumption — a retried RPC, a reload that re-fires
-    // the mutation, a server-side reprocess — writes nothing further.
     for (let attempt = 0; attempt < 3; attempt += 1) {
       const [replay] =
         await sql`SELECT public.inventory_consume_preview_order(${orderId}) AS inserted`;
@@ -180,8 +173,6 @@ suite("food order delivery → inventory consumption", () => {
     const itemId = String((item as { id: string }).id);
     const before = (await stockByKey(sql))["demo_onions"] ?? 0;
 
-    // Manual movements carry source_id IS NULL, which the partial unique index
-    // deliberately excludes — two identical receipts must both land.
     await sql`SELECT public.inventory_receive(${itemId}, 3, NULL, 'market run')`;
     await sql`SELECT public.inventory_receive(${itemId}, 3, NULL, 'market run')`;
 
@@ -190,15 +181,6 @@ suite("food order delivery → inventory consumption", () => {
   });
 });
 
-/**
- * Current behaviour on cancellation, pinned so a future change is a deliberate one.
- *
- * The implementation has no reversal path: `preview_food_order_set_status`
- * consumes on `delivered` and does nothing on `cancelled`. Cancelling an order
- * that was already delivered therefore leaves the consumption in the ledger,
- * and re-delivering it does not deduct again. Reversal, if it is ever wanted,
- * is a product decision — these tests only record what happens today.
- */
 suite("cancelling after delivery (no reversal implemented)", () => {
   let db: TestDatabase;
   let sql: SQL;
@@ -222,7 +204,6 @@ suite("cancelling after delivery (no reversal implemented)", () => {
 
     await sql`SELECT public.preview_food_order_set_status(${orderId}, 'cancelled')`;
 
-    // No reversal movement is written, and nothing is deleted either.
     expect(await movementIdsForOrder(sql, orderId)).toEqual(idsAfterDelivery);
     expect(await stockByKey(sql)).toEqual(stockAfterDelivery);
   });

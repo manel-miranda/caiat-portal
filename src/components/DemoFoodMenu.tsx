@@ -1,15 +1,14 @@
 /**
- * Guest food & drinks menu with cart, cross-sell recommendations, notes,
+ * Guest food & drinks menu with cart, food cross-sell recommendations, notes,
  * timing, review and submit.
  *
  * Submitting creates a row in the dedicated food-order tables only: never a
  * request, charge, payment or PayPal session. Staff advance the order in the
  * Requests inbox and delivery deducts recipe ingredients from stock.
  *
- * Dishes come from the catalogue rows returned by the guest portal, so
- * recommendations configured in the Catalogue manager (including non-food
- * items such as Pampa) resolve. The static config in `src/lib/demo-menu.ts`
- * is only a display fallback when no dishes are returned.
+ * Only real guest-visible food catalogue rows are orderable here. Other
+ * catalogue services and preview/demo rows are deliberately excluded from the
+ * cart so the browser mirrors the server-side guest-order eligibility rules.
  */
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -47,7 +46,7 @@ type Dish = {
   recommendationIds: string[];
   arAvailable: boolean;
   available: boolean;
-  /** Only database-backed dishes can be ordered. */
+  /** Only real menu dishes can be ordered. */
   orderable: boolean;
 };
 
@@ -77,7 +76,6 @@ export function DemoFoodMenu(props: {
   );
 }
 
-
 function DemoMenuBody({
   token,
   services,
@@ -96,10 +94,11 @@ function DemoMenuBody({
   /** Reference of the last submitted order, shown as a confirmation. */
   const [confirmed, setConfirmed] = useState<string | null>(null);
 
-  // Every item a recommendation can point at: menu dishes plus other services.
+  // Real service rows are orderable only when they are actual menu dishes.
+  // Preview/demo rows stay display-only even if they share the same shape.
   const pool = useMemo(() => {
     const map = new Map<string, Dish>();
-    for (const s of [...demoServices, ...services]) {
+    for (const s of services) {
       map.set(s.id, {
         id: s.id,
         name: serviceLabel(s),
@@ -110,7 +109,22 @@ function DemoMenuBody({
         recommendationIds: s.recommended_ids ?? [],
         arAvailable: s.key === "demo_kefta_tajine",
         available: s.available_today !== false,
-        orderable: true,
+        orderable: isMenuDish(s),
+      });
+    }
+    for (const s of demoServices) {
+      if (map.has(s.id)) continue;
+      map.set(s.id, {
+        id: s.id,
+        name: serviceLabel(s),
+        description: serviceDescription(s) ?? "",
+        priceMad: Number(s.default_price ?? 0),
+        category: categoryOf(s.guest_subcategory),
+        signature: Boolean(s.signature),
+        recommendationIds: s.recommended_ids ?? [],
+        arAvailable: s.key === "demo_kefta_tajine",
+        available: s.available_today !== false,
+        orderable: false,
       });
     }
     return map;
@@ -139,7 +153,6 @@ function DemoMenuBody({
     }));
   }, [services, demoServices, pool, lang]);
 
-
   const byId = useMemo(() => {
     const map = new Map<string, Dish>(pool);
     for (const d of dishes) map.set(d.id, d);
@@ -157,13 +170,21 @@ function DemoMenuBody({
   const count = lines.reduce((n, l) => n + l.qty, 0);
   const subtotal = lines.reduce((sum, l) => sum + l.dish.priceMad * l.qty, 0);
 
-  /** Curated cross-sells for what is currently in the cart, minus unavailable. */
+  /** Curated food cross-sells for what is currently in the cart. */
   const recommendations = useMemo(() => {
     const out: Dish[] = [];
     for (const line of lines) {
       for (const id of line.dish.recommendationIds) {
         const rec = byId.get(id);
-        if (!rec || !rec.available || cart[id] || out.some((d) => d.id === id)) continue;
+        if (
+          !rec ||
+          !rec.available ||
+          !rec.orderable ||
+          cart[id] ||
+          out.some((d) => d.id === id)
+        ) {
+          continue;
+        }
         out.push(rec);
       }
     }
@@ -171,7 +192,7 @@ function DemoMenuBody({
   }, [lines, byId, cart]);
 
   function add(dish: Dish, delta = 1) {
-    if (!dish.available) return;
+    if (!dish.available || !dish.orderable) return;
     setConfirmed(null);
     setCart((prev) => {
       const next = { ...prev };
@@ -220,7 +241,6 @@ function DemoMenuBody({
         {t("gcatFood")}
       </h2>
 
-
       {confirmed ? (
         <div className="mt-3 rounded-xl border border-primary/40 bg-primary/5 p-3">
           <p className="text-sm font-semibold">{t("previewOrderSent")}</p>
@@ -232,7 +252,6 @@ function DemoMenuBody({
           </p>
         </div>
       ) : null}
-
 
       {step === "menu" ? (
         <div className="mt-3 space-y-4">
@@ -448,7 +467,7 @@ function DishRow({
             </p>
           ) : null}
         </div>
-        {dish.available ? (
+        {dish.available && dish.orderable ? (
           qty > 0 ? (
             <Stepper qty={qty} onAdd={onAdd} onRemove={onRemove} />
           ) : (
