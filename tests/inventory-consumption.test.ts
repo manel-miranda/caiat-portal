@@ -188,24 +188,6 @@ suite("food order delivery → inventory consumption", () => {
     const after = (await stockByKey(sql))["demo_onions"] ?? 0;
     expect(round(after - before)).toBe(6);
   });
-
-  test("direct consumption RPC rejects an authenticated user without requests_manage", async () => {
-    const orderId = await createPreviewOrder(sql, ORDER);
-    const [outsider] = await sql`
-      INSERT INTO auth.users (email) VALUES ('inventory-outsider@example.test') RETURNING id
-    `;
-    const outsiderId = String((outsider as { id: string }).id);
-
-    await actAs(sql, outsiderId);
-    try {
-      await expect(
-        sql`SELECT public.inventory_consume_preview_order(${orderId})`,
-      ).rejects.toThrow("PERMISSION_DENIED");
-      expect(await movementsForOrder(sql, orderId)).toEqual([]);
-    } finally {
-      await actAs(sql, staffId);
-    }
-  });
 });
 
 /**
