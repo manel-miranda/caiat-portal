@@ -2,12 +2,13 @@
  * Suppliers + purchases regression tests.
  *
  * Runs the real migrations against a throwaway PostgreSQL database and calls
- * the real RPCs: a purchase must create exactly one receipt movement per
- * ingredient, increase estimated stock once, and stay closed to users without
- * `requests_manage` and to anonymous callers.
+ * the real RPCs. A purchase must create exactly one receipt movement per
+ * ingredient, increase estimated stock once, remain idempotent when retried
+ * with the same purchase UUID, and stay closed to unauthorized callers.
  */
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { SQL } from "bun";
+import { randomUUID } from "node:crypto";
 import {
   actAs,
   createStaffUser,
@@ -35,10 +36,19 @@ suite("suppliers and purchases", () => {
     return String((row as { id: string }).id);
   }
 
-  async function createPurchase(lines: Line[], supplier: string | null = null): Promise<string> {
+  async function createPurchase(
+    lines: Line[],
+    supplier: string | null = null,
+    purchaseId = randomUUID(),
+  ): Promise<string> {
     const [row] = await sql`
-      SELECT public.purchase_create(${supplier}, CURRENT_DATE, 'test purchase',
-        ${JSON.stringify(lines)}::jsonb) AS id
+      SELECT public.purchase_create(
+        ${purchaseId}::uuid,
+        ${supplier}::uuid,
+        CURRENT_DATE,
+        'test purchase',
+        ${JSON.stringify(lines)}::text::jsonb
+      ) AS id
     `;
     return String((row as { id: string }).id);
   }
@@ -104,6 +114,36 @@ suite("suppliers and purchases", () => {
     expect(Number((purchase as { line_count: number }).line_count)).toBe(1);
   });
 
+  test("retrying the same purchase id is a no-op and does not double stock", async () => {
+    const onions = await itemId("demo_onions");
+    const purchaseId = randomUUID();
+    const lines = [{ inventory_item_id: onions, quantity: 3, line_total: 45 }];
+    const before = (await stockByKey(sql))["demo_onions"] ?? 0;
+
+    expect(await createPurchase(lines, null, purchaseId)).toBe(purchaseId);
+    const stockAfterFirst = (await stockByKey(sql))["demo_onions"] ?? 0;
+    const firstMovements = await movementsFor(purchaseId);
+
+    expect(await createPurchase(lines, null, purchaseId)).toBe(purchaseId);
+    expect(await createPurchase(lines, null, purchaseId)).toBe(purchaseId);
+
+    const stockAfterRetries = (await stockByKey(sql))["demo_onions"] ?? 0;
+    const movementsAfterRetries = await movementsFor(purchaseId);
+    const [purchaseCount] = await sql`
+      SELECT count(*)::int AS count FROM public.purchases WHERE id = ${purchaseId}
+    `;
+    const [lineCount] = await sql`
+      SELECT count(*)::int AS count FROM public.purchase_lines WHERE purchase_id = ${purchaseId}
+    `;
+
+    expect(round(stockAfterFirst - before)).toBe(3);
+    expect(round(stockAfterRetries - before)).toBe(3);
+    expect(firstMovements.length).toBe(1);
+    expect(movementsAfterRetries.length).toBe(1);
+    expect(Number((purchaseCount as { count: number }).count)).toBe(1);
+    expect(Number((lineCount as { count: number }).count)).toBe(1);
+  });
+
   test("multiple lines are stored and totalled correctly", async () => {
     const supplierName = "Souk El Had";
     const [supplier] = await sql`
@@ -144,12 +184,27 @@ suite("suppliers and purchases", () => {
     const movements = await movementsFor(purchaseId);
     expect(movements.length).toBe(1);
     expect(movements[0]?.quantity).toBe(8);
+    expect(movements[0]?.unit_cost).toBe(2);
 
     const lines = await sql`
-      SELECT quantity::float8 AS quantity FROM public.purchase_lines WHERE purchase_id = ${purchaseId}
+      SELECT quantity::float8 AS quantity, line_total::float8 AS line_total
+        FROM public.purchase_lines WHERE purchase_id = ${purchaseId}
     `;
     expect(lines.length).toBe(1);
-    expect((lines as unknown as { quantity: number }[])[0]?.quantity).toBe(8);
+    expect((lines as unknown as { quantity: number; line_total: number }[])[0]?.quantity).toBe(8);
+    expect((lines as unknown as { quantity: number; line_total: number }[])[0]?.line_total).toBe(16);
+  });
+
+  test("invalid lines are rejected rather than silently changed", async () => {
+    const onions = await itemId("demo_onions");
+    let denied = false;
+    try {
+      await createPurchase([{ inventory_item_id: onions, quantity: 1, line_total: -1 }]);
+    } catch (error) {
+      denied = true;
+      expect(String(error)).toContain("INVALID_PURCHASE_LINE");
+    }
+    expect(denied).toBe(true);
   });
 
   test("an authenticated user without requests_manage cannot write suppliers or purchases", async () => {
@@ -167,8 +222,13 @@ suite("suppliers and purchases", () => {
     let purchaseDenied = false;
     try {
       await outsiderSql`
-        SELECT public.purchase_create(NULL, CURRENT_DATE, NULL,
-          ${JSON.stringify([{ inventory_item_id: onions, quantity: 1, line_total: 1 }])}::jsonb)
+        SELECT public.purchase_create(
+          ${randomUUID()}::uuid,
+          NULL::uuid,
+          CURRENT_DATE,
+          NULL,
+          ${JSON.stringify([{ inventory_item_id: onions, quantity: 1, line_total: 1 }])}::text::jsonb
+        )
       `;
     } catch (error) {
       purchaseDenied = true;
@@ -195,7 +255,7 @@ suite("suppliers and purchases", () => {
     const privileges = await sql`
       SELECT has_function_privilege('anon', 'public.supplier_upsert(uuid,text,text,text,text,boolean)', 'EXECUTE') AS supplier,
              has_function_privilege('anon', 'public.supplier_set_active(uuid,boolean)', 'EXECUTE') AS activate,
-             has_function_privilege('anon', 'public.purchase_create(uuid,date,text,jsonb)', 'EXECUTE') AS purchase
+             has_function_privilege('anon', 'public.purchase_create(uuid,uuid,date,text,jsonb)', 'EXECUTE') AS purchase
     `;
     const row = (privileges as unknown as Record<string, boolean>[])[0]!;
     expect(row["supplier"]).toBe(false);
