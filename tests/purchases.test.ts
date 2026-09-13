@@ -6,7 +6,7 @@
  * movement per ingredient, increase estimated stock once, reject malformed
  * payloads, and stay closed to users without `requests_manage` and to anon.
  */
-import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { afterAll, beforeAll, describe, expect, setDefaultTimeout, test } from "bun:test";
 import type { SQL } from "bun";
 import {
   actAs,
@@ -17,6 +17,8 @@ import {
   stockByKey,
   type TestDatabase,
 } from "./support/preview-db";
+
+setDefaultTimeout(15_000);
 
 const canRun = databaseAvailable();
 const suite = canRun ? describe : describe.skip;
@@ -77,7 +79,7 @@ suite("suppliers and purchases", () => {
     outsiderSql = db.connect();
     await actAs(outsiderSql, String((outsider as { id: string }).id));
     anonSql = db.connect();
-  }, 15_000);
+  });
 
   afterAll(async () => {
     await db?.drop();
