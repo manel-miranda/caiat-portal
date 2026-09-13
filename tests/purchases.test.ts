@@ -38,7 +38,7 @@ suite("suppliers and purchases", () => {
   async function createPurchase(lines: Line[], supplier: string | null = null): Promise<string> {
     const [row] = await sql`
       SELECT public.purchase_create(${supplier}, CURRENT_DATE, 'test purchase',
-        ${JSON.stringify(lines)}::jsonb) AS id
+        ${JSON.stringify(lines)}::text::jsonb) AS id
     `;
     return String((row as { id: string }).id);
   }
@@ -168,7 +168,7 @@ suite("suppliers and purchases", () => {
     try {
       await outsiderSql`
         SELECT public.purchase_create(NULL, CURRENT_DATE, NULL,
-          ${JSON.stringify([{ inventory_item_id: onions, quantity: 1, line_total: 1 }])}::jsonb)
+          ${JSON.stringify([{ inventory_item_id: onions, quantity: 1, line_total: 1 }])}::text::jsonb)
       `;
     } catch (error) {
       purchaseDenied = true;
