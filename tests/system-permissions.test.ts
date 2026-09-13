@@ -243,7 +243,7 @@ suite("system permission boundaries", () => {
     await expectDenied(() => sql`SELECT public.set_user_permission(${staffId}, 'cash_reconcile', true)`, "PERMISSION_DENIED");
   });
 
-  test("an authenticated account with no app permissions cannot mutate inventory or food-order state", async () => {
+  test("an authenticated account with no app permissions cannot mutate inventory", async () => {
     const outsiderSql = db.connect();
     await actAs(outsiderSql, outsiderId);
 
@@ -275,15 +275,15 @@ suite("system permission boundaries", () => {
     );
     await expectDenied(
       () => outsiderSql`
-        INSERT INTO public.charges(stay_id, label, quantity, unit_price, total, created_by)
-        VALUES (${stayId}, 'Unauthorized charge', 1, 10, 10, ${outsiderId})
+        INSERT INTO public.charges(stay_id, label, quantity, unit_price, created_by)
+        VALUES (${stayId}, 'Unauthorized charge', 1, 10, ${outsiderId})
       `,
       "row-level security",
     );
     await expectDenied(
       () => outsiderSql`
-        INSERT INTO public.cash_reconciliations(business_date, expected_total, counted_total, difference, closed_by)
-        VALUES (DATE '2040-06-01', 10, 10, 0, ${outsiderId})
+        INSERT INTO public.cash_reconciliations(business_date, expected_total, counted_total, closed_by)
+        VALUES (DATE '2040-06-01', 10, 10, ${outsiderId})
       `,
       "row-level security",
     );
