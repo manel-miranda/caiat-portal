@@ -627,6 +627,99 @@ export type Database = {
         }
         Relationships: []
       }
+      purchase_lines: {
+        Row: {
+          created_at: string
+          id: string
+          inventory_item_id: string
+          line_total: number
+          purchase_id: string
+          quantity: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inventory_item_id: string
+          line_total?: number
+          purchase_id: string
+          quantity: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inventory_item_id?: string
+          line_total?: number
+          purchase_id?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_lines_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_lines_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_status"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_lines_purchase_id_fkey"
+            columns: ["purchase_id"]
+            isOneToOne: false
+            referencedRelation: "purchases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchases: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          line_count: number
+          notes: string | null
+          purchase_date: string
+          supplier_id: string | null
+          total_cost: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          line_count?: number
+          notes?: string | null
+          purchase_date?: string
+          supplier_id?: string | null
+          total_cost?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          line_count?: number
+          notes?: string | null
+          purchase_date?: string
+          supplier_id?: string | null
+          total_cost?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchases_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       requests: {
         Row: {
           completed_at: string | null
@@ -934,6 +1027,42 @@ export type Database = {
           },
         ]
       }
+      suppliers: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          id: string
+          location: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_permissions: {
         Row: {
           created_at: string
@@ -1184,6 +1313,15 @@ export type Database = {
         Args: { p_order_id: string; p_status: string }
         Returns: string
       }
+      purchase_create: {
+        Args: {
+          p_lines: Json
+          p_notes: string
+          p_purchase_date: string
+          p_supplier_id: string
+        }
+        Returns: string
+      }
       reject_reservation: { Args: { p_stay_id: string }; Returns: string }
       role_default_permission: {
         Args: { _key: string; _role: Database["public"]["Enums"]["app_role"] }
@@ -1203,6 +1341,21 @@ export type Database = {
           p_user_id: string
         }
         Returns: undefined
+      }
+      supplier_set_active: {
+        Args: { p_active: boolean; p_id: string }
+        Returns: string
+      }
+      supplier_upsert: {
+        Args: {
+          p_active: boolean
+          p_id: string
+          p_location: string
+          p_name: string
+          p_notes: string
+          p_phone: string
+        }
+        Returns: string
       }
     }
     Enums: {
