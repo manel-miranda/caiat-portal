@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, setDefaultTimeout, test } from "bun:test";
+import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { SQL } from "bun";
 import {
   actAs,
@@ -7,8 +7,6 @@ import {
   databaseAvailable,
   type TestDatabase,
 } from "./support/preview-db";
-
-setDefaultTimeout(15_000);
 
 const canRun = databaseAvailable();
 const suite = canRun ? describe : describe.skip;
