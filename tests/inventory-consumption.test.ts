@@ -14,7 +14,7 @@
  * and exercise the real RPCs, so a change to any of those three pieces — the
  * index, the conflict target, or the status RPC — fails here.
  */
-import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { afterAll, beforeAll, describe, expect, setDefaultTimeout, test } from "bun:test";
 import type { SQL } from "bun";
 import {
   actAs,
@@ -30,6 +30,8 @@ import {
   type OrderLine,
   type TestDatabase,
 } from "./support/preview-db";
+
+setDefaultTimeout(15_000);
 
 /** Two dishes that share `demo_onions`, so the per-ingredient rollup is covered. */
 const ORDER: OrderLine[] = [
@@ -50,7 +52,7 @@ suite("food order delivery → inventory consumption", () => {
     sql = db.sql;
     staffId = await createStaffUser(sql, "kitchen_staff");
     await actAs(sql, staffId);
-  }, 15_000);
+  });
 
   afterAll(async () => {
     await db?.drop();
@@ -61,9 +63,6 @@ suite("food order delivery → inventory consumption", () => {
     const expected = await expectedConsumption(sql, ORDER);
     const before = await stockByKey(sql);
 
-    // Anchor against hand-computed values from the seeded demo recipes, so the
-    // test does not simply agree with itself: 2 × tajine needs 0.70 kg chicken,
-    // and onions (0.10/portion in both dishes) roll up to 2 × 0.10 + 1 × 0.10.
     expect(round(expected["demo_chicken"] ?? 0)).toBe(0.7);
     expect(round(expected["demo_onions"] ?? 0)).toBe(0.3);
 
@@ -184,11 +183,6 @@ suite("food order delivery → inventory consumption", () => {
   });
 });
 
-/**
- * Current behaviour on cancellation, pinned so a future change is a deliberate one.
- * The implementation has no reversal path: delivery consumes, cancellation does
- * not reverse it, and re-delivery is still idempotent.
- */
 suite("cancelling after delivery (no reversal implemented)", () => {
   let db: TestDatabase;
   let sql: SQL;
@@ -197,7 +191,7 @@ suite("cancelling after delivery (no reversal implemented)", () => {
     db = await createTestDatabase();
     sql = db.sql;
     await actAs(sql, await createStaffUser(sql, "kitchen_staff"));
-  }, 15_000);
+  });
 
   afterAll(async () => {
     await db?.drop();
