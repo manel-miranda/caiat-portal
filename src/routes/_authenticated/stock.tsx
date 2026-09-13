@@ -16,19 +16,27 @@ import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useAuth } from "@/lib/auth";
 import { t } from "@/lib/i18n";
-import { shortDateTime } from "@/lib/format";
+import { mad, shortDate, shortDateTime, todayISO } from "@/lib/format";
 import {
   adjustStock,
+  createPurchase,
   inventoryErrorKey,
   inventoryMovementsQuery,
   inventoryStatusQuery,
+  purchaseLinesQuery,
+  purchasesQuery,
   qty,
   receiveStock,
   recordWaste,
+  saveSupplier,
+  setSupplierActive,
   statusRank,
+  suppliersQuery,
   type InventoryStatusRow,
   type MovementType,
+  type Purchase,
   type StockStatus,
+  type Supplier,
 } from "@/lib/inventory";
 
 export const Route = createFileRoute("/_authenticated/stock")({
