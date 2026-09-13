@@ -489,3 +489,426 @@ function TabButton({
     </button>
   );
 }
+
+/* ---------------- purchases & suppliers ---------------- */
+
+type DraftLine = { itemId: string; quantity: string; cost: string };
+
+function PurchasesTab({
+  canWrite,
+  items,
+  onRecord,
+  onChanged,
+}: {
+  canWrite: boolean;
+  items: InventoryStatusRow[];
+  onRecord: () => void;
+  onChanged: () => Promise<void>;
+}) {
+  const purchases = useQuery(purchasesQuery);
+  const suppliers = useQuery(suppliersQuery);
+  const [open, setOpen] = useState<Purchase | null>(null);
+  const supplierName = (id: string | null) =>
+    (suppliers.data ?? []).find((s) => s.id === id)?.name ?? t("purchaseNoSupplier");
+  const list = purchases.data ?? [];
+
+  return (
+    <div className="mt-3 space-y-3">
+      {canWrite ? (
+        <Button className="w-full rounded-xl" onClick={onRecord}>
+          {t("purchaseNew")}
+        </Button>
+      ) : null}
+      <p className="text-xs text-muted-foreground">{t("purchaseHint")}</p>
+
+      {purchases.isLoading ? (
+        <p className="surface-card p-3 text-sm text-muted-foreground">{t("loading")}</p>
+      ) : list.length === 0 ? (
+        <p className="surface-card p-3 text-sm text-muted-foreground">{t("purchaseEmpty")}</p>
+      ) : (
+        <ul className="surface-card divide-y divide-border">
+          {list.map((p) => (
+            <li key={p.id}>
+              <button
+                onClick={() => setOpen(p)}
+                className="flex w-full items-center justify-between gap-3 p-3 text-start"
+              >
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-semibold">
+                    {supplierName(p.supplier_id)}
+                  </span>
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {shortDate(p.purchase_date)} · {p.line_count} {t("purchaseItemsCount")}
+                  </span>
+                </span>
+                <span className="shrink-0 text-sm font-semibold">{mad(p.total_cost)}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <Sheet open={open !== null} onOpenChange={(o) => !o && setOpen(null)}>
+        <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto rounded-t-2xl">
+          <SheetHeader className="text-start">
+            <SheetTitle className="text-base">{t("purchaseDetails")}</SheetTitle>
+          </SheetHeader>
+          {open ? (
+            <PurchaseDetails
+              purchase={open}
+              items={items}
+              supplier={supplierName(open.supplier_id)}
+              onChanged={onChanged}
+            />
+          ) : null}
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+}
+
+function PurchaseDetails({
+  purchase,
+  items,
+  supplier,
+}: {
+  purchase: Purchase;
+  items: InventoryStatusRow[];
+  supplier: string;
+  onChanged: () => Promise<void>;
+}) {
+  const lines = useQuery(purchaseLinesQuery(purchase.id));
+  const label = (id: string) => items.find((i) => i.id === id)?.label ?? id;
+  const unit = (id: string) => items.find((i) => i.id === id)?.unit ?? "";
+  return (
+    <div className="mt-2 space-y-2 pb-6">
+      <p className="text-sm text-muted-foreground">
+        {shortDate(purchase.purchase_date)} · {supplier}
+      </p>
+      {purchase.notes ? <p className="text-sm">{purchase.notes}</p> : null}
+      {lines.isLoading ? (
+        <p className="text-sm text-muted-foreground">{t("loading")}</p>
+      ) : (
+        <ul className="divide-y divide-border">
+          {(lines.data ?? []).map((l) => (
+            <li key={l.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+              <span className="min-w-0 truncate">
+                {label(l.inventory_item_id)} · {qty(l.quantity)} {unit(l.inventory_item_id)}
+              </span>
+              <span className="shrink-0 font-medium">{mad(l.line_total)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="flex items-center justify-between border-t border-border pt-2 text-sm font-semibold">
+        <span>{t("purchaseTotal")}</span>
+        <span>{mad(purchase.total_cost)}</span>
+      </p>
+    </div>
+  );
+}
+
+function PurchaseForm({
+  items,
+  initialLines,
+  onDone,
+}: {
+  items: InventoryStatusRow[];
+  initialLines: DraftLine[];
+  onDone: () => Promise<void>;
+}) {
+  const suppliers = useQuery(suppliersQuery);
+  const [supplierId, setSupplierId] = useState("");
+  const [date, setDate] = useState(todayISO());
+  const [notes, setNotes] = useState("");
+  const [lines, setLines] = useState<DraftLine[]>(
+    initialLines.length > 0 ? initialLines : [{ itemId: "", quantity: "", cost: "" }],
+  );
+  const [busy, setBusy] = useState(false);
+
+  const total = lines.reduce((sum, l) => sum + (Number(l.cost) || 0), 0);
+
+  function update(index: number, patch: Partial<DraftLine>) {
+    setLines((prev) => prev.map((l, i) => (i === index ? { ...l, ...patch } : l)));
+  }
+
+  async function submit() {
+    // Duplicate items are aggregated server-side; empty rows are dropped here.
+    const payload = lines
+      .filter((l) => l.itemId && Number(l.quantity) > 0)
+      .map((l) => ({
+        inventory_item_id: l.itemId,
+        quantity: Number(l.quantity),
+        line_total: Math.max(Number(l.cost) || 0, 0),
+      }));
+    if (payload.length === 0) {
+      toast.error(t("purchaseLinesRequired"));
+      return;
+    }
+    setBusy(true);
+    try {
+      await createPurchase({
+        supplierId: supplierId || null,
+        purchaseDate: date,
+        notes,
+        lines: payload,
+      });
+      toast.success(t("purchaseSaved"));
+      await onDone();
+    } catch (e) {
+      const key = inventoryErrorKey((e as Error).message);
+      toast.error(key ? t(key as never) : (e as Error).message);
+    }
+    setBusy(false);
+  }
+
+  return (
+    <div className="mt-2 grid gap-3 pb-6">
+      <div className="grid gap-1">
+        <Label className="text-sm">{t("purchaseSupplier")}</Label>
+        <select
+          value={supplierId}
+          onChange={(e) => setSupplierId(e.target.value)}
+          className="min-h-11 rounded-xl border border-border bg-background px-3 text-sm"
+        >
+          <option value="">{t("purchaseNoSupplier")}</option>
+          {(suppliers.data ?? [])
+            .filter((s) => s.active)
+            .map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+        </select>
+      </div>
+      <div className="grid gap-1">
+        <Label className="text-sm">{t("purchaseDate")}</Label>
+        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+      </div>
+
+      <Label className="text-sm">{t("purchaseLinesLabel")}</Label>
+      {lines.map((line, index) => (
+        <div key={index} className="grid gap-2 rounded-xl border border-border p-2">
+          <select
+            value={line.itemId}
+            onChange={(e) => update(index, { itemId: e.target.value })}
+            className="min-h-11 rounded-xl border border-border bg-background px-3 text-sm"
+          >
+            <option value="">—</option>
+            {items.map((i) => (
+              <option key={i.id} value={i.id}>
+                {i.label} ({i.unit})
+              </option>
+            ))}
+          </select>
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              inputMode="decimal"
+              placeholder={t("stockQuantity")}
+              aria-label={t("stockQuantity")}
+              value={line.quantity}
+              onChange={(e) => update(index, { quantity: e.target.value })}
+            />
+            <Input
+              inputMode="decimal"
+              placeholder={t("purchaseLineTotal")}
+              aria-label={t("purchaseLineTotal")}
+              value={line.cost}
+              onChange={(e) => update(index, { cost: e.target.value })}
+            />
+          </div>
+          {lines.length > 1 ? (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="justify-self-start rounded-xl"
+              onClick={() => setLines((prev) => prev.filter((_, i) => i !== index))}
+            >
+              {t("purchaseRemoveLine")}
+            </Button>
+          ) : null}
+        </div>
+      ))}
+      <Button
+        size="sm"
+        variant="outline"
+        className="rounded-xl"
+        onClick={() => setLines((prev) => [...prev, { itemId: "", quantity: "", cost: "" }])}
+      >
+        {t("purchaseAddLine")}
+      </Button>
+
+      <div className="grid gap-1">
+        <Label className="text-sm">{t("stockNote")}</Label>
+        <Input value={notes} onChange={(e) => setNotes(e.target.value)} />
+      </div>
+      <p className="flex items-center justify-between text-sm font-semibold">
+        <span>{t("purchaseTotal")}</span>
+        <span>{mad(total)}</span>
+      </p>
+      <Button className="w-full rounded-xl" disabled={busy} onClick={() => void submit()}>
+        {t("save")}
+      </Button>
+    </div>
+  );
+}
+
+function SuppliersTab({
+  canWrite,
+  onChanged,
+}: {
+  canWrite: boolean;
+  onChanged: () => Promise<void>;
+}) {
+  const suppliers = useQuery(suppliersQuery);
+  const [draft, setDraft] = useState<Supplier | "new" | null>(null);
+  const list = suppliers.data ?? [];
+
+  async function toggle(supplier: Supplier) {
+    try {
+      await setSupplierActive(supplier.id, !supplier.active);
+      toast.success(t("supplierSaved"));
+      await onChanged();
+    } catch (e) {
+      const key = inventoryErrorKey((e as Error).message);
+      toast.error(key ? t(key as never) : (e as Error).message);
+    }
+  }
+
+  return (
+    <div className="mt-3 space-y-3">
+      {canWrite ? (
+        <Button className="w-full rounded-xl" onClick={() => setDraft("new")}>
+          {t("supplierNew")}
+        </Button>
+      ) : null}
+
+      {suppliers.isLoading ? (
+        <p className="surface-card p-3 text-sm text-muted-foreground">{t("loading")}</p>
+      ) : list.length === 0 ? (
+        <p className="surface-card p-3 text-sm text-muted-foreground">{t("supplierEmpty")}</p>
+      ) : (
+        <ul className="surface-card divide-y divide-border">
+          {list.map((s) => (
+            <li key={s.id} className="p-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold">{s.name}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {[s.phone, s.location].filter(Boolean).join(" · ")}
+                  </p>
+                </div>
+                {!s.active ? (
+                  <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                    {t("supplierInactive")}
+                  </span>
+                ) : null}
+              </div>
+              {canWrite ? (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-xl"
+                    onClick={() => setDraft(s)}
+                  >
+                    {t("supplierEdit")}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="rounded-xl"
+                    onClick={() => void toggle(s)}
+                  >
+                    {s.active ? t("supplierDeactivate") : t("supplierActivate")}
+                  </Button>
+                </div>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <Sheet open={draft !== null} onOpenChange={(o) => !o && setDraft(null)}>
+        <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto rounded-t-2xl">
+          <SheetHeader className="text-start">
+            <SheetTitle className="text-base">
+              {draft === "new" ? t("supplierNew") : t("supplierEdit")}
+            </SheetTitle>
+          </SheetHeader>
+          {draft !== null ? (
+            <SupplierForm
+              supplier={draft === "new" ? null : draft}
+              onDone={async () => {
+                setDraft(null);
+                await onChanged();
+              }}
+            />
+          ) : null}
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+}
+
+function SupplierForm({
+  supplier,
+  onDone,
+}: {
+  supplier: Supplier | null;
+  onDone: () => Promise<void>;
+}) {
+  const [name, setName] = useState(supplier?.name ?? "");
+  const [phone, setPhone] = useState(supplier?.phone ?? "");
+  const [location, setLocation] = useState(supplier?.location ?? "");
+  const [notes, setNotes] = useState(supplier?.notes ?? "");
+  const [busy, setBusy] = useState(false);
+
+  async function submit() {
+    if (!name.trim()) {
+      toast.error(t("supplierNameRequired"));
+      return;
+    }
+    setBusy(true);
+    try {
+      await saveSupplier({
+        id: supplier?.id ?? null,
+        name,
+        phone,
+        location,
+        notes,
+        active: supplier?.active ?? true,
+      });
+      toast.success(t("supplierSaved"));
+      await onDone();
+    } catch (e) {
+      const key = inventoryErrorKey((e as Error).message);
+      toast.error(key ? t(key as never) : (e as Error).message);
+    }
+    setBusy(false);
+  }
+
+  return (
+    <div className="mt-2 grid gap-3 pb-6">
+      <div className="grid gap-1">
+        <Label className="text-sm">{t("supplierName")}</Label>
+        <Input value={name} onChange={(e) => setName(e.target.value)} />
+      </div>
+      <div className="grid gap-1">
+        <Label className="text-sm">{t("supplierPhone")}</Label>
+        <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+      </div>
+      <div className="grid gap-1">
+        <Label className="text-sm">{t("supplierLocation")}</Label>
+        <Input value={location} onChange={(e) => setLocation(e.target.value)} />
+      </div>
+      <div className="grid gap-1">
+        <Label className="text-sm">{t("supplierNotes")}</Label>
+        <Input value={notes} onChange={(e) => setNotes(e.target.value)} />
+      </div>
+      <Button className="w-full rounded-xl" disabled={busy} onClick={() => void submit()}>
+        {t("save")}
+      </Button>
+    </div>
+  );
+}
