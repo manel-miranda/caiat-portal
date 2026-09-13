@@ -728,15 +728,27 @@ function Toggle({
   label,
   checked,
   onChange,
+  disabled,
 }: {
   label: string;
   checked: boolean;
   onChange: (value: boolean) => void;
+  disabled?: boolean;
 }) {
   return (
-    <label className="flex min-h-11 items-center gap-2 rounded-xl border border-border px-3 text-sm">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+    <label
+      className={`flex min-h-11 items-center gap-2 rounded-xl border border-border px-3 text-sm ${
+        disabled ? "opacity-50" : ""
+      }`}
+    >
+      <input
+        type="checkbox"
+        checked={checked}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.checked)}
+      />
       <span className="min-w-0 truncate">{label}</span>
     </label>
+
   );
 }
