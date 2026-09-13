@@ -303,6 +303,8 @@ export function inventoryErrorKey(raw: string): string {
   if (raw.includes("PERMISSION_DENIED")) return "adminOnly";
   if (raw.includes("QUANTITY_INVALID")) return "stockQuantityInvalid";
   if (raw.includes("NO_CHANGE")) return "stockNoChange";
+  if (raw.includes("NAME_REQUIRED")) return "supplierNameRequired";
+  if (raw.includes("LINES_REQUIRED")) return "purchaseLinesRequired";
   return "";
 }
 
