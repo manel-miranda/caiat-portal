@@ -528,9 +528,7 @@ function ShoppingHint({
         ? `${t("purchaseLastBoughtAt")} ${context.last_supplier_name}`
         : t("purchaseLastBought")}{" "}
       · {shortDate(context.last_purchased_at)}
-      {context.last_unit_cost != null
-        ? ` · ${mad(context.last_unit_cost)}/${row.unit}`
-        : ""}
+      {context.last_unit_cost != null ? ` · ${mad(context.last_unit_cost)}/${row.unit}` : ""}
       {estimate != null ? ` · ${t("purchaseEstimatedCost")} ~${mad(estimate)}` : ""}
     </p>
   );
@@ -617,13 +615,7 @@ function PurchasesTab({
   );
 }
 
-function PurchaseDetails({
-  purchase,
-  items,
-}: {
-  purchase: Purchase;
-  items: InventoryStatusRow[];
-}) {
+function PurchaseDetails({ purchase, items }: { purchase: Purchase; items: InventoryStatusRow[] }) {
   const lines = useQuery(purchaseLinesQuery(purchase.id));
   const label = (id: string) => items.find((i) => i.id === id)?.label ?? id;
   const unit = (id: string) => items.find((i) => i.id === id)?.unit ?? "";

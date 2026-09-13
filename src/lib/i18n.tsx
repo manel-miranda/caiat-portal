@@ -227,13 +227,15 @@ export const en = {
   mergeCustomers: "Merge customers",
   mergeInto: "Merge into this record",
   mergeConfirmTitle: "Merge customers?",
-  mergeConfirmBody: "All stays and history will move to the customer you keep. The other record will be deleted permanently.",
+  mergeConfirmBody:
+    "All stays and history will move to the customer you keep. The other record will be deleted permanently.",
   recordToKeep: "Record to keep",
   customersMerged: "Customers merged",
   matchByPhone: "Same phone",
   matchByEmail: "Same email",
   matchByName: "Same name",
-  duplicateWarning: "A customer with this phone or email already exists. Use the existing record instead of creating a duplicate.",
+  duplicateWarning:
+    "A customer with this phone or email already exists. Use the existing record instead of creating a duplicate.",
   suggestedMatches: "Existing customers that may match",
   oldestRecord: "Oldest record",
   usersTitle: "Users & permissions",
@@ -403,8 +405,7 @@ export const en = {
   // preview-only demo food menu
   demoMenuSection: "Demo food menu",
   demoMenuBadge: "Demo menu",
-  demoMenuNote:
-    "Example dishes and prices. Bernardo's real menu will replace them later.",
+  demoMenuNote: "Example dishes and prices. Bernardo's real menu will replace them later.",
   caiatSignature: "Caiat Signature",
   recommendedWith: "Recommended with this",
   completeMeal: "Complete your meal",
@@ -451,7 +452,8 @@ export const en = {
   // catalogue manager (admin)
   navCatalogue: "Catalogue",
   catalogueTitle: "Catalogue / Menu",
-  catalogueIntro: "Create and maintain the guest-facing catalogue. Changes apply to the live guest portal.",
+  catalogueIntro:
+    "Create and maintain the guest-facing catalogue. Changes apply to the live guest portal.",
   catalogueNew: "New item",
   catalogueEdit: "Edit item",
   catalogueSearch: "Search catalogue",
@@ -494,7 +496,8 @@ export const en = {
   catalogueNone: "None",
   catalogueKeyImmutable: "The internal key of an existing item cannot be changed",
   catalogueKeyLocked: "The internal key is fixed once the item has been saved.",
-  catalogueDraftHint: "New items are saved hidden and inactive for safety. Save, reopen and review the item, then enable it.",
+  catalogueDraftHint:
+    "New items are saved hidden and inactive for safety. Save, reopen and review the item, then enable it.",
   catalogueKeyTaken: "That internal key is already used",
   catalogueKeyInvalid: "Use lowercase letters, numbers and underscores only",
   catalogueTooManyRecommendations: "Choose at most 3 items",
@@ -517,7 +520,8 @@ export const en = {
   previewOrderSent: "Order sent to reception",
   orderReference: "Order reference",
   orderStatusLabel: "Status",
-  previewOrderBanner: "Preview test order. Nothing is charged and no real kitchen order is created.",
+  previewOrderBanner:
+    "Preview test order. Nothing is charged and no real kitchen order is created.",
   unavailableToday: "Unavailable today",
   clearCart: "Clear cart",
   navFoodOrders: "Food orders",
@@ -540,7 +544,8 @@ export const en = {
   // stock / groceries (preview)
   navStock: "Stock",
   stockTitle: "Stock & groceries",
-  stockIntro: "Estimated stock based on what you buy and what the kitchen serves. Demo data for now.",
+  stockIntro:
+    "Estimated stock based on what you buy and what the kitchen serves. Demo data for now.",
   stockDemoBadge: "Demo",
   stockStatusBuy: "Buy",
   stockStatusLow: "Low",
@@ -613,7 +618,8 @@ export const en = {
   supplierEmpty: "No suppliers yet",
   stockItems: "Ingredients",
   recipeTitle: "Recipe (estimated ingredients)",
-  recipeHint: "Average quantities per portion, used only to estimate stock — not exact kitchen weights.",
+  recipeHint:
+    "Average quantities per portion, used only to estimate stock — not exact kitchen weights.",
   recipeButton: "Recipe",
   recipeQtyPerPortion: "Per portion",
   recipeSaved: "Recipe saved",
@@ -820,13 +826,15 @@ const pt: Dict = {
   mergeCustomers: "Juntar clientes",
   mergeInto: "Juntar neste registo",
   mergeConfirmTitle: "Juntar clientes?",
-  mergeConfirmBody: "Todas as estadias e o histórico passam para o cliente que mantiver. O outro registo será eliminado definitivamente.",
+  mergeConfirmBody:
+    "Todas as estadias e o histórico passam para o cliente que mantiver. O outro registo será eliminado definitivamente.",
   recordToKeep: "Registo a manter",
   customersMerged: "Clientes juntados",
   matchByPhone: "Mesmo telefone",
   matchByEmail: "Mesmo email",
   matchByName: "Mesmo nome",
-  duplicateWarning: "Já existe um cliente com este telefone ou email. Use o registo existente em vez de criar um duplicado.",
+  duplicateWarning:
+    "Já existe um cliente com este telefone ou email. Use o registo existente em vez de criar um duplicado.",
   suggestedMatches: "Clientes existentes que podem corresponder",
   oldestRecord: "Registo mais antigo",
   usersTitle: "Utilizadores e permissões",
@@ -988,8 +996,7 @@ const pt: Dict = {
     "O seu telemóvel não suporta a vista pela câmara. Pode continuar a explorar o prato em 3D.",
   demoMenuSection: "Menu de demonstração",
   demoMenuBadge: "Menu demo",
-  demoMenuNote:
-    "Pratos e preços de exemplo. O menu real vai substituí-los mais tarde.",
+  demoMenuNote: "Pratos e preços de exemplo. O menu real vai substituí-los mais tarde.",
   caiatSignature: "Assinatura Caiat",
   recommendedWith: "Recomendado com este prato",
   completeMeal: "Complete a sua refeição",
@@ -1035,7 +1042,8 @@ const pt: Dict = {
   requestTooLong: "Esse texto é demasiado longo",
   navCatalogue: "Catálogo",
   catalogueTitle: "Catálogo / Menu",
-  catalogueIntro: "Crie e mantenha o catálogo visível para hóspedes. As alterações aplicam-se ao portal do hóspede.",
+  catalogueIntro:
+    "Crie e mantenha o catálogo visível para hóspedes. As alterações aplicam-se ao portal do hóspede.",
   catalogueNew: "Novo item",
   catalogueEdit: "Editar item",
   catalogueSearch: "Pesquisar catálogo",
@@ -1078,7 +1086,8 @@ const pt: Dict = {
   catalogueNone: "Nenhum",
   catalogueKeyImmutable: "A chave interna de um item existente não pode ser alterada",
   catalogueKeyLocked: "A chave interna fica fixa depois de o item ser guardado.",
-  catalogueDraftHint: "Novos itens são guardados ocultos e inativos por segurança. Guarde, reabra e reveja o item e depois ative-o.",
+  catalogueDraftHint:
+    "Novos itens são guardados ocultos e inativos por segurança. Guarde, reabra e reveja o item e depois ative-o.",
   catalogueKeyTaken: "Essa chave interna já está a ser usada",
   catalogueKeyInvalid: "Use apenas letras minúsculas, números e underscores",
   catalogueTooManyRecommendations: "Escolha no máximo 3 itens",
@@ -1123,7 +1132,8 @@ const pt: Dict = {
   catalogueMarkAvailable: "Marcar disponível",
   navStock: "Stock",
   stockTitle: "Stock e compras",
-  stockIntro: "Stock estimado a partir do que compra e do que a cozinha serve. Dados de demonstração.",
+  stockIntro:
+    "Stock estimado a partir do que compra e do que a cozinha serve. Dados de demonstração.",
   stockDemoBadge: "Demo",
   stockStatusBuy: "Comprar",
   stockStatusLow: "Baixo",
@@ -1398,17 +1408,20 @@ const fr: Dict = {
   lastStayedOn: "dernier séjour {date}",
   customerProfile: "Fiche client",
   possibleDuplicates: "Doublons possibles",
-  possibleDuplicatesHint: "Ces fiches peuvent correspondre à la même personne. Vérifiez avant de fusionner.",
+  possibleDuplicatesHint:
+    "Ces fiches peuvent correspondre à la même personne. Vérifiez avant de fusionner.",
   mergeCustomers: "Fusionner les clients",
   mergeInto: "Fusionner dans cette fiche",
   mergeConfirmTitle: "Fusionner les clients ?",
-  mergeConfirmBody: "Tous les séjours et l'historique seront transférés vers la fiche conservée. L'autre fiche sera supprimée définitivement.",
+  mergeConfirmBody:
+    "Tous les séjours et l'historique seront transférés vers la fiche conservée. L'autre fiche sera supprimée définitivement.",
   recordToKeep: "Fiche à conserver",
   customersMerged: "Clients fusionnés",
   matchByPhone: "Même téléphone",
   matchByEmail: "Même email",
   matchByName: "Même nom",
-  duplicateWarning: "Un client avec ce téléphone ou cet email existe déjà. Utilisez la fiche existante au lieu de créer un doublon.",
+  duplicateWarning:
+    "Un client avec ce téléphone ou cet email existe déjà. Utilisez la fiche existante au lieu de créer un doublon.",
   suggestedMatches: "Clients existants pouvant correspondre",
   oldestRecord: "Fiche la plus ancienne",
   usersTitle: "Utilisateurs et permissions",
@@ -1571,8 +1584,7 @@ const fr: Dict = {
     "Votre téléphone ne prend pas en charge la vue caméra. Vous pouvez toujours explorer le plat en 3D.",
   demoMenuSection: "Menu de démonstration",
   demoMenuBadge: "Menu démo",
-  demoMenuNote:
-    "Plats et prix donnés à titre d'exemple. Le vrai menu les remplacera plus tard.",
+  demoMenuNote: "Plats et prix donnés à titre d'exemple. Le vrai menu les remplacera plus tard.",
   caiatSignature: "Signature Caiat",
   recommendedWith: "Recommandé avec ce plat",
   completeMeal: "Complétez votre repas",
@@ -1619,7 +1631,8 @@ const fr: Dict = {
   requestTooLong: "Ce texte est trop long",
   navCatalogue: "Catalogue",
   catalogueTitle: "Catalogue / Menu",
-  catalogueIntro: "Créez et gérez le catalogue visible par les clients. Les changements s'appliquent au portail client.",
+  catalogueIntro:
+    "Créez et gérez le catalogue visible par les clients. Les changements s'appliquent au portail client.",
   catalogueNew: "Nouvel article",
   catalogueEdit: "Modifier l'article",
   catalogueSearch: "Rechercher dans le catalogue",
@@ -1662,7 +1675,8 @@ const fr: Dict = {
   catalogueNone: "Aucun",
   catalogueKeyImmutable: "La clé interne d'un article existant ne peut pas être modifiée",
   catalogueKeyLocked: "La clé interne est figée une fois l'article enregistré.",
-  catalogueDraftHint: "Les nouveaux articles sont enregistrés masqués et inactifs par sécurité. Enregistrez, rouvrez et vérifiez l'article, puis activez-le.",
+  catalogueDraftHint:
+    "Les nouveaux articles sont enregistrés masqués et inactifs par sécurité. Enregistrez, rouvrez et vérifiez l'article, puis activez-le.",
   catalogueKeyTaken: "Cette clé interne est déjà utilisée",
   catalogueKeyInvalid: "Utilisez uniquement minuscules, chiffres et underscores",
   catalogueTooManyRecommendations: "Choisissez au maximum 3 articles",
@@ -1707,7 +1721,8 @@ const fr: Dict = {
   catalogueMarkAvailable: "Marquer disponible",
   navStock: "Stock",
   stockTitle: "Stock et courses",
-  stockIntro: "Stock estimé à partir de vos achats et de ce que la cuisine sert. Données de démonstration.",
+  stockIntro:
+    "Stock estimé à partir de vos achats et de ce que la cuisine sert. Données de démonstration.",
   stockDemoBadge: "Démo",
   stockStatusBuy: "Acheter",
   stockStatusLow: "Bas",
@@ -1780,7 +1795,8 @@ const fr: Dict = {
   supplierEmpty: "Aucun fournisseur",
   stockItems: "Ingrédients",
   recipeTitle: "Recette (ingrédients estimés)",
-  recipeHint: "Quantités moyennes par portion, utilisées pour estimer le stock — pas des poids exacts.",
+  recipeHint:
+    "Quantités moyennes par portion, utilisées pour estimer le stock — pas des poids exacts.",
   recipeButton: "Recette",
   recipeQtyPerPortion: "Par portion",
   recipeSaved: "Recette enregistrée",
@@ -1984,7 +2000,8 @@ const ar: Dict = {
   mergeCustomers: "دمج العملاء",
   mergeInto: "الدمج في هذا السجل",
   mergeConfirmTitle: "دمج العملاء؟",
-  mergeConfirmBody: "ستنتقل جميع الإقامات والسجل إلى العميل الذي تحتفظ به. سيتم حذف السجل الآخر نهائياً.",
+  mergeConfirmBody:
+    "ستنتقل جميع الإقامات والسجل إلى العميل الذي تحتفظ به. سيتم حذف السجل الآخر نهائياً.",
   recordToKeep: "السجل الذي سيبقى",
   customersMerged: "تم دمج العملاء",
   matchByPhone: "نفس الهاتف",
@@ -2228,7 +2245,8 @@ const ar: Dict = {
   catalogueRecommended: "يُنصح به مع هذا",
   catalogueRecommendedHint: "حتى 3 عناصر، بدون تكرار أو إشارة لنفس العنصر.",
   catalogueRecommendedIn: "اعرض هذا العنصر كاقتراح مع",
-  catalogueRecommendedInHint: "اختر العناصر التي يُقترح بعدها هذا العنصر. 3 اقتراحات كحد أقصى لكل عنصر.",
+  catalogueRecommendedInHint:
+    "اختر العناصر التي يُقترح بعدها هذا العنصر. 3 اقتراحات كحد أقصى لكل عنصر.",
   catalogueDemoBadge: "تجريبي",
   catalogueDemoHint: "عنصر تجريبي — غير مفعّل للنزلاء، يظهر فقط في القائمة التجريبية.",
   catalogueFilterReal: "عناصر حقيقية",
@@ -2236,7 +2254,8 @@ const ar: Dict = {
   catalogueNone: "لا شيء",
   catalogueKeyImmutable: "لا يمكن تغيير المفتاح الداخلي لعنصر موجود",
   catalogueKeyLocked: "يصبح المفتاح الداخلي ثابتاً بعد حفظ العنصر.",
-  catalogueDraftHint: "تُحفظ العناصر الجديدة مخفية وغير مفعّلة للأمان. احفظ العنصر ثم أعد فتحه وراجعه ثم فعّله.",
+  catalogueDraftHint:
+    "تُحفظ العناصر الجديدة مخفية وغير مفعّلة للأمان. احفظ العنصر ثم أعد فتحه وراجعه ثم فعّله.",
   catalogueKeyTaken: "هذا المفتاح الداخلي مستخدم بالفعل",
   catalogueKeyInvalid: "استخدم أحرفاً صغيرة وأرقاماً وشرطة سفلية فقط",
   catalogueTooManyRecommendations: "اختر 3 عناصر كحد أقصى",
@@ -2361,7 +2380,6 @@ const ar: Dict = {
   recipeNone: "لا توجد مكوّنات بعد",
   recipeMissing: "بدون وصفة",
 };
-
 
 const dictionaries: Record<Lang, Dict> = { pt, en, fr, ar };
 
