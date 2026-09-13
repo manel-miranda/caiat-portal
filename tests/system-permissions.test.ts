@@ -252,7 +252,7 @@ suite("system permission boundaries", () => {
     await expectDenied(() => outsiderSql`SELECT public.inventory_waste(${inventoryItemId}, 1, NULL)`);
   });
 
-  test("RLS blocks unauthorized financial writes while preserving staff payment access", async () => {
+  test("RLS and grants block unauthorized financial writes while preserving staff payment access", async () => {
     await actAs(sql, supervisorId);
     const [created] = await sql`
       SELECT public.create_stay_with_guest(
@@ -285,7 +285,7 @@ suite("system permission boundaries", () => {
         INSERT INTO public.cash_reconciliations(business_date, expected_total, counted_total, closed_by)
         VALUES (DATE '2040-06-01', 10, 10, ${outsiderId})
       `,
-      "row-level security",
+      "permission denied",
     );
 
     const staffSql = db.connect();
@@ -308,6 +308,9 @@ suite("system permission boundaries", () => {
         has_function_privilege('anon', 'public.checkout_stay(uuid,boolean)', 'EXECUTE') AS checkout,
         has_function_privilege('anon', 'public.catalog_set_active(uuid,boolean)', 'EXECUTE') AS catalogue,
         has_function_privilege('anon', 'public.inventory_receive(uuid,numeric,numeric,text)', 'EXECUTE') AS inventory,
+        has_function_privilege('anon', 'public.cash_reconcile(date,numeric,text)', 'EXECUTE') AS cash,
+        has_function_privilege('anon', 'public.complete_request(uuid,boolean)', 'EXECUTE') AS complete_request,
+        has_function_privilege('anon', 'public.cancel_request(uuid)', 'EXECUTE') AS cancel_request,
         has_function_privilege('anon', 'public.set_user_role(uuid,public.app_role)', 'EXECUTE') AS roles
     `;
     const privileges = row as Record<string, boolean>;
@@ -315,6 +318,9 @@ suite("system permission boundaries", () => {
     expect(privileges["checkout"]).toBe(false);
     expect(privileges["catalogue"]).toBe(false);
     expect(privileges["inventory"]).toBe(false);
+    expect(privileges["cash"]).toBe(false);
+    expect(privileges["complete_request"]).toBe(false);
+    expect(privileges["cancel_request"]).toBe(false);
     expect(privileges["roles"]).toBe(false);
   });
 });
