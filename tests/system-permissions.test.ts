@@ -85,13 +85,13 @@ suite("system permission boundaries", () => {
         public.has_permission(${staffId}, 'requests_manage') AS requests
     `;
     const p = row as Record<string, boolean>;
-    expect(p.reservations).toBe(false);
-    expect(p.customers).toBe(false);
-    expect(p.guest_access).toBe(false);
-    expect(p.cash).toBe(false);
-    expect(p.users_manage).toBe(false);
-    expect(p.payments).toBe(true);
-    expect(p.requests).toBe(true);
+    expect(p["reservations"]).toBe(false);
+    expect(p["customers"]).toBe(false);
+    expect(p["guest_access"]).toBe(false);
+    expect(p["cash"]).toBe(false);
+    expect(p["users_manage"]).toBe(false);
+    expect(p["payments"]).toBe(true);
+    expect(p["requests"]).toBe(true);
   });
 
   test("staff cannot create stays through the SECURITY DEFINER RPC", async () => {
@@ -311,10 +311,10 @@ suite("system permission boundaries", () => {
         has_function_privilege('anon', 'public.set_user_role(uuid,public.app_role)', 'EXECUTE') AS roles
     `;
     const privileges = row as Record<string, boolean>;
-    expect(privileges.create_stay).toBe(false);
-    expect(privileges.checkout).toBe(false);
-    expect(privileges.catalogue).toBe(false);
-    expect(privileges.inventory).toBe(false);
-    expect(privileges.roles).toBe(false);
+    expect(privileges["create_stay"]).toBe(false);
+    expect(privileges["checkout"]).toBe(false);
+    expect(privileges["catalogue"]).toBe(false);
+    expect(privileges["inventory"]).toBe(false);
+    expect(privileges["roles"]).toBe(false);
   });
 });
