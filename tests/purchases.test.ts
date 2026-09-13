@@ -202,4 +202,75 @@ suite("suppliers and purchases", () => {
     expect(row["activate"]).toBe(false);
     expect(row["purchase"]).toBe(false);
   });
+  test("inventory_record_purchase is idempotent for the same purchase id", async () => {
+    const milk = await itemId("demo_milk");
+    const before = (await stockByKey(sql))["demo_milk"] ?? 0;
+    const [gen] = await sql`SELECT gen_random_uuid() AS id`;
+    const purchaseId = String((gen as { id: string }).id);
+    const lines = JSON.stringify([{ inventory_item_id: milk, quantity: 6, unit_cost: 7.5 }]);
+
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      await sql`
+        SELECT public.inventory_record_purchase(${purchaseId}::uuid, NULL, now(), 'retry test',
+          ${lines}::jsonb)
+      `;
+    }
+
+    const movements = await movementsFor(purchaseId);
+    expect(movements.length).toBe(1);
+    expect(movements[0]?.quantity).toBe(6);
+
+    const items = await sql`
+      SELECT count(*)::int AS count FROM public.purchase_lines WHERE purchase_id = ${purchaseId}
+    `;
+    expect((items as unknown as { count: number }[])[0]?.count).toBe(1);
+
+    const after = (await stockByKey(sql))["demo_milk"] ?? 0;
+    expect(round(after - before)).toBe(6);
+  });
+
+  test("the server calculates the purchase total from the lines", async () => {
+    const tomatoes = await itemId("demo_tomatoes");
+    const eggs = await itemId("demo_eggs");
+    const [gen] = await sql`SELECT gen_random_uuid() AS id`;
+    const purchaseId = String((gen as { id: string }).id);
+    const lines = JSON.stringify([
+      { inventory_item_id: tomatoes, quantity: 3, unit_cost: 12 },
+      { inventory_item_id: eggs, quantity: 10, unit_cost: 1.5 },
+    ]);
+    await sql`
+      SELECT public.inventory_record_purchase(${purchaseId}::uuid, NULL, now(), NULL, ${lines}::jsonb)
+    `;
+
+    const [purchase] = await sql`
+      SELECT total_cost::float8 AS total_cost, line_count
+        FROM public.purchases WHERE id = ${purchaseId}
+    `;
+    expect((purchase as { total_cost: number }).total_cost).toBe(51);
+    expect(Number((purchase as { line_count: number }).line_count)).toBe(2);
+  });
+
+  test("inventory_record_purchase is closed to unauthorised and anonymous callers", async () => {
+    const onions = await itemId("demo_onions");
+    const lines = JSON.stringify([{ inventory_item_id: onions, quantity: 1, unit_cost: 1 }]);
+
+    let denied = false;
+    try {
+      await outsiderSql`
+        SELECT public.inventory_record_purchase(gen_random_uuid(), NULL, now(), NULL, ${lines}::jsonb)
+      `;
+    } catch (error) {
+      denied = true;
+      expect(String(error)).toContain("PERMISSION_DENIED");
+    }
+    expect(denied).toBe(true);
+
+    const privileges = await sql`
+      SELECT has_function_privilege('anon', 'public.inventory_record_purchase(uuid,uuid,timestamptz,text,jsonb)', 'EXECUTE') AS record,
+             has_function_privilege('anon', 'public.inventory_upsert_supplier(uuid,text,text,text,text,boolean)', 'EXECUTE') AS supplier
+    `;
+    const row = (privileges as unknown as Record<string, boolean>[])[0]!;
+    expect(row["record"]).toBe(false);
+    expect(row["supplier"]).toBe(false);
+  });
 });
