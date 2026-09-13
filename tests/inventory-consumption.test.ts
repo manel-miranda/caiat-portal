@@ -14,7 +14,7 @@
  * and exercise the real RPCs, so a change to any of those three pieces — the
  * index, the conflict target, or the status RPC — fails here.
  */
-import { afterAll, beforeAll, describe, expect, setDefaultTimeout, test } from "bun:test";
+import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { SQL } from "bun";
 import {
   actAs,
@@ -30,8 +30,6 @@ import {
   type OrderLine,
   type TestDatabase,
 } from "./support/preview-db";
-
-setDefaultTimeout(15_000);
 
 /** Two dishes that share `demo_onions`, so the per-ingredient rollup is covered. */
 const ORDER: OrderLine[] = [
