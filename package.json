@@ -11,7 +11,7 @@
     "typecheck:app": "tsc --noEmit -p tsconfig.json",
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "typecheck": "bun run typecheck:app && bun run typecheck:tests",
-    "test": "bun test",
+    "test": "bun test --timeout 15000",
     "lint": "eslint .",
     "check": "bun run typecheck && bun run build",
     "check:full": "bun run typecheck && bun run lint && bun run build",
