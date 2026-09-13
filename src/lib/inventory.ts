@@ -242,6 +242,7 @@ export async function setSupplierActive(id: string, active: boolean) {
 
 /** Atomic: purchase header + lines + positive receipt movements in one RPC. */
 export async function createPurchase(input: {
+  id: string;
   supplierId: string | null;
   purchaseDate: string;
   notes: string;
@@ -250,6 +251,7 @@ export async function createPurchase(input: {
   const { error } = await supabase.rpc(
     "purchase_create" as never,
     {
+      p_purchase_id: input.id,
       p_supplier_id: input.supplierId,
       p_purchase_date: input.purchaseDate,
       p_notes: input.notes,
@@ -325,7 +327,9 @@ export function inventoryErrorKey(raw: string): string {
   if (raw.includes("QUANTITY_INVALID")) return "stockQuantityInvalid";
   if (raw.includes("NO_CHANGE")) return "stockNoChange";
   if (raw.includes("NAME_REQUIRED")) return "supplierNameRequired";
-  if (raw.includes("LINES_REQUIRED")) return "purchaseLinesRequired";
+  if (raw.includes("LINES_REQUIRED") || raw.includes("INVALID_PURCHASE_LINE")) {
+    return "purchaseLinesRequired";
+  }
   return "";
 }
 
