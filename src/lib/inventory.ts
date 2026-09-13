@@ -242,7 +242,7 @@ export async function setSupplierActive(id: string, active: boolean) {
 
 /** Atomic: purchase header + lines + positive receipt movements in one RPC. */
 export async function createPurchase(input: {
-  id: string;
+  id?: string;
   supplierId: string | null;
   purchaseDate: string;
   notes: string;
@@ -251,7 +251,7 @@ export async function createPurchase(input: {
   const { error } = await supabase.rpc(
     "purchase_create" as never,
     {
-      p_purchase_id: input.id,
+      p_purchase_id: input.id ?? crypto.randomUUID(),
       p_supplier_id: input.supplierId,
       p_purchase_date: input.purchaseDate,
       p_notes: input.notes,
