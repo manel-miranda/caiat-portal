@@ -81,9 +81,10 @@ function emptyDraft(): Draft {
     label: "",
     price: "0",
     billable: true,
-    requestable: true,
-    active: true,
-    guestVisible: true,
+    requestable: false,
+    active: false,
+    guestVisible: false,
+
     category: "food",
     guestCategory: "food",
     guestSubcategory: "",
