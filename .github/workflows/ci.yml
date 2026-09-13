@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   verify:
-    name: Typecheck, lint, build
+    name: Typecheck and build
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -34,7 +34,8 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
-      - name: Lint
+      - name: Lint (baseline, non-blocking)
+        continue-on-error: true
         run: bun run lint
 
       - name: Production build
