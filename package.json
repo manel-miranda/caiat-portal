@@ -8,7 +8,7 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
-    "typecheck": "bunx tsgo --noEmit",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "check": "bun run typecheck && bun run lint && bun run build",
     "format": "prettier --write ."
