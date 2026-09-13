@@ -2,11 +2,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { logAudit } from "@/lib/audit";
 import { t } from "@/lib/i18n";
 
-/** Marker written into a charge note so a request can only be billed once. */
-export function requestChargeMarker(requestId: string) {
-  return `[req:${requestId}]`;
-}
-
 export async function addCharge(params: {
   stayId: string;
   serviceTypeId: string | null;
@@ -237,7 +232,7 @@ export async function addRequest(params: {
   return data;
 }
 
-/** Completes a request and, when asked, bills it once to the linked stay. */
+/** Completes a request and optionally bills it once in one server transaction. */
 export async function completeRequest(params: {
   requestId: string;
   stayId: string | null;
@@ -247,51 +242,18 @@ export async function completeRequest(params: {
   withCharge: boolean;
   userId?: string | undefined;
 }) {
-  if (params.withCharge && params.stayId) {
-    const marker = requestChargeMarker(params.requestId);
-    const { data: existing } = await supabase
-      .from("charges")
-      .select("id")
-      .eq("stay_id", params.stayId)
-      .like("notes", `%${marker}%`)
-      .limit(1);
-    if (!existing?.length) {
-      await addCharge({
-        stayId: params.stayId,
-        serviceTypeId: params.serviceTypeId,
-        label: params.label,
-        quantity: 1,
-        unitPrice: params.unitPrice,
-        notes: marker,
-        userId: params.userId,
-      });
-    }
-  }
-  const { error } = await supabase
-    .from("requests")
-    .update({
-      status: "completed",
-      completed_by: params.userId ?? null,
-      completed_at: new Date().toISOString(),
-    })
-    .eq("id", params.requestId);
+  const { error } = await supabase.rpc("complete_request" as never, {
+    p_request_id: params.requestId,
+    p_with_charge: params.withCharge,
+  } as never);
   if (error) throw error;
-  void logAudit(params.userId, "request.completed", "request", params.requestId, {
-    billed: params.withCharge,
-  });
 }
 
-export async function cancelRequest(requestId: string, userId?: string) {
-  const { error } = await supabase
-    .from("requests")
-    .update({
-      status: "cancelled",
-      completed_by: userId ?? null,
-      completed_at: new Date().toISOString(),
-    })
-    .eq("id", requestId);
+export async function cancelRequest(requestId: string, _userId?: string) {
+  const { error } = await supabase.rpc("cancel_request" as never, {
+    p_request_id: requestId,
+  } as never);
   if (error) throw error;
-  void logAudit(userId, "request.cancelled", "request", requestId, {});
 }
 
 export async function checkoutStay(params: {
@@ -321,7 +283,7 @@ function checkoutErrorMessage(raw: string): string {
   return raw;
 }
 
-/** Insert or update the cash count for a business date (admin only via RLS). */
+/** Reconciles cash with a server-calculated expected total for the business day. */
 export async function saveCashCount(params: {
   date: string;
   expectedTotal: number;
@@ -330,27 +292,11 @@ export async function saveCashCount(params: {
   existingId?: string | null | undefined;
   userId: string;
 }) {
-  const row = {
-    business_date: params.date,
-    expected_total: params.expectedTotal,
-    counted_total: params.countedTotal,
-    notes: params.notes?.trim() || null,
-    closed_by: params.userId,
-    closed_at: new Date().toISOString(),
-  };
-
-  const query = params.existingId
-    ? supabase.from("cash_reconciliations").update(row).eq("id", params.existingId)
-    : supabase.from("cash_reconciliations").insert(row);
-
-  const { data, error } = await query.select("id, difference").single();
+  const { data, error } = await supabase.rpc("cash_reconcile" as never, {
+    p_business_date: params.date,
+    p_counted_total: params.countedTotal,
+    p_notes: params.notes?.trim() || null,
+  } as never);
   if (error) throw error;
-
-  void logAudit(params.userId, "cash.reconciled", "cash_reconciliation", data.id, {
-    business_date: params.date,
-    expected_total: params.expectedTotal,
-    counted_total: params.countedTotal,
-    difference: data.difference,
-  });
-  return data;
+  return data as unknown as { id: string; difference: number };
 }
