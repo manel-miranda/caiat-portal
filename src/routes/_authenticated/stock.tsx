@@ -107,15 +107,32 @@ function StockPage() {
         <Counter label={t("stockStatusGood")} value={counts.good} tone="muted" />
       </div>
 
-      <div className="mt-3 flex gap-2">
+      <div className="mt-3 flex flex-wrap gap-2">
         <TabButton active={tab === "stock"} onClick={() => setTab("stock")}>
           {t("stockItems")}
         </TabButton>
         <TabButton active={tab === "shopping"} onClick={() => setTab("shopping")}>
           {t("stockShoppingList")}
         </TabButton>
+        <TabButton active={tab === "purchases"} onClick={() => setTab("purchases")}>
+          {t("stockPurchases")}
+        </TabButton>
+        <TabButton active={tab === "suppliers"} onClick={() => setTab("suppliers")}>
+          {t("stockSuppliers")}
+        </TabButton>
       </div>
 
+      {tab === "purchases" ? (
+        <PurchasesTab
+          canWrite={canWrite}
+          items={rows}
+          onRecord={() => setPurchase([])}
+          onChanged={refresh}
+        />
+      ) : tab === "suppliers" ? (
+        <SuppliersTab canWrite={canWrite} onChanged={refresh} />
+      ) : (
+        <>
       <div className="surface-card mt-3 space-y-2 p-3">
         <Input
           value={search}
