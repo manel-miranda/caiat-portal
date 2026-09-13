@@ -548,18 +548,22 @@ function CataloguePage() {
                 <Toggle
                   label={t("catalogueRequestable")}
                   checked={draft.requestable}
+                  disabled={!draft.id}
                   onChange={(v) => setDraft({ ...draft, requestable: v })}
                 />
                 <Toggle
                   label={t("catalogueActive")}
                   checked={draft.active}
+                  disabled={!draft.id}
                   onChange={(v) => setDraft({ ...draft, active: v })}
                 />
                 <Toggle
                   label={t("catalogueGuestVisible")}
                   checked={draft.guestVisible}
+                  disabled={!draft.id}
                   onChange={(v) => setDraft({ ...draft, guestVisible: v })}
                 />
+
                 <Toggle
                   label={t("catalogueFeatured")}
                   checked={draft.featured}
