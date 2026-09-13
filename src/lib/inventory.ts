@@ -135,17 +135,27 @@ export type PurchaseLine = {
   purchase_id: string;
   inventory_item_id: string;
   quantity: number;
+  unit_cost: number | null;
   line_total: number;
 };
 
 export type Purchase = {
   id: string;
   supplier_id: string | null;
-  purchase_date: string;
+  supplier_name: string | null;
+  purchased_at: string;
   notes: string | null;
   total_cost: number;
   line_count: number;
   created_at: string;
+};
+
+/** Latest buying context per ingredient — a hint, never a guaranteed price. */
+export type PurchaseContext = {
+  inventory_item_id: string;
+  last_purchased_at: string;
+  last_supplier_name: string | null;
+  last_unit_cost: number | null;
 };
 
 export const suppliersQuery = {
@@ -171,16 +181,19 @@ export const purchasesQuery = {
   queryKey: ["inventory", "purchases"],
   queryFn: async (): Promise<Purchase[]> => {
     const { data, error } = await supabase
-      .from("purchases" as never)
-      .select("id, supplier_id, purchase_date, notes, total_cost, line_count, created_at")
-      .order("purchase_date", { ascending: false })
+      .from("purchase_overview" as never)
+      .select(
+        "id, supplier_id, supplier_name, purchased_at, notes, total_cost, line_count, created_at",
+      )
+      .order("purchased_at", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(100);
     if (error) throw error;
     return ((data ?? []) as unknown as Record<string, unknown>[]).map((r) => ({
       id: String(r["id"]),
       supplier_id: (r["supplier_id"] as string | null) ?? null,
-      purchase_date: String(r["purchase_date"]),
+      supplier_name: (r["supplier_name"] as string | null) ?? null,
+      purchased_at: String(r["purchased_at"]),
       notes: (r["notes"] as string | null) ?? null,
       total_cost: num(r["total_cost"]),
       line_count: Number(r["line_count"] ?? 0),
@@ -194,7 +207,7 @@ export const purchaseLinesQuery = (purchaseId: string) => ({
   queryFn: async (): Promise<PurchaseLine[]> => {
     const { data, error } = await supabase
       .from("purchase_lines" as never)
-      .select("id, purchase_id, inventory_item_id, quantity, line_total")
+      .select("id, purchase_id, inventory_item_id, quantity, unit_cost, line_total")
       .eq("purchase_id", purchaseId);
     if (error) throw error;
     return ((data ?? []) as unknown as Record<string, unknown>[]).map((r) => ({
@@ -202,10 +215,27 @@ export const purchaseLinesQuery = (purchaseId: string) => ({
       purchase_id: String(r["purchase_id"]),
       inventory_item_id: String(r["inventory_item_id"]),
       quantity: num(r["quantity"]),
+      unit_cost: r["unit_cost"] == null ? null : num(r["unit_cost"]),
       line_total: num(r["line_total"]),
     }));
   },
 });
+
+export const purchaseContextQuery = {
+  queryKey: ["inventory", "purchase-context"],
+  queryFn: async (): Promise<PurchaseContext[]> => {
+    const { data, error } = await supabase
+      .from("inventory_purchase_context" as never)
+      .select("inventory_item_id, last_purchased_at, last_supplier_name, last_unit_cost");
+    if (error) throw error;
+    return ((data ?? []) as unknown as Record<string, unknown>[]).map((r) => ({
+      inventory_item_id: String(r["inventory_item_id"]),
+      last_purchased_at: String(r["last_purchased_at"]),
+      last_supplier_name: (r["last_supplier_name"] as string | null) ?? null,
+      last_unit_cost: r["last_unit_cost"] == null ? null : num(r["last_unit_cost"]),
+    }));
+  },
+};
 
 export async function saveSupplier(input: {
   id: string | null;
@@ -215,8 +245,8 @@ export async function saveSupplier(input: {
   notes: string;
   active: boolean;
 }) {
-  const { error } = await supabase.rpc(
-    "supplier_upsert" as never,
+  const { data, error } = await supabase.rpc(
+    "inventory_upsert_supplier" as never,
     {
       p_id: input.id,
       p_name: input.name,
@@ -227,6 +257,7 @@ export async function saveSupplier(input: {
     } as never,
   );
   if (error) throw error;
+  return String(data);
 }
 
 export async function setSupplierActive(id: string, active: boolean) {
@@ -240,23 +271,33 @@ export async function setSupplierActive(id: string, active: boolean) {
   if (error) throw error;
 }
 
-/** Atomic: purchase header + lines + positive receipt movements in one RPC. */
-export async function createPurchase(input: {
+/**
+ * Atomic: purchase header + lines + positive receipt movements in one RPC.
+ * The caller supplies the purchase id, so a retry after a dropped connection
+ * records the same purchase once instead of doubling stock.
+ */
+export async function recordPurchase(input: {
+  purchaseId: string;
   supplierId: string | null;
-  purchaseDate: string;
+  purchasedAt: string;
   notes: string;
-  lines: { inventory_item_id: string; quantity: number; line_total: number }[];
+  lines: { inventory_item_id: string; quantity: number; unit_cost: number }[];
 }) {
   const { error } = await supabase.rpc(
-    "purchase_create" as never,
+    "inventory_record_purchase" as never,
     {
+      p_purchase_id: input.purchaseId,
       p_supplier_id: input.supplierId,
-      p_purchase_date: input.purchaseDate,
+      p_purchased_at: input.purchasedAt,
       p_notes: input.notes,
       p_lines: input.lines,
     } as never,
   );
   if (error) throw error;
+}
+
+export function newPurchaseId(): string {
+  return crypto.randomUUID();
 }
 
 /* ---------------- writes ---------------- */
@@ -326,6 +367,8 @@ export function inventoryErrorKey(raw: string): string {
   if (raw.includes("NO_CHANGE")) return "stockNoChange";
   if (raw.includes("NAME_REQUIRED")) return "supplierNameRequired";
   if (raw.includes("LINES_REQUIRED")) return "purchaseLinesRequired";
+  if (raw.includes("DUPLICATE_ITEM")) return "purchaseDuplicateItem";
+  if (raw.includes("COST_INVALID")) return "purchaseCostInvalid";
   return "";
 }
 
