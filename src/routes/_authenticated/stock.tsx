@@ -249,6 +249,23 @@ function StockPage() {
         </ul>
       )}
 
+      {tab === "shopping" && canWrite && visible.length > 0 ? (
+        <Button
+          className="mt-3 w-full rounded-xl"
+          onClick={() =>
+            setPurchase(
+              visible
+                .filter((r) => r.recommended_quantity > 0)
+                .map((r) => ({ itemId: r.id, quantity: qty(r.recommended_quantity), cost: "" })),
+            )
+          }
+        >
+          {t("purchasePrefill")}
+        </Button>
+      ) : null}
+        </>
+      )}
+
       <Sheet open={Boolean(action)} onOpenChange={(open) => !open && setAction(null)}>
         <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto rounded-t-2xl">
           {action ? (
@@ -277,6 +294,24 @@ function StockPage() {
                 />
               )}
             </>
+          ) : null}
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={purchase !== null} onOpenChange={(open) => !open && setPurchase(null)}>
+        <SheetContent side="bottom" className="max-h-[90dvh] overflow-y-auto rounded-t-2xl">
+          <SheetHeader className="text-start">
+            <SheetTitle className="text-base">{t("purchaseNew")}</SheetTitle>
+          </SheetHeader>
+          {purchase !== null ? (
+            <PurchaseForm
+              items={rows}
+              initialLines={purchase}
+              onDone={async () => {
+                setPurchase(null);
+                await refresh();
+              }}
+            />
           ) : null}
         </SheetContent>
       </Sheet>
