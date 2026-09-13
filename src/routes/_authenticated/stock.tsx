@@ -19,14 +19,16 @@ import { t } from "@/lib/i18n";
 import { mad, shortDate, shortDateTime, todayISO } from "@/lib/format";
 import {
   adjustStock,
-  createPurchase,
   inventoryErrorKey,
   inventoryMovementsQuery,
   inventoryStatusQuery,
+  newPurchaseId,
+  purchaseContextQuery,
   purchaseLinesQuery,
   purchasesQuery,
   qty,
   receiveStock,
+  recordPurchase,
   recordWaste,
   saveSupplier,
   setSupplierActive,
@@ -35,6 +37,7 @@ import {
   type InventoryStatusRow,
   type MovementType,
   type Purchase,
+  type PurchaseContext,
   type StockStatus,
   type Supplier,
 } from "@/lib/inventory";
@@ -506,6 +509,33 @@ function TabButton({
 
 type DraftLine = { itemId: string; quantity: string; cost: string };
 
+/** Small, non-binding buying hint on the shopping list. */
+function ShoppingHint({
+  row,
+  context,
+}: {
+  row: InventoryStatusRow;
+  context: PurchaseContext | undefined;
+}) {
+  if (!context) return null;
+  const estimate =
+    context.last_unit_cost != null && row.recommended_quantity > 0
+      ? context.last_unit_cost * row.recommended_quantity
+      : null;
+  return (
+    <p className="mt-1 text-xs text-muted-foreground">
+      {context.last_supplier_name
+        ? `${t("purchaseLastBoughtAt")} ${context.last_supplier_name}`
+        : t("purchaseLastBought")}{" "}
+      · {shortDate(context.last_purchased_at)}
+      {context.last_unit_cost != null
+        ? ` · ${mad(context.last_unit_cost)}/${row.unit}`
+        : ""}
+      {estimate != null ? ` · ${t("purchaseEstimatedCost")} ~${mad(estimate)}` : ""}
+    </p>
+  );
+}
+
 function PurchasesTab({
   canWrite,
   items,
@@ -518,18 +548,21 @@ function PurchasesTab({
   onChanged: () => Promise<void>;
 }) {
   const purchases = useQuery(purchasesQuery);
-  const suppliers = useQuery(suppliersQuery);
   const [open, setOpen] = useState<Purchase | null>(null);
-  const supplierName = (id: string | null) =>
-    (suppliers.data ?? []).find((s) => s.id === id)?.name ?? t("purchaseNoSupplier");
+  const [suppliersOpen, setSuppliersOpen] = useState(false);
   const list = purchases.data ?? [];
 
   return (
     <div className="mt-3 space-y-3">
       {canWrite ? (
-        <Button className="w-full rounded-xl" onClick={onRecord}>
-          {t("purchaseNew")}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button className="flex-1 rounded-xl" onClick={onRecord}>
+            {t("purchaseNew")}
+          </Button>
+          <Button variant="outline" className="rounded-xl" onClick={() => setSuppliersOpen(true)}>
+            {t("stockSuppliers")}
+          </Button>
+        </div>
       ) : null}
       <p className="text-xs text-muted-foreground">{t("purchaseHint")}</p>
 
@@ -547,11 +580,14 @@ function PurchasesTab({
               >
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-semibold">
-                    {supplierName(p.supplier_id)}
+                    {p.supplier_name ?? t("purchaseNoSupplier")}
                   </span>
                   <span className="block truncate text-xs text-muted-foreground">
-                    {shortDate(p.purchase_date)} · {p.line_count} {t("purchaseItemsCount")}
+                    {shortDateTime(p.purchased_at)} · {p.line_count} {t("purchaseItemsCount")}
                   </span>
+                  {p.notes ? (
+                    <span className="block truncate text-xs text-muted-foreground">{p.notes}</span>
+                  ) : null}
                 </span>
                 <span className="shrink-0 text-sm font-semibold">{mad(p.total_cost)}</span>
               </button>
@@ -565,14 +601,16 @@ function PurchasesTab({
           <SheetHeader className="text-start">
             <SheetTitle className="text-base">{t("purchaseDetails")}</SheetTitle>
           </SheetHeader>
-          {open ? (
-            <PurchaseDetails
-              purchase={open}
-              items={items}
-              supplier={supplierName(open.supplier_id)}
-              onChanged={onChanged}
-            />
-          ) : null}
+          {open ? <PurchaseDetails purchase={open} items={items} /> : null}
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={suppliersOpen} onOpenChange={setSuppliersOpen}>
+        <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto rounded-t-2xl">
+          <SheetHeader className="text-start">
+            <SheetTitle className="text-base">{t("stockSuppliers")}</SheetTitle>
+          </SheetHeader>
+          <SuppliersTab canWrite={canWrite} onChanged={onChanged} />
         </SheetContent>
       </Sheet>
     </div>
@@ -582,12 +620,9 @@ function PurchasesTab({
 function PurchaseDetails({
   purchase,
   items,
-  supplier,
 }: {
   purchase: Purchase;
   items: InventoryStatusRow[];
-  supplier: string;
-  onChanged: () => Promise<void>;
 }) {
   const lines = useQuery(purchaseLinesQuery(purchase.id));
   const label = (id: string) => items.find((i) => i.id === id)?.label ?? id;
@@ -595,7 +630,7 @@ function PurchaseDetails({
   return (
     <div className="mt-2 space-y-2 pb-6">
       <p className="text-sm text-muted-foreground">
-        {shortDate(purchase.purchase_date)} · {supplier}
+        {shortDateTime(purchase.purchased_at)} · {purchase.supplier_name ?? t("purchaseNoSupplier")}
       </p>
       {purchase.notes ? <p className="text-sm">{purchase.notes}</p> : null}
       {lines.isLoading ? (
@@ -606,6 +641,9 @@ function PurchaseDetails({
             <li key={l.id} className="flex items-center justify-between gap-3 py-2 text-sm">
               <span className="min-w-0 truncate">
                 {label(l.inventory_item_id)} · {qty(l.quantity)} {unit(l.inventory_item_id)}
+                {l.unit_cost != null ? (
+                  <span className="text-muted-foreground"> · {mad(l.unit_cost)}</span>
+                ) : null}
               </span>
               <span className="shrink-0 font-medium">{mad(l.line_total)}</span>
             </li>
@@ -623,49 +661,90 @@ function PurchaseDetails({
 function PurchaseForm({
   items,
   initialLines,
+  context,
   onDone,
 }: {
   items: InventoryStatusRow[];
   initialLines: DraftLine[];
+  context: PurchaseContext[];
   onDone: () => Promise<void>;
 }) {
   const suppliers = useQuery(suppliersQuery);
   const [supplierId, setSupplierId] = useState("");
+  const [newSupplier, setNewSupplier] = useState<string | null>(null);
   const [date, setDate] = useState(todayISO());
   const [notes, setNotes] = useState("");
   const [lines, setLines] = useState<DraftLine[]>(
     initialLines.length > 0 ? initialLines : [{ itemId: "", quantity: "", cost: "" }],
   );
   const [busy, setBusy] = useState(false);
+  // Stable across retries: the server records this purchase at most once.
+  const [purchaseId, setPurchaseId] = useState(() => newPurchaseId());
 
   const total = lines.reduce((sum, l) => sum + (Number(l.cost) || 0), 0);
+  const chosen = lines.map((l) => l.itemId).filter(Boolean);
 
   function update(index: number, patch: Partial<DraftLine>) {
     setLines((prev) => prev.map((l, i) => (i === index ? { ...l, ...patch } : l)));
   }
 
+  async function addSupplier() {
+    const name = (newSupplier ?? "").trim();
+    if (!name) {
+      toast.error(t("supplierNameRequired"));
+      return;
+    }
+    try {
+      const id = await saveSupplier({
+        id: null,
+        name,
+        phone: "",
+        location: "",
+        notes: "",
+        active: true,
+      });
+      await suppliers.refetch();
+      setSupplierId(id);
+      setNewSupplier(null);
+      toast.success(t("supplierSaved"));
+    } catch (e) {
+      const key = inventoryErrorKey((e as Error).message);
+      toast.error(key ? t(key as never) : (e as Error).message);
+    }
+  }
+
   async function submit() {
-    // Duplicate items are aggregated server-side; empty rows are dropped here.
     const payload = lines
       .filter((l) => l.itemId && Number(l.quantity) > 0)
-      .map((l) => ({
-        inventory_item_id: l.itemId,
-        quantity: Number(l.quantity),
-        line_total: Math.max(Number(l.cost) || 0, 0),
-      }));
+      .map((l) => {
+        const quantity = Number(l.quantity);
+        const lineTotal = Math.max(Number(l.cost) || 0, 0);
+        // The user types the total they paid; the ledger stores unit cost.
+        return {
+          inventory_item_id: l.itemId,
+          quantity,
+          unit_cost: quantity > 0 ? lineTotal / quantity : 0,
+        };
+      });
     if (payload.length === 0) {
       toast.error(t("purchaseLinesRequired"));
       return;
     }
+    if (new Set(payload.map((l) => l.inventory_item_id)).size !== payload.length) {
+      toast.error(t("purchaseDuplicateItem"));
+      return;
+    }
     setBusy(true);
     try {
-      await createPurchase({
+      await recordPurchase({
+        purchaseId,
         supplierId: supplierId || null,
-        purchaseDate: date,
+        purchasedAt: new Date(`${date}T${new Date().toTimeString().slice(0, 8)}`).toISOString(),
         notes,
         lines: payload,
       });
       toast.success(t("purchaseSaved"));
+      setPurchaseId(newPurchaseId());
       await onDone();
     } catch (e) {
       const key = inventoryErrorKey((e as Error).message);
@@ -692,6 +771,28 @@ function PurchaseForm({
               </option>
             ))}
         </select>
+        {newSupplier === null ? (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="justify-self-start rounded-xl"
+            onClick={() => setNewSupplier("")}
+          >
+            {t("supplierNew")}
+          </Button>
+        ) : (
+          <div className="flex gap-2">
+            <Input
+              value={newSupplier}
+              placeholder={t("supplierName")}
+              aria-label={t("supplierName")}
+              onChange={(e) => setNewSupplier(e.target.value)}
+            />
+            <Button size="sm" className="rounded-xl" onClick={() => void addSupplier()}>
+              {t("save")}
+            </Button>
+          </div>
+        )}
       </div>
       <div className="grid gap-1">
         <Label className="text-sm">{t("purchaseDate")}</Label>
@@ -699,48 +800,58 @@ function PurchaseForm({
       </div>
 
       <Label className="text-sm">{t("purchaseLinesLabel")}</Label>
-      {lines.map((line, index) => (
-        <div key={index} className="grid gap-2 rounded-xl border border-border p-2">
-          <select
-            value={line.itemId}
-            onChange={(e) => update(index, { itemId: e.target.value })}
-            className="min-h-11 rounded-xl border border-border bg-background px-3 text-sm"
-          >
-            <option value="">—</option>
-            {items.map((i) => (
-              <option key={i.id} value={i.id}>
-                {i.label} ({i.unit})
-              </option>
-            ))}
-          </select>
-          <div className="grid grid-cols-2 gap-2">
-            <Input
-              inputMode="decimal"
-              placeholder={t("stockQuantity")}
-              aria-label={t("stockQuantity")}
-              value={line.quantity}
-              onChange={(e) => update(index, { quantity: e.target.value })}
-            />
-            <Input
-              inputMode="decimal"
-              placeholder={t("purchaseLineTotal")}
-              aria-label={t("purchaseLineTotal")}
-              value={line.cost}
-              onChange={(e) => update(index, { cost: e.target.value })}
-            />
-          </div>
-          {lines.length > 1 ? (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="justify-self-start rounded-xl"
-              onClick={() => setLines((prev) => prev.filter((_, i) => i !== index))}
+      {lines.map((line, index) => {
+        const hint = context.find((c) => c.inventory_item_id === line.itemId);
+        return (
+          <div key={index} className="grid gap-2 rounded-xl border border-border p-2">
+            <select
+              value={line.itemId}
+              onChange={(e) => update(index, { itemId: e.target.value })}
+              className="min-h-11 rounded-xl border border-border bg-background px-3 text-sm"
             >
-              {t("purchaseRemoveLine")}
-            </Button>
-          ) : null}
-        </div>
-      ))}
+              <option value="">—</option>
+              {items
+                .filter((i) => i.id === line.itemId || !chosen.includes(i.id))
+                .map((i) => (
+                  <option key={i.id} value={i.id}>
+                    {i.label} ({i.unit})
+                  </option>
+                ))}
+            </select>
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                inputMode="decimal"
+                placeholder={t("stockQuantity")}
+                aria-label={t("stockQuantity")}
+                value={line.quantity}
+                onChange={(e) => update(index, { quantity: e.target.value })}
+              />
+              <Input
+                inputMode="decimal"
+                placeholder={t("purchaseLineTotal")}
+                aria-label={t("purchaseLineTotal")}
+                value={line.cost}
+                onChange={(e) => update(index, { cost: e.target.value })}
+              />
+            </div>
+            {hint?.last_unit_cost != null ? (
+              <p className="text-xs text-muted-foreground">
+                {t("purchaseLastPrice")} {mad(hint.last_unit_cost)}
+              </p>
+            ) : null}
+            {lines.length > 1 ? (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="justify-self-start rounded-xl"
+                onClick={() => setLines((prev) => prev.filter((_, i) => i !== index))}
+              >
+                {t("purchaseRemoveLine")}
+              </Button>
+            ) : null}
+          </div>
+        );
+      })}
       <Button
         size="sm"
         variant="outline"
