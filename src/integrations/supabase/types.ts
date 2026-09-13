@@ -635,6 +635,7 @@ export type Database = {
           line_total: number
           purchase_id: string
           quantity: number
+          unit_cost: number | null
         }
         Insert: {
           created_at?: string
@@ -643,6 +644,7 @@ export type Database = {
           line_total?: number
           purchase_id: string
           quantity: number
+          unit_cost?: number | null
         }
         Update: {
           created_at?: string
@@ -651,6 +653,7 @@ export type Database = {
           line_total?: number
           purchase_id?: string
           quantity?: number
+          unit_cost?: number | null
         }
         Relationships: [
           {
@@ -671,6 +674,20 @@ export type Database = {
             foreignKeyName: "purchase_lines_purchase_id_fkey"
             columns: ["purchase_id"]
             isOneToOne: false
+            referencedRelation: "inventory_purchase_context"
+            referencedColumns: ["purchase_id"]
+          },
+          {
+            foreignKeyName: "purchase_lines_purchase_id_fkey"
+            columns: ["purchase_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_lines_purchase_id_fkey"
+            columns: ["purchase_id"]
+            isOneToOne: false
             referencedRelation: "purchases"
             referencedColumns: ["id"]
           },
@@ -684,6 +701,7 @@ export type Database = {
           line_count: number
           notes: string | null
           purchase_date: string
+          purchased_at: string
           supplier_id: string | null
           total_cost: number
           updated_at: string
@@ -695,6 +713,7 @@ export type Database = {
           line_count?: number
           notes?: string | null
           purchase_date?: string
+          purchased_at?: string
           supplier_id?: string | null
           total_cost?: number
           updated_at?: string
@@ -706,6 +725,7 @@ export type Database = {
           line_count?: number
           notes?: string | null
           purchase_date?: string
+          purchased_at?: string
           supplier_id?: string | null
           total_cost?: number
           updated_at?: string
@@ -1113,6 +1133,40 @@ export type Database = {
       }
     }
     Views: {
+      inventory_purchase_context: {
+        Row: {
+          inventory_item_id: string | null
+          last_purchased_at: string | null
+          last_quantity: number | null
+          last_supplier_id: string | null
+          last_supplier_name: string | null
+          last_unit_cost: number | null
+          purchase_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_lines_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_lines_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_status"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchases_supplier_id_fkey"
+            columns: ["last_supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory_status: {
         Row: {
           active: boolean | null
@@ -1131,6 +1185,28 @@ export type Database = {
           unit: string | null
         }
         Relationships: []
+      }
+      purchase_overview: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          line_count: number | null
+          notes: string | null
+          purchase_date: string | null
+          purchased_at: string | null
+          supplier_id: string | null
+          supplier_name: string | null
+          total_cost: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchases_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {
@@ -1283,6 +1359,16 @@ export type Database = {
         }
         Returns: string
       }
+      inventory_record_purchase: {
+        Args: {
+          p_lines: Json
+          p_notes: string
+          p_purchase_id: string
+          p_purchased_at: string
+          p_supplier_id: string
+        }
+        Returns: string
+      }
       inventory_set_recipe: {
         Args: { p_components: Json; p_service_type_id: string }
         Returns: number
@@ -1298,6 +1384,17 @@ export type Database = {
           p_safety_stock: number
           p_target_days: number
           p_unit: string
+        }
+        Returns: string
+      }
+      inventory_upsert_supplier: {
+        Args: {
+          p_active: boolean
+          p_id: string
+          p_location: string
+          p_name: string
+          p_notes: string
+          p_phone: string
         }
         Returns: string
       }
