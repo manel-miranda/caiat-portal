@@ -73,7 +73,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Run database regression tests
-        run: bun test
+        run: bun run test
         env:
           INVENTORY_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/postgres
           INVENTORY_TESTS_REQUIRED: "1"
