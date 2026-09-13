@@ -749,7 +749,5 @@ function Toggle({
       />
       <span className="min-w-0 truncate">{label}</span>
     </label>
-
-
   );
 }
