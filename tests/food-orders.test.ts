@@ -52,12 +52,18 @@ async function chargesFor(sql: SQL, orderId: string): Promise<Charge[]> {
 
 async function expectDenied(run: () => Promise<unknown>, marker: string) {
   let rejected = false;
-  try { await run(); } catch (e) { rejected = true; expect(String(e)).toContain(marker); }
+  try {
+    await run();
+  } catch (e) {
+    rejected = true;
+    expect(String(e)).toContain(marker);
+  }
   expect(rejected).toBe(true);
 }
 
 async function expectStock(sql: SQL, orderId: string, quantity: number) {
-  const rows = await sql`SELECT quantity::float8 AS quantity FROM public.inventory_movements WHERE source_id=${orderId}`;
+  const rows =
+    await sql`SELECT quantity::float8 AS quantity FROM public.inventory_movements WHERE source_id=${orderId}`;
   expect(rows.length).toBe(1);
   expect(Number((rows[0] as { quantity: number }).quantity)).toBe(quantity);
 }
@@ -66,7 +72,9 @@ async function expectUnchanged(sql: SQL, orderId: string) {
   const [row] = await sql`SELECT status FROM public.preview_food_orders WHERE id=${orderId}`;
   expect((row as { status: string }).status).toBe("requested");
   expect((await chargesFor(sql, orderId)).length).toBe(0);
-  expect((await sql`SELECT id FROM public.inventory_movements WHERE source_id=${orderId}`).length).toBe(0);
+  expect(
+    (await sql`SELECT id FROM public.inventory_movements WHERE source_id=${orderId}`).length,
+  ).toBe(0);
 }
 
 suite("kitchen food orders", () => {
@@ -212,7 +220,10 @@ suite("kitchen food orders", () => {
     `;
     const orderId = String((created as { id: string }).id);
     await sql`UPDATE public.stays SET status = 'completed' WHERE id = ${stayId}`;
-    await expectDenied(() => sql`SELECT public.preview_food_order_set_status(${orderId}, 'delivered')`, "STAY_NOT_ACTIVE");
+    await expectDenied(
+      () => sql`SELECT public.preview_food_order_set_status(${orderId}, 'delivered')`,
+      "STAY_NOT_ACTIVE",
+    );
     await expectUnchanged(sql, orderId);
   });
 
@@ -303,7 +314,10 @@ suite("kitchen food orders", () => {
     await sql`INSERT INTO public.user_permissions(user_id,permission,granted) VALUES (${limitedId},'payments_manage',false)`;
     const limited = db.connect();
     await actAs(limited, limitedId);
-    await expectDenied(() => limited`SELECT public.preview_food_order_set_status(${id}, 'delivered')`, "PERMISSION_DENIED:payments_manage");
-    await expectUnchanged(sql,id);
+    await expectDenied(
+      () => limited`SELECT public.preview_food_order_set_status(${id}, 'delivered')`,
+      "PERMISSION_DENIED:payments_manage",
+    );
+    await expectUnchanged(sql, id);
   });
 });

@@ -269,18 +269,24 @@ export const requestsQuery = {
   queryFn: async (): Promise<RequestRow[]> => {
     const pending: RequestRow[] = [];
     for (let offset = 0; ; offset += 300) {
-      const { data, error } = await supabase.from("requests").select(REQUEST_SELECT)
+      const { data, error } = await supabase
+        .from("requests")
+        .select(REQUEST_SELECT)
         .eq("status", "pending")
         .order("scheduled_at", { ascending: true, nullsFirst: false })
-        .order("id").range(offset, offset + 299);
+        .order("id")
+        .range(offset, offset + 299);
       if (error) throw error;
       pending.push(...((data ?? []) as unknown as RequestRow[]));
       if ((data ?? []).length < 300) break;
     }
-    const { data, error } = await supabase.from("requests").select(REQUEST_SELECT)
+    const { data, error } = await supabase
+      .from("requests")
+      .select(REQUEST_SELECT)
       .neq("status", "pending")
       .order("completed_at", { ascending: false, nullsFirst: false })
-      .order("created_at", { ascending: false }).limit(RECENT_REQUEST_LIMIT);
+      .order("created_at", { ascending: false })
+      .limit(RECENT_REQUEST_LIMIT);
     if (error) throw error;
     return [...pending, ...((data ?? []) as unknown as RequestRow[])];
   },

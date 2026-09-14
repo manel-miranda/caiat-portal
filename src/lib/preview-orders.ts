@@ -197,49 +197,58 @@ type OrderRow = {
   } | null;
 };
 
-const ORDER_SELECT = "id, stay_id, origin, billable, status, timing, notes, subtotal, created_at, updated_at, preview_food_order_items(id, label, quantity, unit_price, line_total), stays(guests(full_name), rooms(name, number))";
+const ORDER_SELECT =
+  "id, stay_id, origin, billable, status, timing, notes, subtotal, created_at, updated_at, preview_food_order_items(id, label, quantity, unit_price, line_total), stays(guests(full_name), rooms(name, number))";
 
 /** All open orders plus recent history; stay views are filtered on the server. */
 async function fetchOrders(stayId?: string): Promise<PreviewOrder[]> {
   const rows: OrderRow[] = [];
   for (let offset = 0; ; offset += 300) {
-    let query = supabase.from("preview_food_orders").select(ORDER_SELECT)
+    let query = supabase
+      .from("preview_food_orders")
+      .select(ORDER_SELECT)
       .not("status", "in", "(delivered,cancelled)")
-      .order("created_at").order("id").range(offset, offset + 299);
+      .order("created_at")
+      .order("id")
+      .range(offset, offset + 299);
     if (stayId) query = query.eq("stay_id", stayId);
     const { data, error } = await query;
     if (error) throw error;
     rows.push(...((data ?? []) as unknown as OrderRow[]));
     if ((data ?? []).length < 300) break;
   }
-  let query = supabase.from("preview_food_orders").select(ORDER_SELECT)
+  let query = supabase
+    .from("preview_food_orders")
+    .select(ORDER_SELECT)
     .in("status", ["delivered", "cancelled"])
-    .order("updated_at", { ascending: false }).order("id").limit(100);
+    .order("updated_at", { ascending: false })
+    .order("id")
+    .limit(100);
   if (stayId) query = query.eq("stay_id", stayId);
   const { data, error } = await query;
   if (error) throw error;
   rows.push(...((data ?? []) as unknown as OrderRow[]));
   return rows.map((row) => ({
-      id: row.id,
-      stay_id: row.stay_id,
-      origin: row.origin === "staff" ? "staff" : "guest",
-      billable: Boolean(row.billable),
-      status: normaliseStatus(row.status),
-      timing: row.timing as PreviewTiming,
-      notes: row.notes,
-      subtotal: Number(row.subtotal ?? 0),
-      created_at: row.created_at,
-      updated_at: row.updated_at ?? row.created_at,
-      items: (row.preview_food_order_items ?? []).map((i) => ({
-        id: i.id,
-        label: i.label,
-        quantity: i.quantity,
-        unit_price: Number(i.unit_price ?? 0),
-        line_total: Number(i.line_total ?? 0),
-      })),
-      room_label: row.stays?.rooms ? (row.stays.rooms.name ?? row.stays.rooms.number) : null,
-      guest_first_name: row.stays?.guests?.full_name?.trim().split(" ")[0] ?? null,
-    }));
+    id: row.id,
+    stay_id: row.stay_id,
+    origin: row.origin === "staff" ? "staff" : "guest",
+    billable: Boolean(row.billable),
+    status: normaliseStatus(row.status),
+    timing: row.timing as PreviewTiming,
+    notes: row.notes,
+    subtotal: Number(row.subtotal ?? 0),
+    created_at: row.created_at,
+    updated_at: row.updated_at ?? row.created_at,
+    items: (row.preview_food_order_items ?? []).map((i) => ({
+      id: i.id,
+      label: i.label,
+      quantity: i.quantity,
+      unit_price: Number(i.unit_price ?? 0),
+      line_total: Number(i.line_total ?? 0),
+    })),
+    room_label: row.stays?.rooms ? (row.stays.rooms.name ?? row.stays.rooms.number) : null,
+    guest_first_name: row.stays?.guests?.full_name?.trim().split(" ")[0] ?? null,
+  }));
 }
 
 export const previewOrdersQuery = {
