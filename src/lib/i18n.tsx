@@ -1271,6 +1271,10 @@ const pt: Dict = {
   simDone: "Simulação concluída",
   simReplenish: "Simular compra a partir da lista",
   simPurchaseDone: "Compra simulada registada",
+  simSeedHistory: "Gerar histórico demo de 30 dias",
+  simSeedHistoryDone: "Histórico demo gerado",
+  simSeedHistoryHint:
+    "Cria 30 dias de consumo diário e compras retroativas a fornecedores [DEMO]. A reposição remove-os.",
   simReset: "Repor dados de simulação",
   simResetDone: "Dados de simulação removidos",
   simResetHint:
