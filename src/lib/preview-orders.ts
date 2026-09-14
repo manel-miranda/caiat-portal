@@ -125,7 +125,7 @@ export async function staffCreateFoodOrder(params: {
 
 /** Maps raw RPC errors onto localized messages. */
 export function foodOrderErrorMessage(raw: string): string {
-  if (raw.includes("PERMISSION_DENIED")) return t("noPermission");
+  if (raw.includes("PERMISSION_DENIED")) return t("permissionDenied");
   if (raw.includes("STAY_NOT_ACTIVE")) return t("foodOrderStayNotActive");
   if (raw.includes("INVALID_ITEM")) return t("foodOrderInvalidItem");
   if (raw.includes("EMPTY_ORDER")) return t("foodOrderEmpty");
