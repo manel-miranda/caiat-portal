@@ -10,7 +10,6 @@ import {
   Bell,
   LogIn,
   LogOut,
-  History,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
@@ -155,29 +154,6 @@ function DashboardPage() {
           tone="success"
         />
       </section>
-
-      <div className="mt-3 flex flex-wrap gap-2">
-        {can("users_manage") ? (
-          <Link
-            to="/users"
-            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-semibold active:bg-muted"
-          >
-            <Users className="size-4" /> {t("usersTitle")}
-          </Link>
-        ) : null}
-        <Link
-          to="/activity"
-          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-semibold active:bg-muted"
-        >
-          <History className="size-4" /> {t("navActivity")}
-        </Link>
-        <Link
-          to="/customers"
-          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-semibold active:bg-muted"
-        >
-          <Users className="size-4" /> {t("customers")}
-        </Link>
-      </div>
 
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         {can("cash_reconcile") ? (

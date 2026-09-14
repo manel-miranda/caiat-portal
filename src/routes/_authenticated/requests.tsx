@@ -32,14 +32,11 @@ function RequestsPage() {
   const [busy, setBusy] = useState(false);
   // Food orders share this inbox with normal requests.
   const orders = useQuery(previewOrdersQuery);
-  const [filter, setFilter] = useState<"all" | "food" | "other">("all");
 
   const all = requests.data ?? [];
-  const showOther = filter !== "food";
-  const showFood = filter !== "other";
-  const pending = showOther ? all.filter((r) => r.status === "pending") : [];
-  const history = showOther ? all.filter((r) => r.status !== "pending") : [];
-  const allOrders = showFood ? (orders.data ?? []) : [];
+  const pending = all.filter((r) => r.status === "pending");
+  const history = all.filter((r) => r.status !== "pending");
+  const allOrders = orders.data ?? [];
   const openOrders = allOrders.filter(
     (o) => o.status !== "delivered" && o.status !== "cancelled",
   );
@@ -102,23 +99,6 @@ function RequestsPage() {
 
   return (
     <AppShell title={t("navRequests")}>
-      <div className="mb-3 flex gap-2">
-        {(["all", "food", "other"] as const).map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`min-h-[38px] rounded-full border px-3 text-xs font-semibold ${
-              filter === f
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border bg-card text-muted-foreground"
-            }`}
-          >
-            {t(f === "all" ? "filterAll" : f === "food" ? "typeFood" : "filterOther")}
-          </button>
-        ))}
-      </div>
-
-
       <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
         {t("pendingRequests")}
       </h2>
@@ -165,7 +145,7 @@ function RequestsPage() {
       )}
 
       <h2 className="mt-6 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-        {t("activity")}
+        {t("recentActivity")}
       </h2>
       {doneOrders.length > 0 ? (
         <ul className="mt-2 space-y-3">
