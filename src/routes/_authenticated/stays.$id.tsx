@@ -32,6 +32,11 @@ import { businessLocalToISO, mad, nights, roomLabel, shortDate, shortDateTime } 
 import { methodLabel, sourceLabel, statusLabel, t } from "@/lib/i18n";
 import { serviceLabel } from "@/lib/service-i18n";
 import {
+  PREVIEW_STATUS_LABEL,
+  staffCreateFoodOrder,
+  stayFoodOrdersQuery,
+} from "@/lib/preview-orders";
+import {
   requestsQuery,
   serviceTypesQuery,
   stayChargesQuery,
@@ -69,6 +74,7 @@ function StayDetailPage() {
   const chargesQ = useQuery(stayChargesQuery(id));
   const paymentsQ = useQuery(stayPaymentsQuery(id));
   const servicesQ = useQuery(serviceTypesQuery);
+  const foodOrdersQ = useQuery(stayFoodOrdersQuery(id));
   const requestsQ = useQuery(requestsQuery);
   // Customer history behind this booking: new face or someone coming back?
   const guestId = stayQ.data?.guest_id;
@@ -239,6 +245,35 @@ function StayDetailPage() {
                   </span>
                 </span>
                 <span className="font-semibold">{mad(p.amount)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="surface-card mt-4 p-3 sm:p-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          {t("kitchenOrders")}
+        </h2>
+        {(foodOrdersQ.data ?? []).length === 0 ? (
+          <p className="mt-2 text-sm text-muted-foreground">{t("noKitchenOrders")}</p>
+        ) : (
+          <ul className="mt-2 divide-y divide-border text-sm">
+            {(foodOrdersQ.data ?? []).map((o) => (
+              <li key={o.id} className="flex items-start justify-between gap-3 py-2">
+                <span className="min-w-0">
+                  {o.items.map((i) => `${i.quantity} × ${i.label}`).join(", ")}
+                  <span className="block text-xs text-muted-foreground">
+                    {shortDateTime(o.created_at)} ·{" "}
+                    {o.origin === "staff" ? t("staffOriginTag") : t("guestOriginTag")}
+                  </span>
+                </span>
+                <span className="shrink-0 text-end">
+                  <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold">
+                    {t(PREVIEW_STATUS_LABEL[o.status])}
+                  </span>
+                  <span className="mt-1 block font-semibold">{mad(o.subtotal)}</span>
+                </span>
               </li>
             ))}
           </ul>
@@ -423,11 +458,29 @@ function StayDetailPage() {
               return;
             }
             try {
+              const dish = services.find((s) => s.id === values.serviceTypeId);
+              if (isMenuDish(dish)) {
+                await staffCreateFoodOrder({
+                  stayId: id,
+                  items: [
+                    { service_type_id: values.serviceTypeId as string, quantity: values.quantity },
+                  ],
+                  notes: values.notes,
+                  timing: "asap",
+                });
+                await refresh();
+                setSheet(null);
+                toast.success(t("foodOrderCreated"));
+                return;
+              }
               await addRequest({
                 stayId: id,
                 roomId: stay.room_id,
                 userId: user?.id,
-                ...values,
+                serviceTypeId: values.serviceTypeId,
+                label: values.label,
+                scheduledAt: values.scheduledAt,
+                notes: values.notes,
               });
               await refresh();
               setSheet(null);
@@ -640,7 +693,14 @@ type ServiceLike = {
   default_price: number;
   billable: boolean;
   requestable: boolean;
+  guest_category?: string | null;
+  preview_only?: boolean | null;
 };
+
+/** Real menu dishes go through the shared kitchen order flow, not plain requests. */
+export function isMenuDish(s: ServiceLike | undefined): boolean {
+  return Boolean(s && s.guest_category === "food" && !s.preview_only);
+}
 
 function ChargeForm({
   services,
@@ -871,6 +931,7 @@ function RequestForm({
   onSubmit: (v: {
     serviceTypeId: string | null;
     label: string;
+    quantity: number;
     scheduledAt: string | null;
     notes: string;
   }) => Promise<unknown>;
@@ -879,8 +940,10 @@ function RequestForm({
   const [customLabel, setCustomLabel] = useState("");
   const [when, setWhen] = useState("");
   const [notes, setNotes] = useState("");
+  const [qty, setQty] = useState("1");
   const [busy, setBusy] = useState(false);
   const selected = services.find((s) => s.id === serviceId);
+  const dish = isMenuDish(selected);
 
   return (
     <form
@@ -891,6 +954,7 @@ function RequestForm({
         await onSubmit({
           serviceTypeId: serviceId || null,
           label: (selected?.label ?? customLabel).trim() || "Request",
+          quantity: Math.min(20, Math.max(1, Number(qty) || 1)),
           scheduledAt: businessLocalToISO(when),
           notes,
         });
@@ -938,15 +1002,31 @@ function RequestForm({
           />
         </div>
       ) : null}
-      <div className="space-y-2">
-        <Label>{t("when")}</Label>
-        <Input
-          type="datetime-local"
-          className="tap-target text-base"
-          value={when}
-          onChange={(e) => setWhen(e.target.value)}
-        />
-      </div>
+      {dish ? (
+        <div className="space-y-2">
+          <Label>{t("quantity")}</Label>
+          <Input
+            type="number"
+            min={1}
+            max={20}
+            inputMode="numeric"
+            className="tap-target text-base"
+            value={qty}
+            onChange={(e) => setQty(e.target.value)}
+          />
+          <p className="text-xs text-muted-foreground">{t("foodOrderBillsOnDelivery")}</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <Label>{t("when")}</Label>
+          <Input
+            type="datetime-local"
+            className="tap-target text-base"
+            value={when}
+            onChange={(e) => setWhen(e.target.value)}
+          />
+        </div>
+      )}
       <div className="space-y-2">
         <Label>{`${t("notes")} (${t("optional")})`}</Label>
         <Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
