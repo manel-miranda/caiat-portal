@@ -40,7 +40,7 @@ export function MobileMenu({ variant = "icon" }: { variant?: "icon" | "tab" | "m
 
   const links: MenuLink[] = (
     canManage
-      ? [
+      ? ([
           { to: "/customers", label: t("navCustomers"), icon: Users },
           { to: "/services", label: t("navServices"), icon: ConciergeBell },
           { to: "/stock", label: t("navStock"), icon: Boxes },
@@ -53,11 +53,9 @@ export function MobileMenu({ variant = "icon" }: { variant?: "icon" | "tab" | "m
             permission: "users_manage",
           },
           { to: "/users", label: t("navUsers"), icon: UserCog, permission: "users_manage" },
-        ]
+        ] as MenuLink[])
       : []
-  ).filter(
-    (link): link is MenuLink => Boolean(link) && (!link?.permission || can(link.permission)),
-  );
+  ).filter((link) => !link.permission || can(link.permission));
 
   if (desktopManage && links.length === 0) return null;
 
