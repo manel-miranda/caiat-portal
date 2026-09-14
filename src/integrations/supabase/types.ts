@@ -86,6 +86,7 @@ export type Database = {
           notes: string | null
           quantity: number
           service_type_id: string | null
+          source_request_id: string | null
           stay_id: string
           total: number | null
           unit_price: number
@@ -98,6 +99,7 @@ export type Database = {
           notes?: string | null
           quantity?: number
           service_type_id?: string | null
+          source_request_id?: string | null
           stay_id: string
           total?: number | null
           unit_price?: number
@@ -110,6 +112,7 @@ export type Database = {
           notes?: string | null
           quantity?: number
           service_type_id?: string | null
+          source_request_id?: string | null
           stay_id?: string
           total?: number | null
           unit_price?: number
@@ -120,6 +123,13 @@ export type Database = {
             columns: ["service_type_id"]
             isOneToOne: false
             referencedRelation: "service_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "charges_source_request_id_fkey"
+            columns: ["source_request_id"]
+            isOneToOne: false
+            referencedRelation: "requests"
             referencedColumns: ["id"]
           },
           {
@@ -1210,6 +1220,30 @@ export type Database = {
       }
     }
     Functions: {
+      cancel_request: { Args: { p_request_id: string }; Returns: string }
+      cash_reconcile: {
+        Args: {
+          p_business_date: string
+          p_counted_total: number
+          p_notes?: string
+        }
+        Returns: {
+          business_date: string
+          closed_at: string
+          closed_by: string | null
+          counted_total: number
+          difference: number | null
+          expected_total: number
+          id: string
+          notes: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "cash_reconciliations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       catalog_set_active: {
         Args: { p_active: boolean; p_id: string }
         Returns: string
@@ -1254,6 +1288,10 @@ export type Database = {
       checkout_stay: {
         Args: { p_override?: boolean; p_stay_id: string }
         Returns: number
+      }
+      complete_request: {
+        Args: { p_request_id: string; p_with_charge?: boolean }
+        Returns: string
       }
       confirm_reservation: { Args: { p_stay_id: string }; Returns: string }
       create_stay_with_guest: {
@@ -1408,15 +1446,6 @@ export type Database = {
       }
       preview_food_order_set_status: {
         Args: { p_order_id: string; p_status: string }
-        Returns: string
-      }
-      purchase_create: {
-        Args: {
-          p_lines: Json
-          p_notes: string
-          p_purchase_date: string
-          p_supplier_id: string
-        }
         Returns: string
       }
       reject_reservation: { Args: { p_stay_id: string }; Returns: string }
