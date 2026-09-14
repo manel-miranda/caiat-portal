@@ -361,12 +361,7 @@ function MovementForm({ action, onDone }: { action: Action; onDone: () => Promis
     }
     setBusy(true);
     try {
-      if (action.kind === "receive") {
-        // A total cost is friendlier to type than a unit cost, so derive it.
-        const total = Number(cost);
-        const unitCost = Number.isFinite(total) && total > 0 ? total / amount : null;
-        await receiveStock(action.row.id, amount, unitCost, note);
-      } else if (action.kind === "adjust") {
+      if (action.kind === "adjust") {
         await adjustStock(action.row.id, amount, note);
       } else {
         await recordWaste(action.row.id, amount, note);
