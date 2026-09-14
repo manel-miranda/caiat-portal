@@ -1,16 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  BedDouble,
-  Users,
-  Wallet,
-  Banknote,
-  AlertCircle,
-  Bell,
-  LogIn,
-  LogOut,
-} from "lucide-react";
+import { BedDouble, Users, Wallet, Banknote, AlertCircle, Bell, LogIn, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { confirmReservation, rejectReservation } from "@/lib/mutations";
@@ -114,7 +105,9 @@ function DashboardPage() {
   if (error) {
     return (
       <AppShell title={t("navDashboard")}>
-        <p className="surface-card p-3 sm:p-4 text-sm text-destructive">{(error as Error).message}</p>
+        <p className="surface-card p-3 sm:p-4 text-sm text-destructive">
+          {(error as Error).message}
+        </p>
       </AppShell>
     );
   }

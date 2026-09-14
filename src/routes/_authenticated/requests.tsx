@@ -37,12 +37,8 @@ function RequestsPage() {
   const pending = all.filter((r) => r.status === "pending");
   const history = all.filter((r) => r.status !== "pending");
   const allOrders = orders.data ?? [];
-  const openOrders = allOrders.filter(
-    (o) => o.status !== "delivered" && o.status !== "cancelled",
-  );
-  const doneOrders = allOrders.filter(
-    (o) => o.status === "delivered" || o.status === "cancelled",
-  );
+  const openOrders = allOrders.filter((o) => o.status !== "delivered" && o.status !== "cancelled");
+  const doneOrders = allOrders.filter((o) => o.status === "delivered" || o.status === "cancelled");
 
   function serviceFor(r: RequestRow) {
     return (services.data ?? []).find((s) => s.id === r.service_type_id);
