@@ -15,6 +15,7 @@ import {
   resetSimulation,
   runSimulatedPurchase,
   runSimulation,
+  seedDemoHistory,
   simulationErrorKey,
   SIMULATION_SCENARIOS,
   type SimulationScenario,
