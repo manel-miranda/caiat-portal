@@ -28,7 +28,6 @@ import {
   purchaseLinesQuery,
   purchasesQuery,
   qty,
-  receiveStock,
   recordPurchase,
   recordWaste,
   saveSupplier,
@@ -64,7 +63,7 @@ export const Route = createFileRoute("/_authenticated/stock")({
   component: StockPage,
 });
 
-type Action = { row: InventoryStatusRow; kind: "receive" | "adjust" | "waste" | "history" };
+type Action = { row: InventoryStatusRow; kind: "adjust" | "waste" | "history" };
 
 const MOVEMENT_LABEL: Record<MovementType, string> = {
   receipt: "stockMovementReceipt",
@@ -236,7 +235,7 @@ function StockPage() {
                         <Button
                           size="sm"
                           className="rounded-xl"
-                          onClick={() => setAction({ row, kind: "receive" })}
+                          onClick={() => setPurchase([{ itemId: row.id, quantity: "", cost: "" }])}
                         >
                           {t("stockReceive")}
                         </Button>
@@ -299,13 +298,11 @@ function StockPage() {
             <>
               <SheetHeader className="text-start">
                 <SheetTitle className="text-base">
-                  {action.kind === "receive"
-                    ? t("stockReceive")
-                    : action.kind === "adjust"
-                      ? t("stockAdjust")
-                      : action.kind === "waste"
-                        ? t("stockWaste")
-                        : t("stockHistory")}{" "}
+                  {action.kind === "adjust"
+                    ? t("stockAdjust")
+                    : action.kind === "waste"
+                      ? t("stockWaste")
+                      : t("stockHistory")}{" "}
                   · {action.row.label}
                 </SheetTitle>
               </SheetHeader>
@@ -351,7 +348,6 @@ function MovementForm({ action, onDone }: { action: Action; onDone: () => Promis
   const [value, setValue] = useState(
     action.kind === "adjust" ? qty(action.row.estimated_stock) : "",
   );
-  const [cost, setCost] = useState("");
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -363,12 +359,7 @@ function MovementForm({ action, onDone }: { action: Action; onDone: () => Promis
     }
     setBusy(true);
     try {
-      if (action.kind === "receive") {
-        // A total cost is friendlier to type than a unit cost, so derive it.
-        const total = Number(cost);
-        const unitCost = Number.isFinite(total) && total > 0 ? total / amount : null;
-        await receiveStock(action.row.id, amount, unitCost, note);
-      } else if (action.kind === "adjust") {
+      if (action.kind === "adjust") {
         await adjustStock(action.row.id, amount, note);
       } else {
         await recordWaste(action.row.id, amount, note);
@@ -395,12 +386,6 @@ function MovementForm({ action, onDone }: { action: Action; onDone: () => Promis
         </Label>
         <Input inputMode="decimal" value={value} onChange={(e) => setValue(e.target.value)} />
       </div>
-      {action.kind === "receive" ? (
-        <div className="grid gap-1">
-          <Label className="text-sm">{t("stockUnitCost")}</Label>
-          <Input inputMode="decimal" value={cost} onChange={(e) => setCost(e.target.value)} />
-        </div>
-      ) : null}
       <div className="grid gap-1">
         <Label className="text-sm">{t("stockNote")}</Label>
         <Input value={note} onChange={(e) => setNote(e.target.value)} />
