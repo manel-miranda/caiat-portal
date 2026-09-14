@@ -1917,7 +1917,7 @@ const fr: Dict = {
   simMeals: "Repas simulés",
   simConsumed: "Ingrédients consommés",
   simAttention: "Désormais bas ou à acheter",
-  simNoneAffected: "Aucun article n’a changÃ© de statut",
+  simNoneAffected: "Aucun article n’a changé de statut",
   simShopping: "Recommandations d’achat",
   simNoRun: "Aucune simulation pour l’instant",
   simNothingToBuy: "Rien à acheter pour le moment",
