@@ -61,10 +61,11 @@ export function FoodOrderCard({ order }: { order: PreviewOrder }) {
             {t(PREVIEW_STATUS_LABEL[order.status])}
           </span>
           {order.billable && order.status !== "delivered" && order.status !== "cancelled" ? (
-            <span className="text-[11px] text-muted-foreground">{t("foodOrderBillsOnDelivery")}</span>
+            <span className="text-[11px] text-muted-foreground">
+              {t("foodOrderBillsOnDelivery")}
+            </span>
           ) : null}
         </div>
-
       </div>
 
       <ul className="mt-2 space-y-1 text-sm">
@@ -78,7 +79,9 @@ export function FoodOrderCard({ order }: { order: PreviewOrder }) {
         ))}
       </ul>
 
-      {order.notes ? <p className="mt-2 rounded-xl bg-muted/50 p-2 text-xs">{order.notes}</p> : null}
+      {order.notes ? (
+        <p className="mt-2 rounded-xl bg-muted/50 p-2 text-xs">{order.notes}</p>
+      ) : null}
 
       <div className="mt-2 flex items-center justify-between gap-3 border-t border-border pt-2 text-sm font-semibold">
         <span>{t("subtotal")}</span>

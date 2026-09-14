@@ -113,9 +113,7 @@ suite("kitchen food orders", () => {
   test("guest order through the token RPC behaves identically", async () => {
     const stayId = await createStay(sql, "Kitchen Guest");
     const token = String(
-      (
-        (await sql`SELECT public.guest_token_generate(${stayId}) AS t`)[0] as { t: string }
-      ).t,
+      ((await sql`SELECT public.guest_token_generate(${stayId}) AS t`)[0] as { t: string }).t,
     );
     const dish = await menuDish(sql);
     const [created] = await sql`
