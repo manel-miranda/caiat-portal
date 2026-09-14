@@ -26,9 +26,8 @@ import type { PermissionKey } from "@/lib/permissions";
 type MenuLink = { to: string; label: string; icon: typeof Banknote; permission?: PermissionKey };
 
 /**
- * Mobile-only overflow menu. Keeps the phone header down to title + tasks +
- * this button, while every secondary destination and preference stays one tap
- * away. Permission checks mirror the routes and the database.
+ * Shared secondary menu. Phones include settings and management destinations;
+ * desktop uses the same permission-filtered destination list from its nav.
  */
 export function MobileMenu({ variant = "icon" }: { variant?: "icon" | "tab" | "manage" }) {
   const [open, setOpen] = useState(false);
@@ -52,7 +51,9 @@ export function MobileMenu({ variant = "icon" }: { variant?: "icon" | "tab" | "m
     { to: "/catalogue", label: t("navCatalogue"), icon: BookOpen, permission: "users_manage" },
     { to: "/users", label: t("navUsers"), icon: UserCog, permission: "users_manage" },
     { to: "/stock", label: t("navStock"), icon: Boxes },
-  ] as (MenuLink | null)[]).filter((l): l is MenuLink => Boolean(l) && (!l!.permission || can(l!.permission)));
+  ] as (MenuLink | null)[]).filter(
+    (link): link is MenuLink => Boolean(link) && (!link?.permission || can(link.permission)),
+  );
 
   async function signOut() {
     setOpen(false);
@@ -100,10 +101,16 @@ export function MobileMenu({ variant = "icon" }: { variant?: "icon" | "tab" | "m
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
           side={desktopManage ? "right" : "bottom"}
-          className={desktopManage ? "overflow-y-auto p-4" : "max-h-[85dvh] overflow-y-auto rounded-t-2xl p-4"}
+          className={
+            desktopManage
+              ? "overflow-y-auto p-4"
+              : "max-h-[85dvh] overflow-y-auto rounded-t-2xl p-4"
+          }
         >
           <SheetHeader className="text-start">
-            <SheetTitle className="text-base">{desktopManage ? t("manage") : t("menuTitle")}</SheetTitle>
+            <SheetTitle className="text-base">
+              {desktopManage ? t("manage") : t("menuTitle")}
+            </SheetTitle>
           </SheetHeader>
 
           {!desktopManage ? (

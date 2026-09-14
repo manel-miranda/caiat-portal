@@ -2,7 +2,16 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { BedDouble, CreditCard, Bell, Plus, LogOut, Pencil, QrCode, ChevronDown } from "lucide-react";
+import {
+  BedDouble,
+  CreditCard,
+  Bell,
+  Plus,
+  LogOut,
+  Pencil,
+  QrCode,
+  ChevronDown,
+} from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -278,7 +287,9 @@ function StayDetailPage() {
             <span className="flex items-center gap-2">
               <QrCode className="size-4" /> {t("guestAccess")}
             </span>
-            <ChevronDown className={`size-4 transition-transform ${guestAccessOpen ? "rotate-180" : ""}`} />
+            <ChevronDown
+              className={`size-4 transition-transform ${guestAccessOpen ? "rotate-180" : ""}`}
+            />
           </Button>
           {guestAccessOpen ? <GuestAccessCard stayId={id} /> : null}
         </section>
