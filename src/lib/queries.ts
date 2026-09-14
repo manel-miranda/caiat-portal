@@ -38,6 +38,9 @@ export type ServiceType = {
   activity_mode: string | null;
   difficulty: string | null;
   guest_category: string | null;
+  guest_subcategory: string | null;
+  guest_visible: boolean;
+  available_today: boolean;
   preview_only: boolean;
 };
 
@@ -263,6 +266,13 @@ const REQUEST_SELECT =
  * finished work separately by recency, so a long backlog can never hide
  * recent completions and a busy day can never drop pending work.
  */
+/**
+ * Bounded page sizes. The inbox surfaces the cap instead of silently
+ * truncating, so a busy day can never hide pending work without saying so.
+ */
+export const PENDING_REQUEST_LIMIT = 300;
+export const RECENT_REQUEST_LIMIT = 100;
+
 export const requestsQuery = {
   queryKey: ["requests"],
   queryFn: async (): Promise<RequestRow[]> => {
@@ -272,13 +282,13 @@ export const requestsQuery = {
         .select(REQUEST_SELECT)
         .eq("status", "pending")
         .order("scheduled_at", { ascending: true, nullsFirst: false })
-        .limit(300),
+        .limit(PENDING_REQUEST_LIMIT),
       supabase
         .from("requests")
         .select(REQUEST_SELECT)
         .neq("status", "pending")
         .order("created_at", { ascending: false })
-        .limit(100),
+        .limit(RECENT_REQUEST_LIMIT),
     ]);
     if (pending.error) throw pending.error;
     if (done.error) throw done.error;

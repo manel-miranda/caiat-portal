@@ -71,6 +71,34 @@ export type PreviewOrderItem = {
 
 export type FoodOrderOrigin = "guest" | "staff";
 
+/**
+ * Guest-menu subcategories. Staff kitchen orders accept exactly what the guest
+ * menu offers; breakfast, meals and room service stay ordinary requests.
+ */
+export const MENU_SUBCATEGORIES = new Set(["signature", "mains", "drinks", "desserts"]);
+
+export type MenuDishLike = {
+  guest_category?: string | null;
+  guest_subcategory?: string | null;
+  guest_visible?: boolean | null;
+  available_today?: boolean | null;
+  preview_only?: boolean | null;
+  requestable?: boolean | null;
+};
+
+/** Mirrors the server-side eligibility check in `staff_create_food_order`. */
+export function isKitchenMenuDish(s: MenuDishLike | undefined | null): boolean {
+  if (!s) return false;
+  return (
+    s.guest_category === "food" &&
+    MENU_SUBCATEGORIES.has(s.guest_subcategory ?? "") &&
+    s.preview_only !== true &&
+    s.guest_visible !== false &&
+    s.available_today !== false &&
+    s.requestable !== false
+  );
+}
+
 export type PreviewOrder = {
   id: string;
   stay_id: string;
@@ -81,6 +109,8 @@ export type PreviewOrder = {
   notes: string | null;
   subtotal: number;
   created_at: string;
+  /** Last transition time; falls back to creation for untouched orders. */
+  updated_at: string;
   items: PreviewOrderItem[];
   room_label: string | null;
   guest_first_name: string | null;
@@ -125,6 +155,7 @@ export async function staffCreateFoodOrder(params: {
 
 /** Maps raw RPC errors onto localized messages. */
 export function foodOrderErrorMessage(raw: string): string {
+  if (raw.includes("PERMISSION_DENIED:payments_manage")) return t("foodOrderNeedsPayments");
   if (raw.includes("PERMISSION_DENIED")) return t("permissionDenied");
   if (raw.includes("STAY_NOT_ACTIVE")) return t("foodOrderStayNotActive");
   if (raw.includes("INVALID_ITEM")) return t("foodOrderInvalidItem");
@@ -153,6 +184,7 @@ type OrderRow = {
   notes: string | null;
   subtotal: number | string;
   created_at: string;
+  updated_at: string | null;
   preview_food_order_items: {
     id: string;
     label: string;
@@ -166,6 +198,9 @@ type OrderRow = {
   } | null;
 };
 
+/** Bounded page size; the inbox tells the user when the cap is reached. */
+export const FOOD_ORDER_LIMIT = 100;
+
 export const previewOrdersQuery = {
   queryKey: ["preview-food-orders"],
   refetchInterval: 20_000,
@@ -173,10 +208,10 @@ export const previewOrdersQuery = {
     const { data, error } = await supabase
       .from("preview_food_orders")
       .select(
-        "id, stay_id, origin, billable, status, timing, notes, subtotal, created_at, preview_food_order_items(id, label, quantity, unit_price, line_total), stays(guests(full_name), rooms(name, number))",
+        "id, stay_id, origin, billable, status, timing, notes, subtotal, created_at, updated_at, preview_food_order_items(id, label, quantity, unit_price, line_total), stays(guests(full_name), rooms(name, number))",
       )
       .order("created_at", { ascending: false })
-      .limit(100);
+      .limit(FOOD_ORDER_LIMIT);
     if (error) throw error;
     return ((data ?? []) as unknown as OrderRow[]).map((row) => ({
       id: row.id,
@@ -188,6 +223,7 @@ export const previewOrdersQuery = {
       notes: row.notes,
       subtotal: Number(row.subtotal ?? 0),
       created_at: row.created_at,
+      updated_at: row.updated_at ?? row.created_at,
       items: (row.preview_food_order_items ?? []).map((i) => ({
         id: i.id,
         label: i.label,
@@ -206,7 +242,7 @@ export async function setPreviewOrderStatus(id: string, status: PreviewOrderStat
     p_order_id: id,
     p_status: status,
   });
-  if (error) throw error;
+  if (error) throw new Error(foodOrderErrorMessage(error.message));
 }
 
 /** True only on Lovable preview hosts, after hydration (defaults to hidden). */
