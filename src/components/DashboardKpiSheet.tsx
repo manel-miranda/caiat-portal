@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { RefObject, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -18,6 +18,8 @@ export function DashboardKpiSheet({
   scope,
   description,
   children,
+  openerRef,
+  contentId,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -25,10 +27,17 @@ export function DashboardKpiSheet({
   scope: string;
   description?: string;
   children: ReactNode;
+  openerRef: RefObject<HTMLButtonElement | null>;
+  contentId: string;
 }) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="flex h-dvh w-[92vw] max-w-md flex-col gap-0 p-0 sm:w-full">
+      <SheetContent
+        id={contentId}
+        closeLabel={t("close")}
+        onCloseAutoFocus={(event) => restoreDashboardKpiFocus(event, openerRef.current)}
+        className="flex h-dvh w-[92vw] max-w-md flex-col gap-0 p-0 sm:w-full"
+      >
         <SheetHeader className="shrink-0 border-b border-border px-5 py-5 pe-12 text-start">
           <SheetTitle>{title}</SheetTitle>
           <SheetDescription>{scope}</SheetDescription>
@@ -47,4 +56,12 @@ export function DashboardKpiSheet({
       </SheetContent>
     </Sheet>
   );
+}
+
+export function restoreDashboardKpiFocus(
+  event: { preventDefault: () => void },
+  opener: Pick<HTMLButtonElement, "focus"> | null,
+) {
+  event.preventDefault();
+  opener?.focus();
 }
