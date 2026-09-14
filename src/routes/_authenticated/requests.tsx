@@ -40,6 +40,11 @@ function RequestsPage() {
   const openOrders = allOrders.filter((o) => o.status !== "delivered" && o.status !== "cancelled");
   const doneOrders = allOrders.filter((o) => o.status === "delivered" || o.status === "cancelled");
 
+  const recent = [
+    ...doneOrders.map((order) => ({ kind: "food" as const, order, at: order.updated_at })),
+    ...history.map((request) => ({ kind: "request" as const, request, at: request.completed_at ?? request.created_at })),
+  ].sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
+
   function serviceFor(r: RequestRow) {
     return (services.data ?? []).find((s) => s.id === r.service_type_id);
   }
@@ -143,24 +148,15 @@ function RequestsPage() {
       <h2 className="mt-6 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
         {t("recentActivity")}
       </h2>
-      {doneOrders.length > 0 ? (
-        <ul className="mt-2 space-y-3">
-          {doneOrders.map((o) => (
-            <FoodOrderCard key={o.id} order={o} />
-          ))}
-        </ul>
-      ) : null}
-      {history.length === 0 ? (
-        doneOrders.length > 0 ? null : (
-          <p className="surface-card mt-2 p-3 text-sm text-muted-foreground sm:p-4">
-            {t("noResults")}
-          </p>
-        )
+      {recent.length === 0 ? (
+        <p className="surface-card mt-2 p-3 text-sm text-muted-foreground">{t("noResults")}</p>
       ) : (
-        <ul className="surface-card mt-2 divide-y divide-border">
-          {history.map((r) => (
-            <li key={r.id} className="p-4">
-              <RequestHead r={r} label={serviceLabel(serviceFor(r) ?? { label: r.label })} />
+        <ul className="mt-2 space-y-3">
+          {recent.map((entry) => entry.kind === "food" ? (
+            <FoodOrderCard key={entry.order.id} order={entry.order} />
+          ) : (
+            <li key={entry.request.id} className="surface-card p-4">
+              <RequestHead r={entry.request} label={serviceLabel(serviceFor(entry.request) ?? { label: entry.request.label })} />
             </li>
           ))}
         </ul>

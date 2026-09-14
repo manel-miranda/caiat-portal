@@ -261,38 +261,28 @@ export type RequestRow = {
 const REQUEST_SELECT =
   "id, label, scheduled_at, notes, status, created_at, stay_id, room_id, service_type_id, created_by, created_via, completed_by, completed_at, room:rooms(number, name), stay:stays(id, guest:guests(full_name))";
 
-/**
- * Pending work is fetched in full (ordered by when it is due) and recent
- * finished work separately by recency, so a long backlog can never hide
- * recent completions and a busy day can never drop pending work.
- */
-/**
- * Bounded page sizes. The inbox surfaces the cap instead of silently
- * truncating, so a busy day can never hide pending work without saying so.
- */
-export const PENDING_REQUEST_LIMIT = 300;
+/** Fetch every pending page; history is independently bounded and newest first. */
 export const RECENT_REQUEST_LIMIT = 100;
-
 export const requestsQuery = {
   queryKey: ["requests"],
+  refetchInterval: 20_000,
   queryFn: async (): Promise<RequestRow[]> => {
-    const [pending, done] = await Promise.all([
-      supabase
-        .from("requests")
-        .select(REQUEST_SELECT)
+    const pending: RequestRow[] = [];
+    for (let offset = 0; ; offset += 300) {
+      const { data, error } = await supabase.from("requests").select(REQUEST_SELECT)
         .eq("status", "pending")
         .order("scheduled_at", { ascending: true, nullsFirst: false })
-        .limit(PENDING_REQUEST_LIMIT),
-      supabase
-        .from("requests")
-        .select(REQUEST_SELECT)
-        .neq("status", "pending")
-        .order("created_at", { ascending: false })
-        .limit(RECENT_REQUEST_LIMIT),
-    ]);
-    if (pending.error) throw pending.error;
-    if (done.error) throw done.error;
-    return [...(pending.data ?? []), ...(done.data ?? [])] as unknown as RequestRow[];
+        .order("id").range(offset, offset + 299);
+      if (error) throw error;
+      pending.push(...((data ?? []) as unknown as RequestRow[]));
+      if ((data ?? []).length < 300) break;
+    }
+    const { data, error } = await supabase.from("requests").select(REQUEST_SELECT)
+      .neq("status", "pending")
+      .order("completed_at", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false }).limit(RECENT_REQUEST_LIMIT);
+    if (error) throw error;
+    return [...pending, ...((data ?? []) as unknown as RequestRow[])];
   },
 };
 

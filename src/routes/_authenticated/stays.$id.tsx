@@ -1024,7 +1024,7 @@ function RequestForm({
             value={qty}
             onChange={(e) => setQty(e.target.value)}
           />
-          <Label>{t("timing")}</Label>
+          <Label>{t("requestedTiming")}</Label>
           <div className="grid grid-cols-4 gap-2">
             {PREVIEW_TIMINGS.map((option) => (
               <button
