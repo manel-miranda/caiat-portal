@@ -12,7 +12,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { isDemoPreviewHost } from "./demo-menu";
-import type { TranslationKey } from "./i18n";
+import { t, type TranslationKey } from "./i18n";
 
 /**
  * "ready" was removed from the workflow; legacy rows are normalised to
@@ -119,16 +119,16 @@ export async function staffCreateFoodOrder(params: {
     p_notes: params.notes,
     p_timing: params.timing,
   });
-  if (error) throw new Error(foodOrderErrorKey(error.message));
+  if (error) throw new Error(foodOrderErrorMessage(error.message));
   return data as unknown as string;
 }
 
-/** Maps raw RPC errors onto stable codes the UI translates. */
-export function foodOrderErrorKey(raw: string): string {
-  if (raw.includes("PERMISSION_DENIED")) return "PERMISSION_DENIED";
-  if (raw.includes("STAY_NOT_ACTIVE")) return "STAY_NOT_ACTIVE";
-  if (raw.includes("INVALID_ITEM")) return "INVALID_ITEM";
-  if (raw.includes("EMPTY_ORDER")) return "EMPTY_ORDER";
+/** Maps raw RPC errors onto localized messages. */
+export function foodOrderErrorMessage(raw: string): string {
+  if (raw.includes("PERMISSION_DENIED")) return t("noPermission");
+  if (raw.includes("STAY_NOT_ACTIVE")) return t("foodOrderStayNotActive");
+  if (raw.includes("INVALID_ITEM")) return t("foodOrderInvalidItem");
+  if (raw.includes("EMPTY_ORDER")) return t("foodOrderEmpty");
   return raw;
 }
 

@@ -37,6 +37,8 @@ export type ServiceType = {
   category: string;
   activity_mode: string | null;
   difficulty: string | null;
+  guest_category: string | null;
+  preview_only: boolean;
 };
 
 export type StayRow = {
