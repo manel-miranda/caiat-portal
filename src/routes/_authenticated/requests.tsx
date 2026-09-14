@@ -42,7 +42,11 @@ function RequestsPage() {
 
   const recent = [
     ...doneOrders.map((order) => ({ kind: "food" as const, order, at: order.updated_at })),
-    ...history.map((request) => ({ kind: "request" as const, request, at: request.completed_at ?? request.created_at })),
+    ...history.map((request) => ({
+      kind: "request" as const,
+      request,
+      at: request.completed_at ?? request.created_at,
+    })),
   ].sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
 
   function serviceFor(r: RequestRow) {
@@ -152,13 +156,18 @@ function RequestsPage() {
         <p className="surface-card mt-2 p-3 text-sm text-muted-foreground">{t("noResults")}</p>
       ) : (
         <ul className="mt-2 space-y-3">
-          {recent.map((entry) => entry.kind === "food" ? (
-            <FoodOrderCard key={entry.order.id} order={entry.order} />
-          ) : (
-            <li key={entry.request.id} className="surface-card p-4">
-              <RequestHead r={entry.request} label={serviceLabel(serviceFor(entry.request) ?? { label: entry.request.label })} />
-            </li>
-          ))}
+          {recent.map((entry) =>
+            entry.kind === "food" ? (
+              <FoodOrderCard key={entry.order.id} order={entry.order} />
+            ) : (
+              <li key={entry.request.id} className="surface-card p-4">
+                <RequestHead
+                  r={entry.request}
+                  label={serviceLabel(serviceFor(entry.request) ?? { label: entry.request.label })}
+                />
+              </li>
+            ),
+          )}
         </ul>
       )}
 

@@ -28,7 +28,6 @@ export function FoodOrderCard({ order }: { order: PreviewOrder }) {
   const canDeliver = !order.billable || can("payments_manage");
   const next = nextStatus(order.status);
 
-
   async function move(status: PreviewOrder["status"]) {
     setBusy(true);
     try {
@@ -120,7 +119,6 @@ export function FoodOrderCard({ order }: { order: PreviewOrder }) {
           ) : null}
         </div>
       ) : null}
-
     </li>
   );
 }
