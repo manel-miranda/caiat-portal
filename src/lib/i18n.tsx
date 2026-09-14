@@ -157,6 +157,8 @@ export const en = {
   confirmCheckout: "Confirm checkout",
   adminOverride: "Admin override: check out with balance",
   checkoutDone: "Stay closed, room available",
+  checkoutFoodOrdersPending:
+    "Deliver or cancel this stay's pending restaurant orders before checkout. Then settle any remaining balance.",
   // cash control
   cashControl: "Cash control",
   date: "Date",
@@ -825,6 +827,8 @@ const pt: Dict = {
   confirmCheckout: "Confirmar check-out",
   adminOverride: "Exceção do proprietário: fechar com dívida",
   checkoutDone: "Estadia fechada, quarto livre",
+  checkoutFoodOrdersPending:
+    "Entregue ou cancele os pedidos de restaurante pendentes desta estadia antes do check-out. Depois, liquide qualquer saldo em dívida.",
   cashControl: "Controlo de caixa",
   date: "Data",
   byEmployee: "Dinheiro por funcionário",
@@ -1477,6 +1481,8 @@ const fr: Dict = {
   confirmCheckout: "Confirmer le départ",
   adminOverride: "Exception admin : clôturer avec solde",
   checkoutDone: "Séjour clôturé, chambre libre",
+  checkoutFoodOrdersPending:
+    "Livrez ou annulez les commandes de restaurant en attente de ce séjour avant le départ. Réglez ensuite tout solde restant.",
   cashControl: "Contrôle de caisse",
   date: "Date",
   byEmployee: "Espèces par employé",
@@ -2131,6 +2137,8 @@ const ar: Dict = {
   confirmCheckout: "تأكيد إنهاء الإقامة",
   adminOverride: "استثناء المالك: الإنهاء مع وجود متبقٍ",
   checkoutDone: "أُنهيت الإقامة، الغرفة متاحة",
+  checkoutFoodOrdersPending:
+    "سلّم طلبات المطعم المعلّقة لهذه الإقامة أو ألغِها قبل إنهاء الإقامة، ثم سدّد أي رصيد متبقٍ.",
   cashControl: "مراقبة الصندوق",
   date: "التاريخ",
   byEmployee: "النقد حسب الموظف",

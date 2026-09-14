@@ -276,6 +276,7 @@ export async function checkoutStay(params: {
 }
 
 function checkoutErrorMessage(raw: string): string {
+  if (raw.includes("FOOD_ORDERS_PENDING")) return t("checkoutFoodOrdersPending");
   if (raw.includes("OUTSTANDING_BALANCE") || raw.includes("OVERRIDE_REQUIRED")) {
     return t("outstandingBlocked");
   }
