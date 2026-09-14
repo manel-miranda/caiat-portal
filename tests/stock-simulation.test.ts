@@ -30,8 +30,7 @@ suite("stock simulation", () => {
 
   test("a simulated week consumes ingredients through the normal ledger", async () => {
     const runId = crypto.randomUUID();
-    const [row] =
-      await sql`SELECT public.inventory_simulate_week(${runId}, 'busy') AS summary`;
+    const [row] = await sql`SELECT public.inventory_simulate_week(${runId}, 'busy') AS summary`;
     const summary = (row as { summary: { meals: number; items: unknown[] } }).summary;
     expect(summary.meals).toBeGreaterThan(0);
     expect(summary.items.length).toBeGreaterThan(0);
