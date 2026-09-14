@@ -2,27 +2,37 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { BedDouble, Users, Wallet, Banknote, AlertCircle, Bell, LogIn, LogOut } from "lucide-react";
+import { useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { DashboardKpiSheet } from "@/components/DashboardKpiSheet";
 import { useAuth } from "@/lib/auth";
 import { confirmReservation, rejectReservation } from "@/lib/mutations";
-import { sourceLabel } from "@/lib/i18n";
+import { methodLabel, sourceLabel } from "@/lib/i18n";
 import { AppShell } from "@/components/AppShell";
 import { StatCard } from "@/components/ui/stat-card";
 import { requirePermission } from "@/lib/admin-guard";
 import { addDaysISO, mad, roomLabel, shortDate, timeOnly, todayISO } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import {
+  dashboardAvailableRooms,
+  dashboardCashPayments,
+  dashboardGuestTotal,
+  dashboardOccupiedStays,
+  dashboardOutstanding,
+  dashboardPaymentGroups,
+  dashboardRevenue,
+} from "@/lib/dashboard-kpis";
+import {
   activeStaysQuery,
   pendingReservationsQuery,
   requestsQuery,
   roomsQuery,
-  stayForRoom,
-  isInHouse,
   stayTotals,
   todayChargesQuery,
   todayPaymentsQuery,
 } from "@/lib/queries";
-import type { ReactNode } from "react";
+
+type KpiDetail = "occupancy" | "guests" | "revenue" | "payments" | "cash" | "outstanding";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   beforeLoad: requirePermission("activity_view"),
@@ -38,6 +48,7 @@ function DashboardPage() {
   const pendingReservations = useQuery(pendingReservationsQuery);
   const queryClient = useQueryClient();
   const { user, can } = useAuth();
+  const [detail, setDetail] = useState<KpiDetail | null>(null);
 
   async function decide(stayId: string, accept: boolean) {
     try {
@@ -62,31 +73,25 @@ function DashboardPage() {
 
   const roomList = rooms.data ?? [];
   const activeStays = stays.data ?? [];
-  const occupiedStays = roomList
-    .map((r) => stayForRoom(activeStays, r.id, today))
-    .filter((s): s is NonNullable<typeof s> => Boolean(s) && isInHouse(s!, today));
+  const occupiedStays = dashboardOccupiedStays(roomList, activeStays, today);
+  const availableRooms = dashboardAvailableRooms(roomList, occupiedStays);
 
-  const guestsStaying = occupiedStays.reduce((sum, s) => sum + Number(s.num_guests ?? 0), 0);
+  const guestsStaying = dashboardGuestTotal(occupiedStays);
   const arrivals = activeStays.filter((s) => s.check_in === today);
   const departures = activeStays.filter((s) => s.check_out === today);
 
-  const chargesToday = (charges.data ?? []).reduce((sum, c) => sum + Number(c.total ?? 0), 0);
-  const accommodationToday = arrivals.reduce(
-    (sum, s) => sum + Number(s.accommodation_total ?? 0),
-    0,
-  );
-  const revenueToday = chargesToday + accommodationToday;
+  const revenue = dashboardRevenue(activeStays, charges.data ?? [], today);
+  const chargesToday = revenue.extras;
+  const revenueToday = revenue.total;
 
-  const paymentsToday = (payments.data ?? []).reduce((sum, p) => sum + Number(p.amount ?? 0), 0);
-  const cashToday = (payments.data ?? [])
-    .filter((p) => p.method === "cash")
-    .reduce((sum, p) => sum + Number(p.amount ?? 0), 0);
+  const paymentGroups = dashboardPaymentGroups(payments.data ?? []);
+  const cashPayments = dashboardCashPayments(payments.data ?? []);
+  const paymentsToday = paymentGroups.reduce((sum, group) => sum + group.total, 0);
+  const cashToday = cashPayments.reduce((sum, payment) => sum + Number(payment.amount ?? 0), 0);
 
-  const outstandingTotal = activeStays.reduce((sum, s) => sum + stayTotals(s).outstanding, 0);
-  const outstandingStays = activeStays
-    .map((s) => ({ stay: s, ...stayTotals(s) }))
-    .filter((r) => r.outstanding > 0)
-    .sort((a, b) => b.outstanding - a.outstanding);
+  const outstandingStays = dashboardOutstanding(activeStays);
+  const outstandingTotal = outstandingStays.reduce((sum, row) => sum + row.outstanding, 0);
+  const scope = t("dashboardScopeToday", { date: shortDate(today) });
 
   const pending = (requests.data ?? []).filter((r) => r.status === "pending");
   // Only what is still ahead of us, within the next 24 hours. Overdue items
@@ -128,36 +133,39 @@ function DashboardPage() {
           label={t("occupancy")}
           value={`${occupiedStays.length}/${roomList.length || 7}`}
           hint={shortDate(today)}
+          onClick={() => setDetail("occupancy")}
         />
         <StatCard
           icon={<Users className="size-4" />}
           label={t("guestsStaying")}
           value={guestsStaying}
+          onClick={() => setDetail("guests")}
         />
         <StatCard
           icon={<Wallet className="size-4" />}
           label={t("revenueToday")}
           value={mad(revenueToday)}
           hint={`${mad(chargesToday)} ${t("extras")}`}
+          onClick={() => setDetail("revenue")}
         />
         <StatCard
           icon={<Banknote className="size-4" />}
           label={t("paymentsToday")}
           value={mad(paymentsToday)}
           tone="success"
+          onClick={() => setDetail("payments")}
         />
       </section>
 
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         {can("cash_reconcile") ? (
-          <Link to="/cash" className="contents">
-            <StatCard
-              icon={<Banknote className="size-4" />}
-              label={t("expectedInSafe")}
-              value={mad(cashToday)}
-              hint={t("cashControl")}
-            />
-          </Link>
+          <StatCard
+            icon={<Banknote className="size-4" />}
+            label={t("expectedInSafe")}
+            value={mad(cashToday)}
+            hint={t("cashControl")}
+            onClick={() => setDetail("cash")}
+          />
         ) : null}
         <StatCard
           icon={<AlertCircle className="size-4" />}
@@ -165,8 +173,209 @@ function DashboardPage() {
           value={mad(outstandingTotal)}
           tone={outstandingTotal > 0 ? "warning" : "default"}
           hint={`${outstandingStays.length} ${t("stay").toLowerCase()}`}
+          onClick={() => setDetail("outstanding")}
         />
       </div>
+
+      <DashboardKpiSheet
+        open={detail === "occupancy"}
+        onOpenChange={(open) => !open && setDetail(null)}
+        title={t("occupancy")}
+        scope={scope}
+      >
+        <DetailGroup
+          title={`${t("occupiedRooms")} · ${occupiedStays.length}`}
+          empty={occupiedStays.length === 0}
+          emptyText={t("noOccupiedRooms")}
+        >
+          {occupiedStays.map((stay) => (
+            <StayDetailLink
+              key={stay.id}
+              stayId={stay.id}
+              title={`${roomLabel(stay.room)} · ${stay.guest?.full_name ?? "—"}`}
+              meta={`${shortDate(stay.check_in)} – ${shortDate(stay.check_out)}`}
+            />
+          ))}
+        </DetailGroup>
+        <DetailGroup
+          title={`${t("availableRooms")} · ${availableRooms.length}`}
+          empty={availableRooms.length === 0}
+          emptyText={t("noAvailableRooms")}
+        >
+          {availableRooms.map((room) => (
+            <div key={room.id} className="flex items-center justify-between py-3 text-sm">
+              <span className="font-medium">{roomLabel(room)}</span>
+              <span className="text-success">{t("available")}</span>
+            </div>
+          ))}
+        </DetailGroup>
+      </DashboardKpiSheet>
+
+      <DashboardKpiSheet
+        open={detail === "guests"}
+        onOpenChange={(open) => !open && setDetail(null)}
+        title={t("guestsStaying")}
+        scope={scope}
+      >
+        <DetailGroup
+          title={`${t("guests")} · ${guestsStaying}`}
+          empty={occupiedStays.length === 0}
+          emptyText={t("noGuestsStaying")}
+        >
+          {occupiedStays.map((stay) => (
+            <StayDetailLink
+              key={stay.id}
+              stayId={stay.id}
+              title={`${stay.guest?.full_name ?? "—"} · ${roomLabel(stay.room)}`}
+              meta={`${stay.num_guests} ${t("pax")}`}
+              amount={String(stay.num_guests)}
+            />
+          ))}
+        </DetailGroup>
+      </DashboardKpiSheet>
+
+      <DashboardKpiSheet
+        open={detail === "revenue"}
+        onOpenChange={(open) => !open && setDetail(null)}
+        title={t("revenueToday")}
+        scope={scope}
+        description={t("revenueTodayExplanation")}
+      >
+        <DetailGroup
+          title={t("accommodationArrivals")}
+          total={mad(revenue.accommodation)}
+          empty={revenue.accommodationRows.length === 0}
+          emptyText={t("noAccommodationToday")}
+        >
+          {revenue.accommodationRows.map((stay) => (
+            <StayDetailLink
+              key={stay.id}
+              stayId={stay.id}
+              title={`${stay.guest?.full_name ?? "—"} · ${roomLabel(stay.room)}`}
+              meta={`${shortDate(stay.check_in)} – ${shortDate(stay.check_out)}`}
+              amount={mad(stay.accommodation_total)}
+            />
+          ))}
+        </DetailGroup>
+        <DetailGroup
+          title={t("extrasRecordedToday")}
+          total={mad(revenue.extras)}
+          empty={revenue.extraRows.length === 0}
+          emptyText={t("noExtrasToday")}
+        >
+          {revenue.extraRows.map((charge) => (
+            <DetailRow
+              key={charge.id}
+              title={charge.label}
+              meta={`${charge.quantity} × · ${timeOnly(charge.created_at)}`}
+              amount={mad(charge.total)}
+            />
+          ))}
+        </DetailGroup>
+        <DetailTotal label={t("total")} value={mad(revenue.total)} />
+      </DashboardKpiSheet>
+
+      <DashboardKpiSheet
+        open={detail === "payments"}
+        onOpenChange={(open) => !open && setDetail(null)}
+        title={t("paymentsToday")}
+        scope={scope}
+      >
+        {paymentGroups.length === 0 ? (
+          <EmptyDetail>{t("noPaymentsToday")}</EmptyDetail>
+        ) : (
+          paymentGroups.map((group) => (
+            <DetailGroup
+              key={group.method}
+              title={methodLabel(group.method)}
+              total={mad(group.total)}
+              empty={false}
+              emptyText=""
+            >
+              {group.rows.map((payment) => {
+                const knownStay = activeStays.find((stay) => stay.id === payment.stay_id);
+                return (
+                  <StayDetailLink
+                    key={payment.id}
+                    stayId={payment.stay_id}
+                    title={
+                      knownStay
+                        ? `${knownStay.guest?.full_name ?? "—"} · ${roomLabel(knownStay.room)}`
+                        : t("openStay")
+                    }
+                    meta={timeOnly(payment.created_at)}
+                    amount={mad(payment.amount)}
+                  />
+                );
+              })}
+            </DetailGroup>
+          ))
+        )}
+        {paymentGroups.length > 0 ? (
+          <DetailTotal label={t("total")} value={mad(paymentsToday)} />
+        ) : null}
+      </DashboardKpiSheet>
+
+      {can("cash_reconcile") ? (
+        <DashboardKpiSheet
+          open={detail === "cash"}
+          onOpenChange={(open) => !open && setDetail(null)}
+          title={t("expectedInSafe")}
+          scope={scope}
+          description={t("cashTodayExplanation")}
+        >
+          <DetailGroup
+            title={t("cash")}
+            total={mad(cashToday)}
+            empty={cashPayments.length === 0}
+            emptyText={t("noCashToday")}
+          >
+            {cashPayments.map((payment) => {
+              const knownStay = activeStays.find((stay) => stay.id === payment.stay_id);
+              return (
+                <StayDetailLink
+                  key={payment.id}
+                  stayId={payment.stay_id}
+                  title={
+                    knownStay
+                      ? `${knownStay.guest?.full_name ?? "—"} · ${roomLabel(knownStay.room)}`
+                      : t("openStay")
+                  }
+                  meta={timeOnly(payment.created_at)}
+                  amount={mad(payment.amount)}
+                />
+              );
+            })}
+          </DetailGroup>
+          <Button asChild className="mt-5 w-full">
+            <Link to="/cash">{t("openCashControl")}</Link>
+          </Button>
+        </DashboardKpiSheet>
+      ) : null}
+
+      <DashboardKpiSheet
+        open={detail === "outstanding"}
+        onOpenChange={(open) => !open && setDetail(null)}
+        title={t("outstandingBalances")}
+        scope={scope}
+      >
+        <DetailGroup
+          title={`${t("outstanding")} · ${outstandingStays.length}`}
+          total={mad(outstandingTotal)}
+          empty={outstandingStays.length === 0}
+          emptyText={t("noOutstandingBalances")}
+        >
+          {outstandingStays.map((row) => (
+            <StayDetailLink
+              key={row.stay.id}
+              stayId={row.stay.id}
+              title={`${row.stay.guest?.full_name ?? "—"} · ${roomLabel(row.stay.room)}`}
+              meta={`${t("billTotal")}: ${mad(row.total)} · ${t("paid")}: ${mad(row.paid)}`}
+              amount={mad(row.outstanding)}
+            />
+          ))}
+        </DetailGroup>
+      </DashboardKpiSheet>
 
       <Section title={`${t("pendingReservations")} (${(pendingReservations.data ?? []).length})`}>
         <Group
@@ -334,5 +543,84 @@ function Row({ to, left, right }: { to: string; left: string; right: string }) {
       <span className="truncate font-medium">{left}</span>
       <span className="shrink-0 text-muted-foreground">{right}</span>
     </Link>
+  );
+}
+
+function DetailGroup({
+  title,
+  total,
+  empty,
+  emptyText,
+  children,
+}: {
+  title: string;
+  total?: string;
+  empty: boolean;
+  emptyText: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="mb-6 last:mb-0">
+      <div className="flex items-center justify-between gap-3 border-b border-border pb-2">
+        <h3 className="text-sm font-semibold">{title}</h3>
+        {total ? <span className="shrink-0 text-sm font-semibold">{total}</span> : null}
+      </div>
+      {empty ? (
+        <EmptyDetail>{emptyText}</EmptyDetail>
+      ) : (
+        <div className="divide-y divide-border">{children}</div>
+      )}
+    </section>
+  );
+}
+
+function EmptyDetail({ children }: { children: ReactNode }) {
+  return <p className="py-5 text-sm text-muted-foreground">{children}</p>;
+}
+
+function DetailRow({ title, meta, amount }: { title: string; meta: string; amount: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3 py-3 text-sm">
+      <div className="min-w-0">
+        <p className="truncate font-medium">{title}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{meta}</p>
+      </div>
+      <span className="shrink-0 font-semibold">{amount}</span>
+    </div>
+  );
+}
+
+function StayDetailLink({
+  stayId,
+  title,
+  meta,
+  amount,
+}: {
+  stayId: string;
+  title: string;
+  meta: string;
+  amount?: string;
+}) {
+  return (
+    <Link
+      to="/stays/$id"
+      params={{ id: stayId }}
+      className="flex items-center justify-between gap-3 py-3 text-sm transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    >
+      <div className="min-w-0">
+        <p className="truncate font-medium">{title}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{meta}</p>
+      </div>
+      {amount ? <span className="shrink-0 font-semibold">{amount}</span> : null}
+    </Link>
+  );
+}
+
+function DetailTotal({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="mt-4 flex items-center justify-between border-t-2 border-border pt-4 text-base font-semibold">
+      <span>{label}</span>
+      <span>{value}</span>
+    </div>
   );
 }
