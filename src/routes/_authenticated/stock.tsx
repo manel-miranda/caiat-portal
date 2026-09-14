@@ -235,9 +235,7 @@ function StockPage() {
                         <Button
                           size="sm"
                           className="rounded-xl"
-                          onClick={() =>
-                            setPurchase([{ itemId: row.id, quantity: "", cost: "" }])
-                          }
+                          onClick={() => setPurchase([{ itemId: row.id, quantity: "", cost: "" }])}
                         >
                           {t("stockReceive")}
                         </Button>
