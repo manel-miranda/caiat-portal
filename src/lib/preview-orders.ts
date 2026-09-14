@@ -168,8 +168,7 @@ export function stayFoodOrdersQuery(stayId: string) {
   return {
     queryKey: ["preview-food-orders", "stay", stayId],
     queryFn: async (): Promise<PreviewOrder[]> => {
-      const all = await previewOrdersQuery.queryFn();
-      return all.filter((o) => o.stay_id === stayId);
+      return fetchOrders(stayId);
     },
   };
 }
@@ -198,22 +197,29 @@ type OrderRow = {
   } | null;
 };
 
-/** Bounded page size; the inbox tells the user when the cap is reached. */
-export const FOOD_ORDER_LIMIT = 100;
+const ORDER_SELECT = "id, stay_id, origin, billable, status, timing, notes, subtotal, created_at, updated_at, preview_food_order_items(id, label, quantity, unit_price, line_total), stays(guests(full_name), rooms(name, number))";
 
-export const previewOrdersQuery = {
-  queryKey: ["preview-food-orders"],
-  refetchInterval: 20_000,
-  queryFn: async (): Promise<PreviewOrder[]> => {
-    const { data, error } = await supabase
-      .from("preview_food_orders")
-      .select(
-        "id, stay_id, origin, billable, status, timing, notes, subtotal, created_at, updated_at, preview_food_order_items(id, label, quantity, unit_price, line_total), stays(guests(full_name), rooms(name, number))",
-      )
-      .order("created_at", { ascending: false })
-      .limit(FOOD_ORDER_LIMIT);
+/** All open orders plus recent history; stay views are filtered on the server. */
+async function fetchOrders(stayId?: string): Promise<PreviewOrder[]> {
+  const rows: OrderRow[] = [];
+  for (let offset = 0; ; offset += 300) {
+    let query = supabase.from("preview_food_orders").select(ORDER_SELECT)
+      .not("status", "in", "(delivered,cancelled)")
+      .order("created_at").order("id").range(offset, offset + 299);
+    if (stayId) query = query.eq("stay_id", stayId);
+    const { data, error } = await query;
     if (error) throw error;
-    return ((data ?? []) as unknown as OrderRow[]).map((row) => ({
+    rows.push(...((data ?? []) as unknown as OrderRow[]));
+    if ((data ?? []).length < 300) break;
+  }
+  let query = supabase.from("preview_food_orders").select(ORDER_SELECT)
+    .in("status", ["delivered", "cancelled"])
+    .order("updated_at", { ascending: false }).order("id").limit(100);
+  if (stayId) query = query.eq("stay_id", stayId);
+  const { data, error } = await query;
+  if (error) throw error;
+  rows.push(...((data ?? []) as unknown as OrderRow[]));
+  return rows.map((row) => ({
       id: row.id,
       stay_id: row.stay_id,
       origin: row.origin === "staff" ? "staff" : "guest",
@@ -234,7 +240,12 @@ export const previewOrdersQuery = {
       room_label: row.stays?.rooms ? (row.stays.rooms.name ?? row.stays.rooms.number) : null,
       guest_first_name: row.stays?.guests?.full_name?.trim().split(" ")[0] ?? null,
     }));
-  },
+}
+
+export const previewOrdersQuery = {
+  queryKey: ["preview-food-orders"],
+  refetchInterval: 20_000,
+  queryFn: () => fetchOrders(),
 };
 
 export async function setPreviewOrderStatus(id: string, status: PreviewOrderStatus) {
