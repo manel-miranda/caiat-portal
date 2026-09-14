@@ -2,7 +2,16 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { BedDouble, CreditCard, Bell, Plus, LogOut, Pencil } from "lucide-react";
+import {
+  BedDouble,
+  CreditCard,
+  Bell,
+  Plus,
+  LogOut,
+  Pencil,
+  QrCode,
+  ChevronDown,
+} from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,6 +63,7 @@ function StayDetailPage() {
   const navigate = useNavigate();
   const [sheet, setSheet] = useState<Sheet>(null);
   const [overrideConfirm, setOverrideConfirm] = useState(false);
+  const [guestAccessOpen, setGuestAccessOpen] = useState(false);
 
   const stayQ = useQuery(stayQuery(id));
   const chargesQ = useQuery(stayChargesQuery(id));
@@ -266,7 +276,23 @@ function StayDetailPage() {
       </section>
 
       {stay.status === "active" && stay.confirmation_status === "confirmed" ? (
-        <GuestAccessCard stayId={id} />
+        <section className="mt-4">
+          <Button
+            type="button"
+            variant="outline"
+            className="tap-target w-full justify-between rounded-xl"
+            aria-expanded={guestAccessOpen}
+            onClick={() => setGuestAccessOpen((open) => !open)}
+          >
+            <span className="flex items-center gap-2">
+              <QrCode className="size-4" /> {t("guestAccess")}
+            </span>
+            <ChevronDown
+              className={`size-4 transition-transform ${guestAccessOpen ? "rotate-180" : ""}`}
+            />
+          </Button>
+          {guestAccessOpen ? <GuestAccessCard stayId={id} /> : null}
+        </section>
       ) : null}
 
       {isPendingRequest ? (
@@ -294,34 +320,39 @@ function StayDetailPage() {
           {t("rejectedLabel")}
         </p>
       ) : stay.status === "active" ? (
-        <section className="mt-4 grid grid-cols-2 gap-3">
+        <section className="mt-4 space-y-2">
           {can("payments_manage") ? (
             <Action
               icon={<Plus className="size-5" />}
               label={t("addCharge")}
               onClick={() => setSheet("charge")}
+              primary
             />
           ) : null}
-          {can("payments_manage") ? (
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {can("payments_manage") ? (
+              <Action
+                icon={<CreditCard className="size-4" />}
+                label={t("addPayment")}
+                onClick={() => setSheet("payment")}
+                compact
+              />
+            ) : null}
+            {can("requests_manage") ? (
+              <Action
+                icon={<Bell className="size-4" />}
+                label={t("addRequest")}
+                onClick={() => setSheet("request")}
+                compact
+              />
+            ) : null}
             <Action
-              icon={<CreditCard className="size-5" />}
-              label={t("addPayment")}
-              onClick={() => setSheet("payment")}
+              icon={<LogOut className="size-4" />}
+              label={t("checkout")}
+              onClick={() => setSheet("checkout")}
+              compact
             />
-          ) : null}
-          {can("requests_manage") ? (
-            <Action
-              icon={<Bell className="size-5" />}
-              label={t("addRequest")}
-              onClick={() => setSheet("request")}
-            />
-          ) : null}
-          <Action
-            icon={<LogOut className="size-5" />}
-            label={t("checkout")}
-            primary
-            onClick={() => setSheet("checkout")}
-          />
+          </div>
         </section>
       ) : (
         <p className="mt-4 flex items-center gap-2 rounded-2xl border border-border p-4 text-sm text-muted-foreground">
@@ -553,17 +584,21 @@ function Action({
   label,
   onClick,
   primary,
+  compact,
 }: {
   icon: React.ReactNode;
   label: string;
   onClick: () => void;
   primary?: boolean;
+  compact?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
       className={[
-        "flex min-h-[52px] items-center justify-center gap-2 rounded-xl border text-sm font-semibold active:scale-[0.99] sm:min-h-16 sm:rounded-2xl sm:text-base",
+        compact
+          ? "flex min-h-11 items-center justify-center gap-1.5 rounded-xl border px-2 text-xs font-semibold active:scale-[0.99] sm:text-sm"
+          : "flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl border text-sm font-semibold active:scale-[0.99] sm:min-h-14 sm:text-base",
         primary
           ? "border-primary bg-primary text-primary-foreground"
           : "border-border bg-card text-foreground",

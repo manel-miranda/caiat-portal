@@ -23,3 +23,6 @@
 - [ ] PIN reset round trip with temp QA user, then cleanup
 - [ ] Typecheck + production build
 - [ ] Report commit SHA + READY TO PUBLISH
+
+## C) Simplicity pass
+- [ ] Simplify secondary navigation, stay actions, Dashboard links, and Requests history labels (frontend only)

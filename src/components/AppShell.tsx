@@ -1,16 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import {
-  BedDouble,
-  Bell,
-  CalendarDays,
-  LogOut,
-  LayoutDashboard,
-  Banknote,
-  BookOpen,
-  ConciergeBell,
-  Users,
-  Boxes,
-} from "lucide-react";
+import { BedDouble, Bell, CalendarDays, LogOut, LayoutDashboard, Users } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -30,22 +19,14 @@ type NavItem = { to: string; label: string; icon: typeof BedDouble; permission?:
 
 // Only routes that exist are listed. Hiding an entry is convenience only — the
 // routes and the database both re-check the permission.
-function desktopNavItems(): NavItem[] {
+function desktopNavItems(canDashboard: boolean): NavItem[] {
   return [
     { to: "/home", label: t("navRooms"), icon: BedDouble },
     { to: "/requests", label: t("navRequests"), icon: Bell },
-    { to: "/customers", label: t("navCustomers"), icon: Users },
-    { to: "/services", label: t("navServices"), icon: ConciergeBell },
-    {
-      to: "/dashboard",
-      label: t("navDashboard"),
-      icon: LayoutDashboard,
-      permission: "activity_view",
-    },
-    { to: "/cash", label: t("navCash"), icon: Banknote, permission: "cash_reconcile" },
-    // Catalogue is admin-only; `users_manage` is admin-only by definition.
-    { to: "/catalogue", label: t("navCatalogue"), icon: BookOpen, permission: "users_manage" },
-    { to: "/stock", label: t("navStock"), icon: Boxes },
+    { to: "/calendar", label: t("navCalendar"), icon: CalendarDays },
+    ...(canDashboard
+      ? [{ to: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard }]
+      : []),
   ];
 }
 
@@ -68,7 +49,7 @@ export function AppShell({ title, children }: { title?: string; children: ReactN
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const desktopItems = desktopNavItems().filter((i) => !i.permission || can(i.permission));
+  const desktopItems = desktopNavItems(can("activity_view"));
   const mobileItems = mobileNavItems(can("activity_view"));
   // One shared live-updates channel for every authenticated screen.
   useRealtimeSync();
@@ -138,6 +119,7 @@ export function AppShell({ title, children }: { title?: string; children: ReactN
             {desktopItems.map((item) => (
               <NavTab key={item.to} item={item} pathname={pathname} />
             ))}
+            <MobileMenu variant="manage" />
           </div>
         </div>
       </nav>
