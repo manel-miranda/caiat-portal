@@ -107,6 +107,26 @@ export function StockSimulationPanel({ onChanged }: { onChanged: () => Promise<v
         </Button>
 
         <Button
+          variant="outline"
+          className="w-full rounded-xl"
+          disabled={busy}
+          onClick={() =>
+            void run(async () => {
+              const result = await seedDemoHistory(30);
+              setSummary(result);
+              toast.success(
+                `${t("simSeedHistoryDone")} · ${result.meals} · ${result.purchases} · ${mad(
+                  result.total_cost,
+                )}`,
+              );
+            })
+          }
+        >
+          {t("simSeedHistory")}
+        </Button>
+        <p className="text-xs text-muted-foreground">{t("simSeedHistoryHint")}</p>
+
+        <Button
           variant="ghost"
           className="w-full rounded-xl text-destructive"
           disabled={busy}
