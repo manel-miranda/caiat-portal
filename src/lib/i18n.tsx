@@ -1910,6 +1910,10 @@ const fr: Dict = {
   simDone: "Simulation terminée",
   simReplenish: "Simuler un achat depuis la liste",
   simPurchaseDone: "Achat simulé enregistré",
+  simSeedHistory: "Générer 30 jours d'historique de démo",
+  simSeedHistoryDone: "Historique de démo généré",
+  simSeedHistoryHint:
+    "Crée 30 jours de consommation quotidienne et des achats antidatés auprès de fournisseurs [DEMO]. La réinitialisation les supprime.",
   simReset: "Réinitialiser les données de simulation",
   simResetDone: "Données de simulation supprimées",
   simResetHint:
