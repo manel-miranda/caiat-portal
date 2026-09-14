@@ -698,7 +698,7 @@ type ServiceLike = {
 };
 
 /** Real menu dishes go through the shared kitchen order flow, not plain requests. */
-export function isMenuDish(s: ServiceLike | undefined): boolean {
+function isMenuDish(s: ServiceLike | undefined): boolean {
   return Boolean(s && s.guest_category === "food" && !s.preview_only);
 }
 
