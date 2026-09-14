@@ -37,6 +37,8 @@ export type ServiceType = {
   category: string;
   activity_mode: string | null;
   difficulty: string | null;
+  guest_category: string | null;
+  preview_only: boolean;
 };
 
 export type StayRow = {
@@ -256,16 +258,31 @@ export type RequestRow = {
 const REQUEST_SELECT =
   "id, label, scheduled_at, notes, status, created_at, stay_id, room_id, service_type_id, created_by, created_via, completed_by, completed_at, room:rooms(number, name), stay:stays(id, guest:guests(full_name))";
 
+/**
+ * Pending work is fetched in full (ordered by when it is due) and recent
+ * finished work separately by recency, so a long backlog can never hide
+ * recent completions and a busy day can never drop pending work.
+ */
 export const requestsQuery = {
   queryKey: ["requests"],
   queryFn: async (): Promise<RequestRow[]> => {
-    const { data, error } = await supabase
-      .from("requests")
-      .select(REQUEST_SELECT)
-      .order("scheduled_at", { ascending: true, nullsFirst: false })
-      .limit(200);
-    if (error) throw error;
-    return data as unknown as RequestRow[];
+    const [pending, done] = await Promise.all([
+      supabase
+        .from("requests")
+        .select(REQUEST_SELECT)
+        .eq("status", "pending")
+        .order("scheduled_at", { ascending: true, nullsFirst: false })
+        .limit(300),
+      supabase
+        .from("requests")
+        .select(REQUEST_SELECT)
+        .neq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(100),
+    ]);
+    if (pending.error) throw pending.error;
+    if (done.error) throw done.error;
+    return [...(pending.data ?? []), ...(done.data ?? [])] as unknown as RequestRow[];
   },
 };
 
