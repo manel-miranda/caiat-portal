@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { BedDouble, Bell, CalendarDays, LogOut, LayoutDashboard, Users } from "lucide-react";
+import { BedDouble, Bell, CalendarDays, LogOut, LayoutDashboard } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -30,16 +30,14 @@ function desktopNavItems(canDashboard: boolean): NavItem[] {
   ];
 }
 
-// Phones keep five slots only; everything else moves into the More sheet.
-// Dashboard-capable users see Dashboard + Calendar in the bar and find
-// Customers inside More; everyone else keeps Customers + Calendar.
+// Phones keep daily destinations visible; secondary destinations live in More.
 function mobileNavItems(canDashboard: boolean): NavItem[] {
   return [
     { to: "/home", label: t("navRooms"), icon: BedDouble },
     { to: "/requests", label: t("navRequests"), icon: Bell },
-    canDashboard
-      ? { to: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard }
-      : { to: "/customers", label: t("navCustomers"), icon: Users },
+    ...(canDashboard
+      ? [{ to: "/dashboard", label: t("navDashboard"), icon: LayoutDashboard }]
+      : []),
     { to: "/calendar", label: t("navCalendar"), icon: CalendarDays },
   ];
 }

@@ -7,7 +7,6 @@ import {
   Boxes,
   ConciergeBell,
   History,
-  LayoutDashboard,
   LogOut,
   MoreHorizontal,
   UserCog,
@@ -36,33 +35,31 @@ export function MobileMenu({ variant = "icon" }: { variant?: "icon" | "tab" | "m
   const { currency, setCurrency } = useCurrency();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const canDashboard = can("activity_view");
   const desktopManage = variant === "manage";
+  const canManage = role === "supervisor" || role === "admin";
 
   const links: MenuLink[] = (
-    [
-      // Customers moves into the More sheet for Dashboard-capable users because
-      // Calendar takes its bottom-nav slot. Calendar is always in the bar.
-      canDashboard ? { to: "/customers", label: t("navCustomers"), icon: Users } : null,
-      { to: "/services", label: t("navServices"), icon: ConciergeBell },
-      // Dashboard is already in the bottom bar for Dashboard-capable users.
-      canDashboard
-        ? null
-        : ({
-            to: "/dashboard",
-            label: t("navDashboard"),
-            icon: LayoutDashboard,
-            permission: "activity_view",
-          } as MenuLink),
-      { to: "/cash", label: t("navCash"), icon: Banknote, permission: "cash_reconcile" },
-      { to: "/activity", label: t("navActivity"), icon: History, permission: "activity_view" },
-      { to: "/catalogue", label: t("navCatalogue"), icon: BookOpen, permission: "users_manage" },
-      { to: "/users", label: t("navUsers"), icon: UserCog, permission: "users_manage" },
-      { to: "/stock", label: t("navStock"), icon: Boxes },
-    ] as (MenuLink | null)[]
+    canManage
+      ? [
+          { to: "/customers", label: t("navCustomers"), icon: Users },
+          { to: "/services", label: t("navServices"), icon: ConciergeBell },
+          { to: "/stock", label: t("navStock"), icon: Boxes },
+          { to: "/cash", label: t("navCash"), icon: Banknote, permission: "cash_reconcile" },
+          { to: "/activity", label: t("navActivity"), icon: History, permission: "activity_view" },
+          {
+            to: "/catalogue",
+            label: t("navCatalogue"),
+            icon: BookOpen,
+            permission: "users_manage",
+          },
+          { to: "/users", label: t("navUsers"), icon: UserCog, permission: "users_manage" },
+        ]
+      : []
   ).filter(
     (link): link is MenuLink => Boolean(link) && (!link?.permission || can(link.permission)),
   );
+
+  if (desktopManage && links.length === 0) return null;
 
   async function signOut() {
     setOpen(false);
