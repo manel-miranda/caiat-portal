@@ -33,7 +33,11 @@ import { methodLabel, sourceLabel, statusLabel, t } from "@/lib/i18n";
 import { serviceLabel } from "@/lib/service-i18n";
 import {
   PREVIEW_STATUS_LABEL,
+  isKitchenMenuDish,
+  PREVIEW_TIMINGS,
+  PREVIEW_TIMING_LABEL,
   staffCreateFoodOrder,
+  type PreviewTiming,
   stayFoodOrdersQuery,
 } from "@/lib/preview-orders";
 import {
@@ -466,7 +470,7 @@ function StayDetailPage() {
                     { service_type_id: values.serviceTypeId as string, quantity: values.quantity },
                   ],
                   notes: values.notes,
-                  timing: "asap",
+                  timing: values.timing,
                 });
                 await refresh();
                 setSheet(null);
@@ -694,12 +698,15 @@ type ServiceLike = {
   billable: boolean;
   requestable: boolean;
   guest_category?: string | null;
+  guest_subcategory?: string | null;
+  guest_visible?: boolean | null;
+  available_today?: boolean | null;
   preview_only?: boolean | null;
 };
 
 /** Real menu dishes go through the shared kitchen order flow, not plain requests. */
 function isMenuDish(s: ServiceLike | undefined): boolean {
-  return Boolean(s && s.guest_category === "food" && !s.preview_only);
+  return isKitchenMenuDish(s);
 }
 
 function ChargeForm({
@@ -932,6 +939,7 @@ function RequestForm({
     serviceTypeId: string | null;
     label: string;
     quantity: number;
+    timing: PreviewTiming;
     scheduledAt: string | null;
     notes: string;
   }) => Promise<unknown>;
@@ -941,6 +949,7 @@ function RequestForm({
   const [when, setWhen] = useState("");
   const [notes, setNotes] = useState("");
   const [qty, setQty] = useState("1");
+  const [timing, setTiming] = useState<PreviewTiming>("asap");
   const [busy, setBusy] = useState(false);
   const selected = services.find((s) => s.id === serviceId);
   const dish = isMenuDish(selected);
@@ -955,6 +964,7 @@ function RequestForm({
           serviceTypeId: serviceId || null,
           label: (selected?.label ?? customLabel).trim() || "Request",
           quantity: Math.min(20, Math.max(1, Number(qty) || 1)),
+          timing,
           scheduledAt: businessLocalToISO(when),
           notes,
         });
@@ -1014,6 +1024,23 @@ function RequestForm({
             value={qty}
             onChange={(e) => setQty(e.target.value)}
           />
+          <Label>{t("timing")}</Label>
+          <div className="grid grid-cols-4 gap-2">
+            {PREVIEW_TIMINGS.map((option) => (
+              <button
+                type="button"
+                key={option}
+                onClick={() => setTiming(option)}
+                className={`rounded-xl border px-2 py-2 text-xs font-semibold ${
+                  timing === option
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-card"
+                }`}
+              >
+                {t(PREVIEW_TIMING_LABEL[option])}
+              </button>
+            ))}
+          </div>
           <p className="text-xs text-muted-foreground">{t("foodOrderBillsOnDelivery")}</p>
         </div>
       ) : (

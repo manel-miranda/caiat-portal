@@ -23,7 +23,11 @@ export function FoodOrderCard({ order }: { order: PreviewOrder }) {
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
   const manage = can("requests_manage");
+  // Delivery of a billable order creates a guest charge: same authority as
+  // adding a charge by hand, enforced again in the database.
+  const canDeliver = !order.billable || can("payments_manage");
   const next = nextStatus(order.status);
+
 
   async function move(status: PreviewOrder["status"]) {
     setBusy(true);
@@ -89,12 +93,12 @@ export function FoodOrderCard({ order }: { order: PreviewOrder }) {
       </div>
 
       {manage && (next || (order.status !== "cancelled" && order.status !== "delivered")) ? (
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap items-center gap-2">
           {next ? (
             <Button
               size="sm"
               className="tap-target rounded-xl"
-              disabled={busy}
+              disabled={busy || (next === "delivered" && !canDeliver)}
               onClick={() => void move(next)}
             >
               {t(PREVIEW_STATUS_LABEL[next])}
@@ -111,8 +115,12 @@ export function FoodOrderCard({ order }: { order: PreviewOrder }) {
               {t("foStatusCancelled")}
             </Button>
           ) : null}
+          {next === "delivered" && !canDeliver ? (
+            <span className="text-xs text-muted-foreground">{t("foodOrderNeedsPayments")}</span>
+          ) : null}
         </div>
       ) : null}
+
     </li>
   );
 }
