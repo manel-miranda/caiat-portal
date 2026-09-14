@@ -388,12 +388,6 @@ function MovementForm({ action, onDone }: { action: Action; onDone: () => Promis
         </Label>
         <Input inputMode="decimal" value={value} onChange={(e) => setValue(e.target.value)} />
       </div>
-      {action.kind === "receive" ? (
-        <div className="grid gap-1">
-          <Label className="text-sm">{t("stockUnitCost")}</Label>
-          <Input inputMode="decimal" value={cost} onChange={(e) => setCost(e.target.value)} />
-        </div>
-      ) : null}
       <div className="grid gap-1">
         <Label className="text-sm">{t("stockNote")}</Label>
         <Input value={note} onChange={(e) => setNote(e.target.value)} />
