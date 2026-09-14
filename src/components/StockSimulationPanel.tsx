@@ -153,9 +153,14 @@ export function StockSimulationPanel({ onChanged }: { onChanged: () => Promise<v
               <p className="mt-1 text-sm text-muted-foreground">{t("simNoneAffected")}</p>
             ) : (
               <p className="mt-1 text-sm">
-                {attention.map((i) => `${i.label} (${t(
-                  i.status_after === "buy" ? "stockStatusBuy" : "stockStatusLow",
-                )})`).join(" · ")}
+                {attention
+                  .map(
+                    (i) =>
+                      `${i.label} (${t(
+                        i.status_after === "buy" ? "stockStatusBuy" : "stockStatusLow",
+                      )})`,
+                  )
+                  .join(" · ")}
               </p>
             )}
           </div>

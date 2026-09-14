@@ -10,6 +10,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
+import { StockSimulationPanel } from "@/components/StockSimulationPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -73,12 +74,12 @@ const MOVEMENT_LABEL: Record<MovementType, string> = {
 };
 
 function StockPage() {
-  const { can } = useAuth();
+  const { can, isAdmin } = useAuth();
   const canWrite = can("requests_manage");
   const queryClient = useQueryClient();
   const status = useQuery(inventoryStatusQuery);
   const context = useQuery(purchaseContextQuery);
-  const [tab, setTab] = useState<"stock" | "shopping" | "purchases">("stock");
+  const [tab, setTab] = useState<"stock" | "shopping" | "purchases" | "simulation">("stock");
   const [filter, setFilter] = useState<"all" | StockStatus>("all");
   const [search, setSearch] = useState("");
   const [action, setAction] = useState<Action | null>(null);
@@ -130,9 +131,16 @@ function StockPage() {
         <TabButton active={tab === "purchases"} onClick={() => setTab("purchases")}>
           {t("stockPurchases")}
         </TabButton>
+        {isAdmin ? (
+          <TabButton active={tab === "simulation"} onClick={() => setTab("simulation")}>
+            {t("simTab")}
+          </TabButton>
+        ) : null}
       </div>
 
-      {tab === "purchases" ? (
+      {tab === "simulation" && isAdmin ? (
+        <StockSimulationPanel onChanged={refresh} />
+      ) : tab === "purchases" ? (
         <PurchasesTab
           canWrite={canWrite}
           items={rows}
