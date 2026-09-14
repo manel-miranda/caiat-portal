@@ -633,6 +633,10 @@ export const en = {
   simDone: "Simulation complete",
   simReplenish: "Simulate purchase from shopping list",
   simPurchaseDone: "Simulated purchase recorded",
+  simSeedHistory: "Seed 30-day demo history",
+  simSeedHistoryDone: "Demo history created",
+  simSeedHistoryHint:
+    "Creates 30 days of daily usage plus backdated purchases from [DEMO] suppliers. Reset removes them.",
   simReset: "Reset simulation data",
   simResetDone: "Simulation data removed",
   simResetHint:
