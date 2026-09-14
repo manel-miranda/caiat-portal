@@ -112,11 +112,9 @@ suite("stock simulation", () => {
 
   test("seeded demo history creates backdated usage and purchases, and reset clears them", async () => {
     // a manual supplier and purchase must survive the reset
-    const supplierId = String(
-      (
-        await sql`SELECT public.supplier_upsert(NULL, 'Manual Supplier', NULL, NULL, NULL, true) AS id`
-      )[0].id,
-    );
+    const [supplierRow] =
+      await sql`SELECT public.supplier_upsert(NULL, 'Manual Supplier', NULL, NULL, NULL, true) AS id`;
+    const supplierId = String((supplierRow as { id: string }).id);
     const [manualItem] = await sql`SELECT id FROM public.inventory_items WHERE active LIMIT 1`;
     const manualPurchase = crypto.randomUUID();
     await sql`
@@ -131,9 +129,9 @@ suite("stock simulation", () => {
         ])}::jsonb)
     `;
 
-    const summary = (
-      await sql`SELECT public.inventory_simulate_history(${crypto.randomUUID()}, 30) AS s`
-    )[0].s as { days: number; meals: number; purchases: number };
+    const [historyRow] =
+      await sql`SELECT public.inventory_simulate_history(${crypto.randomUUID()}, 30) AS s`;
+    const summary = (historyRow as { s: { days: number; meals: number; purchases: number } }).s;
     expect(summary.days).toBe(30);
     expect(summary.meals > 0).toBe(true);
     expect(summary.purchases > 0).toBe(true);
