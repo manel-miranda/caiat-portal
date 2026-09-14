@@ -1,10 +1,13 @@
 /**
- * PREVIEW-ONLY food ordering prototype.
+ * Kitchen food orders.
  *
- * These orders live in dedicated `preview_food_orders` tables and never touch
- * requests, charges, payments, checkout or cash reconciliation. Guests submit
- * through a token-scoped SECURITY DEFINER RPC; staff read/update through
- * permission-gated policies and an audited status RPC.
+ * Guest and staff entry points create the same order type (table names keep
+ * their historical `preview_food_*` prefix). Orders created from the real menu
+ * are flagged `billable` and, on delivery, produce guest bill charges exactly
+ * once alongside the once-only recipe stock consumption. Legacy/demo orders
+ * stay non-billable and are never charged. Guests submit through a
+ * token-scoped SECURITY DEFINER RPC; staff create and advance orders through
+ * permission-gated, audited RPCs.
  */
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -66,9 +69,13 @@ export type PreviewOrderItem = {
   line_total: number;
 };
 
+export type FoodOrderOrigin = "guest" | "staff";
+
 export type PreviewOrder = {
   id: string;
   stay_id: string;
+  origin: FoodOrderOrigin;
+  billable: boolean;
   status: PreviewOrderStatus;
   timing: PreviewTiming;
   notes: string | null;
@@ -99,9 +106,48 @@ export async function submitPreviewOrder(params: {
 
 /* ---------------- staff side ---------------- */
 
+/** Staff creates a kitchen order from the real menu; prices come from the server. */
+export async function staffCreateFoodOrder(params: {
+  stayId: string;
+  items: { service_type_id: string; quantity: number }[];
+  notes: string;
+  timing: PreviewTiming;
+}): Promise<string> {
+  const { data, error } = await supabase.rpc("staff_create_food_order", {
+    p_stay_id: params.stayId,
+    p_items: params.items as never,
+    p_notes: params.notes,
+    p_timing: params.timing,
+  });
+  if (error) throw new Error(foodOrderErrorKey(error.message));
+  return data as unknown as string;
+}
+
+/** Maps raw RPC errors onto stable codes the UI translates. */
+export function foodOrderErrorKey(raw: string): string {
+  if (raw.includes("PERMISSION_DENIED")) return "PERMISSION_DENIED";
+  if (raw.includes("STAY_NOT_ACTIVE")) return "STAY_NOT_ACTIVE";
+  if (raw.includes("INVALID_ITEM")) return "INVALID_ITEM";
+  if (raw.includes("EMPTY_ORDER")) return "EMPTY_ORDER";
+  return raw;
+}
+
+/** Kitchen orders for one stay, newest first. */
+export function stayFoodOrdersQuery(stayId: string) {
+  return {
+    queryKey: ["preview-food-orders", "stay", stayId],
+    queryFn: async (): Promise<PreviewOrder[]> => {
+      const all = await previewOrdersQuery.queryFn();
+      return all.filter((o) => o.stay_id === stayId);
+    },
+  };
+}
+
 type OrderRow = {
   id: string;
   stay_id: string;
+  origin: string | null;
+  billable: boolean | null;
   status: string;
   timing: string;
   notes: string | null;
@@ -127,7 +173,7 @@ export const previewOrdersQuery = {
     const { data, error } = await supabase
       .from("preview_food_orders")
       .select(
-        "id, stay_id, status, timing, notes, subtotal, created_at, preview_food_order_items(id, label, quantity, unit_price, line_total), stays(guests(full_name), rooms(name, number))",
+        "id, stay_id, origin, billable, status, timing, notes, subtotal, created_at, preview_food_order_items(id, label, quantity, unit_price, line_total), stays(guests(full_name), rooms(name, number))",
       )
       .order("created_at", { ascending: false })
       .limit(100);
@@ -135,6 +181,8 @@ export const previewOrdersQuery = {
     return ((data ?? []) as unknown as OrderRow[]).map((row) => ({
       id: row.id,
       stay_id: row.stay_id,
+      origin: row.origin === "staff" ? "staff" : "guest",
+      billable: Boolean(row.billable),
       status: normaliseStatus(row.status),
       timing: row.timing as PreviewTiming,
       notes: row.notes,
