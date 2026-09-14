@@ -138,7 +138,10 @@ describe("dashboard KPI breakdowns", () => {
     const row = stay({ id: "nullable", room_id: "r1", accommodation_total: 200 });
     row.charges = null;
     row.payments = null;
-    expect(dashboardOutstanding([row])[0]).toMatchObject({ total: 200, paid: 0, outstanding: 200 });
+    const result = dashboardOutstanding([row])[0];
+    expect(result?.total).toBe(200);
+    expect(result?.paid).toBe(0);
+    expect(result?.outstanding).toBe(200);
   });
 
   test("closing a KPI sheet prevents default focus handling and restores its opener", () => {
