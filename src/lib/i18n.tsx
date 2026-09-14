@@ -2538,6 +2538,10 @@ const ar: Dict = {
   simDone: "اكتملت المحاكاة",
   simReplenish: "محاكاة شراء من القائمة",
   simPurchaseDone: "تم تسجيل الشراء المحاكى",
+  simSeedHistory: "إنشاء سجل تجريبي لـ 30 يوماً",
+  simSeedHistoryDone: "تم إنشاء السجل التجريبي",
+  simSeedHistoryHint:
+    "ينشئ استهلاكاً يومياً لمدة 30 يوماً ومشتريات مؤرخة من موردين تجريبيين معلّمين [DEMO]. إعادة الضبط تحذفها.",
   simReset: "إعادة ضبط بيانات المحاكاة",
   simResetDone: "تم حذف بيانات المحاكاة",
   simResetHint:
