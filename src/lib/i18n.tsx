@@ -633,6 +633,10 @@ export const en = {
   simDone: "Simulation complete",
   simReplenish: "Simulate purchase from shopping list",
   simPurchaseDone: "Simulated purchase recorded",
+  simSeedHistory: "Seed 30-day demo history",
+  simSeedHistoryDone: "Demo history created",
+  simSeedHistoryHint:
+    "Creates 30 days of daily usage plus backdated purchases from [DEMO] suppliers. Reset removes them.",
   simReset: "Reset simulation data",
   simResetDone: "Simulation data removed",
   simResetHint:
@@ -1271,6 +1275,10 @@ const pt: Dict = {
   simDone: "Simulação concluída",
   simReplenish: "Simular compra a partir da lista",
   simPurchaseDone: "Compra simulada registada",
+  simSeedHistory: "Gerar histórico demo de 30 dias",
+  simSeedHistoryDone: "Histórico demo gerado",
+  simSeedHistoryHint:
+    "Cria 30 dias de consumo diário e compras retroativas a fornecedores [DEMO]. A reposição remove-os.",
   simReset: "Repor dados de simulação",
   simResetDone: "Dados de simulação removidos",
   simResetHint:
@@ -1910,6 +1918,10 @@ const fr: Dict = {
   simDone: "Simulation terminée",
   simReplenish: "Simuler un achat depuis la liste",
   simPurchaseDone: "Achat simulé enregistré",
+  simSeedHistory: "Générer 30 jours d'historique de démo",
+  simSeedHistoryDone: "Historique de démo généré",
+  simSeedHistoryHint:
+    "Crée 30 jours de consommation quotidienne et des achats antidatés auprès de fournisseurs [DEMO]. La réinitialisation les supprime.",
   simReset: "Réinitialiser les données de simulation",
   simResetDone: "Données de simulation supprimées",
   simResetHint:
@@ -2538,6 +2550,10 @@ const ar: Dict = {
   simDone: "اكتملت المحاكاة",
   simReplenish: "محاكاة شراء من القائمة",
   simPurchaseDone: "تم تسجيل الشراء المحاكى",
+  simSeedHistory: "إنشاء سجل تجريبي لـ 30 يوماً",
+  simSeedHistoryDone: "تم إنشاء السجل التجريبي",
+  simSeedHistoryHint:
+    "ينشئ استهلاكاً يومياً لمدة 30 يوماً ومشتريات مؤرخة من موردين تجريبيين معلّمين [DEMO]. إعادة الضبط تحذفها.",
   simReset: "إعادة ضبط بيانات المحاكاة",
   simResetDone: "تم حذف بيانات المحاكاة",
   simResetHint:

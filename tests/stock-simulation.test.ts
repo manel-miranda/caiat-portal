@@ -109,4 +109,85 @@ suite("stock simulation", () => {
     `;
     expect((real as { n: number }).n).toBe(1);
   });
+
+  test("seeded demo history creates backdated usage and purchases, and reset clears them", async () => {
+    // a manual supplier and purchase must survive the reset
+    const [supplierRow] =
+      await sql`SELECT public.supplier_upsert(NULL, 'Manual Supplier', NULL, NULL, NULL, true) AS id`;
+    const supplierId = String((supplierRow as { id: string }).id);
+    const [manualItem] = await sql`SELECT id FROM public.inventory_items WHERE active LIMIT 1`;
+    const manualPurchase = crypto.randomUUID();
+    await sql`
+      SELECT public.inventory_record_purchase(
+        ${manualPurchase}, ${supplierId}, now(), 'manual purchase',
+        ${JSON.stringify([
+          {
+            inventory_item_id: String((manualItem as { id: string }).id),
+            quantity: 2,
+            unit_cost: 10,
+          },
+        ])}::jsonb)
+    `;
+
+    const [historyRow] =
+      await sql`SELECT public.inventory_simulate_history(${crypto.randomUUID()}, 30) AS s`;
+    const summary = (historyRow as { s: { days: number; meals: number; purchases: number } }).s;
+    expect(summary.days).toBe(30);
+    expect(summary.meals > 0).toBe(true);
+    expect(summary.purchases > 0).toBe(true);
+
+    const [hist] = await sql`
+      SELECT count(*)::int AS n FROM public.inventory_movements
+       WHERE source_type = 'simulation_history'
+    `;
+    expect((hist as { n: number }).n > 0).toBe(true);
+
+    const [old] = await sql`
+      SELECT count(*)::int AS n FROM public.inventory_movements
+       WHERE source_type = 'simulation_history' AND created_at < now() - interval '7 days'
+    `;
+    expect((old as { n: number }).n > 0).toBe(true);
+
+    const [demoSuppliers] =
+      await sql`SELECT count(*)::int AS n FROM public.suppliers WHERE name LIKE '[DEMO]%'`;
+    expect((demoSuppliers as { n: number }).n).toBe(4);
+
+    // reset must not raise "DELETE requires a WHERE clause" and must clear sim data
+    await sql`SELECT public.inventory_simulation_reset()`;
+
+    const [leftHist] = await sql`
+      SELECT count(*)::int AS n FROM public.inventory_movements
+       WHERE source_type IN ('simulation', 'simulation_history')
+    `;
+    expect((leftHist as { n: number }).n).toBe(0);
+
+    const [leftSimPurchases] =
+      await sql`SELECT count(*)::int AS n FROM public.purchases WHERE notes LIKE '[SIM]%'`;
+    expect((leftSimPurchases as { n: number }).n).toBe(0);
+
+    const [runs] = await sql`SELECT count(*)::int AS n FROM public.inventory_simulation_runs`;
+    expect((runs as { n: number }).n).toBe(0);
+
+    const [manual] =
+      await sql`SELECT count(*)::int AS n FROM public.purchases WHERE id = ${manualPurchase}`;
+    expect((manual as { n: number }).n).toBe(1);
+
+    const [manualSupplier] =
+      await sql`SELECT count(*)::int AS n FROM public.suppliers WHERE id = ${supplierId}`;
+    expect((manualSupplier as { n: number }).n).toBe(1);
+  });
+
+  test("non-admin users cannot seed demo history", async () => {
+    const staffId = await createStaffUser(sql, "history_staff");
+    const staffSql = db.connect();
+    await actAs(staffSql, staffId);
+    let denied = false;
+    try {
+      await staffSql`SELECT public.inventory_simulate_history(${crypto.randomUUID()}, 30)`;
+    } catch (error) {
+      denied = true;
+      expect(String(error)).toContain("PERMISSION_DENIED");
+    }
+    expect(denied).toBe(true);
+  });
 });

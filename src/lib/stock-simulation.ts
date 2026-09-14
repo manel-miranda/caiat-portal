@@ -84,6 +84,29 @@ export async function runSimulatedPurchase(): Promise<SimulationPurchaseResult> 
   };
 }
 
+export type SimulationHistoryResult = SimulationSummary & {
+  purchases: number;
+  total_cost: number;
+};
+
+/**
+ * Seeds ~30 days of tagged historical usage plus backdated demo purchases so
+ * forecasting, supplier context and purchase history have data to work with.
+ */
+export async function seedDemoHistory(days = 30): Promise<SimulationHistoryResult> {
+  const { data, error } = await supabase.rpc(
+    "inventory_simulate_history" as never,
+    { p_run_id: crypto.randomUUID(), p_days: days } as never,
+  );
+  if (error) throw error;
+  const r = (data ?? {}) as Record<string, unknown>;
+  return {
+    ...parseSummary(data),
+    purchases: Number(r["purchases"] ?? 0),
+    total_cost: num(r["total_cost"]),
+  };
+}
+
 export type SimulationResetResult = { movements: number; purchases: number; runs: number };
 
 /** Removes simulator-created movements, simulated purchases and run records. */
