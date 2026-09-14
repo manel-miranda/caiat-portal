@@ -117,16 +117,17 @@ suite("stock simulation", () => {
     const supplierId = String((supplierRow as { id: string }).id);
     const [manualItem] = await sql`SELECT id FROM public.inventory_items WHERE active LIMIT 1`;
     const manualPurchase = crypto.randomUUID();
+    const manualItemId = String((manualItem as { id: string }).id);
     await sql`
       SELECT public.inventory_record_purchase(
-        ${manualPurchase}, ${supplierId}, now(), 'manual purchase',
-        ${JSON.stringify([
-          {
-            inventory_item_id: String((manualItem as { id: string }).id),
-            quantity: 2,
-            unit_cost: 10,
-          },
-        ])}::jsonb)
+        ${manualPurchase}::uuid, ${supplierId}::uuid, now(), 'manual purchase',
+        jsonb_build_array(
+          jsonb_build_object(
+            'inventory_item_id', ${manualItemId}::uuid,
+            'quantity', 2::numeric,
+            'unit_cost', 10::numeric
+          )
+        ))
     `;
 
     const [historyRow] =
