@@ -23,7 +23,11 @@ export function FoodOrderCard({ order }: { order: PreviewOrder }) {
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
   const manage = can("requests_manage");
+  // Delivery of a billable order creates a guest charge: same authority as
+  // adding a charge by hand, enforced again in the database.
+  const canDeliver = !order.billable || can("payments_manage");
   const next = nextStatus(order.status);
+
 
   async function move(status: PreviewOrder["status"]) {
     setBusy(true);
