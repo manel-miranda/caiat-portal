@@ -123,7 +123,11 @@ suite("stock simulation", () => {
       SELECT public.inventory_record_purchase(
         ${manualPurchase}, ${supplierId}, now(), 'manual purchase',
         ${JSON.stringify([
-          { inventory_item_id: String((manualItem as { id: string }).id), quantity: 2, unit_cost: 10 },
+          {
+            inventory_item_id: String((manualItem as { id: string }).id),
+            quantity: 2,
+            unit_cost: 10,
+          },
         ])}::jsonb)
     `;
 
