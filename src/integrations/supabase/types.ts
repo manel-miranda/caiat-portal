@@ -1441,6 +1441,10 @@ export type Database = {
         Args: { p_components: Json; p_service_type_id: string }
         Returns: number
       }
+      inventory_simulate_history: {
+        Args: { p_days?: number; p_run_id: string }
+        Returns: Json
+      }
       inventory_simulate_purchase: {
         Args: { p_purchase_id: string }
         Returns: Json
