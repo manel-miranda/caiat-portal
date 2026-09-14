@@ -22,8 +22,6 @@ function stay(
   overrides: Partial<DashboardStay> & Pick<DashboardStay, "id" | "room_id">,
 ): DashboardStay {
   return {
-    id: overrides.id,
-    room_id: overrides.room_id,
     check_in: "2026-09-13",
     check_out: "2026-09-16",
     num_guests: 2,
@@ -42,7 +40,6 @@ function payment(
   overrides: Partial<DashboardPayment> & Pick<DashboardPayment, "id">,
 ): DashboardPayment {
   return {
-    id: overrides.id,
     amount: 100,
     method: "cash",
     created_at: "2026-09-14T10:00:00Z",
