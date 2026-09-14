@@ -350,7 +350,6 @@ function MovementForm({ action, onDone }: { action: Action; onDone: () => Promis
   const [value, setValue] = useState(
     action.kind === "adjust" ? qty(action.row.estimated_stock) : "",
   );
-  const [cost, setCost] = useState("");
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
 
