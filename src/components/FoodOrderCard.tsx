@@ -1,6 +1,6 @@
 /**
- * PREVIEW-ONLY food order card, shown inside the unified Requests inbox.
- * Advancing a status never posts a charge: "Delivered" is a preview state.
+ * Kitchen food order card, shown inside the unified Requests inbox.
+ * Delivering a billable order posts its bill charges server-side, exactly once.
  */
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -29,7 +29,8 @@ export function FoodOrderCard({ order }: { order: PreviewOrder }) {
     setBusy(true);
     try {
       await setPreviewOrderStatus(order.id, status);
-      await queryClient.invalidateQueries({ queryKey: ["preview-food-orders"] });
+      // Delivery can create charges and stock movements: refresh everything.
+      await queryClient.invalidateQueries();
     } catch (e) {
       toast.error((e as Error).message);
     }
@@ -44,6 +45,9 @@ export function FoodOrderCard({ order }: { order: PreviewOrder }) {
             <UtensilsCrossed className="size-3.5" />
             {t("typeFood")}
           </span>
+          <span className="ms-1 inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+            {order.origin === "staff" ? t("staffOriginTag") : t("guestOriginTag")}
+          </span>
           <p className="mt-1 text-sm font-semibold">
             {order.room_label ?? "—"}
             {order.guest_first_name ? ` · ${order.guest_first_name}` : ""}
@@ -56,6 +60,9 @@ export function FoodOrderCard({ order }: { order: PreviewOrder }) {
           <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold uppercase">
             {t(PREVIEW_STATUS_LABEL[order.status])}
           </span>
+          {order.billable && order.status !== "delivered" && order.status !== "cancelled" ? (
+            <span className="text-[11px] text-muted-foreground">{t("foodOrderBillsOnDelivery")}</span>
+          ) : null}
         </div>
 
       </div>
