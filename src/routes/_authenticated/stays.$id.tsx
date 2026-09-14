@@ -548,17 +548,22 @@ function StayDetailPage() {
                           toast.error(t("offline"));
                           return;
                         }
-                        await checkoutStay({
-                          stayId: id,
-                          outstanding: totals.outstanding,
-                          override: true,
-                          userId: user?.id,
-                        });
-                        await refresh();
-                        setOverrideConfirm(false);
-                        setSheet(null);
-                        toast.success(t("checkoutDone"));
-                        navigate({ to: "/home" });
+                        try {
+                          await checkoutStay({
+                            stayId: id,
+                            outstanding: totals.outstanding,
+                            override: true,
+                            userId: user?.id,
+                          });
+                          await refresh();
+                          setOverrideConfirm(false);
+                          setSheet(null);
+                          toast.success(t("checkoutDone"));
+                          navigate({ to: "/home" });
+                        } catch (e) {
+                          toast.error((e as Error).message);
+                          await refresh();
+                        }
                       }}
                     >
                       {t("confirm")}
@@ -575,16 +580,21 @@ function StayDetailPage() {
                   toast.error(t("offline"));
                   return;
                 }
-                await checkoutStay({
-                  stayId: id,
-                  outstanding: 0,
-                  override: false,
-                  userId: user?.id,
-                });
-                await refresh();
-                setSheet(null);
-                toast.success(t("checkoutDone"));
-                navigate({ to: "/home" });
+                try {
+                  await checkoutStay({
+                    stayId: id,
+                    outstanding: 0,
+                    override: false,
+                    userId: user?.id,
+                  });
+                  await refresh();
+                  setSheet(null);
+                  toast.success(t("checkoutDone"));
+                  navigate({ to: "/home" });
+                } catch (e) {
+                  toast.error((e as Error).message);
+                  await refresh();
+                }
               }}
             >
               {t("confirmCheckout")}
