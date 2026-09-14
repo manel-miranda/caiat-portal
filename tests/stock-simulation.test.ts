@@ -32,7 +32,7 @@ suite("stock simulation", () => {
     const runId = crypto.randomUUID();
     const [row] = await sql`SELECT public.inventory_simulate_week(${runId}, 'busy') AS summary`;
     const summary = (row as { summary: { meals: number; items: unknown[] } }).summary;
-    expect(summary.meals).toBeGreaterThan(0);
+    expect(summary.meals > 0).toBe(true);
     expect(summary.items.length).toBeGreaterThan(0);
 
     const moves = await sql`
@@ -48,7 +48,7 @@ suite("stock simulation", () => {
     for (const m of list) {
       expect(m.movement_type).toBe("consumption");
       expect(m.source_type).toBe("simulation");
-      expect(m.quantity).toBeLessThan(0);
+      expect(m.quantity < 0).toBe(true);
     }
   });
 
