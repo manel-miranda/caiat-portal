@@ -18,7 +18,9 @@ const rooms: DashboardRoom[] = [
   { id: "r3", number: "3", name: "Sahara" },
 ];
 
-function stay(overrides: Partial<DashboardStay> & Pick<DashboardStay, "id" | "room_id">): DashboardStay {
+function stay(
+  overrides: Partial<DashboardStay> & Pick<DashboardStay, "id" | "room_id">,
+): DashboardStay {
   return {
     id: overrides.id,
     room_id: overrides.room_id,
@@ -36,7 +38,9 @@ function stay(overrides: Partial<DashboardStay> & Pick<DashboardStay, "id" | "ro
   };
 }
 
-function payment(overrides: Partial<DashboardPayment> & Pick<DashboardPayment, "id">): DashboardPayment {
+function payment(
+  overrides: Partial<DashboardPayment> & Pick<DashboardPayment, "id">,
+): DashboardPayment {
   return {
     id: overrides.id,
     amount: 100,
@@ -96,7 +100,12 @@ describe("dashboard KPI breakdowns", () => {
       ["cash", 175],
       ["card", 250],
     ]);
-    expect(groups.flatMap((group) => group.rows).map((row) => row.id).sort()).toEqual(["p1", "p2", "p3"]);
+    expect(
+      groups
+        .flatMap((group) => group.rows)
+        .map((row) => row.id)
+        .sort(),
+    ).toEqual(["p1", "p2", "p3"]);
     expect(dashboardCashPayments(rows).map((row) => row.id)).toEqual(["p1", "p3"]);
     expect(dashboardPaymentGroups([])).toEqual([]);
   });
@@ -104,8 +113,19 @@ describe("dashboard KPI breakdowns", () => {
   test("outstanding rows sort descending and clamp overpayments to zero", () => {
     const rows = dashboardOutstanding([
       stay({ id: "small", room_id: "r1", accommodation_total: 300, payments: [{ amount: 100 }] }),
-      stay({ id: "large", room_id: "r2", accommodation_total: 700, charges: [{ total: 100 }], payments: [{ amount: 50 }] }),
-      stay({ id: "overpaid", room_id: "r3", accommodation_total: 100, payments: [{ amount: 150 }] }),
+      stay({
+        id: "large",
+        room_id: "r2",
+        accommodation_total: 700,
+        charges: [{ total: 100 }],
+        payments: [{ amount: 50 }],
+      }),
+      stay({
+        id: "overpaid",
+        room_id: "r3",
+        accommodation_total: 100,
+        payments: [{ amount: 150 }],
+      }),
     ]);
 
     expect(rows.map((row) => [row.stay.id, row.total, row.paid, row.outstanding])).toEqual([

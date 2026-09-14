@@ -32,7 +32,9 @@ export function DashboardKpiSheet({
         <SheetHeader className="shrink-0 border-b border-border px-5 py-5 pe-12 text-start">
           <SheetTitle>{title}</SheetTitle>
           <SheetDescription>{scope}</SheetDescription>
-          {description ? <p className="text-sm leading-5 text-muted-foreground">{description}</p> : null}
+          {description ? (
+            <p className="text-sm leading-5 text-muted-foreground">{description}</p>
+          ) : null}
         </SheetHeader>
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">{children}</div>
         <SheetFooter className="shrink-0 border-t border-border p-4">

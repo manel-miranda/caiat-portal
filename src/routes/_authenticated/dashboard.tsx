@@ -183,12 +183,25 @@ function DashboardPage() {
         title={t("occupancy")}
         scope={scope}
       >
-        <DetailGroup title={`${t("occupiedRooms")} · ${occupiedStays.length}`} empty={occupiedStays.length === 0} emptyText={t("noOccupiedRooms")}>
+        <DetailGroup
+          title={`${t("occupiedRooms")} · ${occupiedStays.length}`}
+          empty={occupiedStays.length === 0}
+          emptyText={t("noOccupiedRooms")}
+        >
           {occupiedStays.map((stay) => (
-            <StayDetailLink key={stay.id} stayId={stay.id} title={`${roomLabel(stay.room)} · ${stay.guest?.full_name ?? "—"}`} meta={`${shortDate(stay.check_in)} – ${shortDate(stay.check_out)}`} />
+            <StayDetailLink
+              key={stay.id}
+              stayId={stay.id}
+              title={`${roomLabel(stay.room)} · ${stay.guest?.full_name ?? "—"}`}
+              meta={`${shortDate(stay.check_in)} – ${shortDate(stay.check_out)}`}
+            />
           ))}
         </DetailGroup>
-        <DetailGroup title={`${t("availableRooms")} · ${availableRooms.length}`} empty={availableRooms.length === 0} emptyText={t("noAvailableRooms")}>
+        <DetailGroup
+          title={`${t("availableRooms")} · ${availableRooms.length}`}
+          empty={availableRooms.length === 0}
+          emptyText={t("noAvailableRooms")}
+        >
           {availableRooms.map((room) => (
             <div key={room.id} className="flex items-center justify-between py-3 text-sm">
               <span className="font-medium">{roomLabel(room)}</span>
@@ -198,56 +211,168 @@ function DashboardPage() {
         </DetailGroup>
       </DashboardKpiSheet>
 
-      <DashboardKpiSheet open={detail === "guests"} onOpenChange={(open) => !open && setDetail(null)} title={t("guestsStaying")} scope={scope}>
-        <DetailGroup title={`${t("guests")} · ${guestsStaying}`} empty={occupiedStays.length === 0} emptyText={t("noGuestsStaying")}>
+      <DashboardKpiSheet
+        open={detail === "guests"}
+        onOpenChange={(open) => !open && setDetail(null)}
+        title={t("guestsStaying")}
+        scope={scope}
+      >
+        <DetailGroup
+          title={`${t("guests")} · ${guestsStaying}`}
+          empty={occupiedStays.length === 0}
+          emptyText={t("noGuestsStaying")}
+        >
           {occupiedStays.map((stay) => (
-            <StayDetailLink key={stay.id} stayId={stay.id} title={`${stay.guest?.full_name ?? "—"} · ${roomLabel(stay.room)}`} meta={`${stay.num_guests} ${t("pax")}`} amount={String(stay.num_guests)} />
+            <StayDetailLink
+              key={stay.id}
+              stayId={stay.id}
+              title={`${stay.guest?.full_name ?? "—"} · ${roomLabel(stay.room)}`}
+              meta={`${stay.num_guests} ${t("pax")}`}
+              amount={String(stay.num_guests)}
+            />
           ))}
         </DetailGroup>
       </DashboardKpiSheet>
 
-      <DashboardKpiSheet open={detail === "revenue"} onOpenChange={(open) => !open && setDetail(null)} title={t("revenueToday")} scope={scope} description={t("revenueTodayExplanation")}>
-        <DetailGroup title={t("accommodationArrivals")} total={mad(revenue.accommodation)} empty={revenue.accommodationRows.length === 0} emptyText={t("noAccommodationToday")}>
+      <DashboardKpiSheet
+        open={detail === "revenue"}
+        onOpenChange={(open) => !open && setDetail(null)}
+        title={t("revenueToday")}
+        scope={scope}
+        description={t("revenueTodayExplanation")}
+      >
+        <DetailGroup
+          title={t("accommodationArrivals")}
+          total={mad(revenue.accommodation)}
+          empty={revenue.accommodationRows.length === 0}
+          emptyText={t("noAccommodationToday")}
+        >
           {revenue.accommodationRows.map((stay) => (
-            <StayDetailLink key={stay.id} stayId={stay.id} title={`${stay.guest?.full_name ?? "—"} · ${roomLabel(stay.room)}`} meta={`${shortDate(stay.check_in)} – ${shortDate(stay.check_out)}`} amount={mad(stay.accommodation_total)} />
+            <StayDetailLink
+              key={stay.id}
+              stayId={stay.id}
+              title={`${stay.guest?.full_name ?? "—"} · ${roomLabel(stay.room)}`}
+              meta={`${shortDate(stay.check_in)} – ${shortDate(stay.check_out)}`}
+              amount={mad(stay.accommodation_total)}
+            />
           ))}
         </DetailGroup>
-        <DetailGroup title={t("extrasRecordedToday")} total={mad(revenue.extras)} empty={revenue.extraRows.length === 0} emptyText={t("noExtrasToday")}>
+        <DetailGroup
+          title={t("extrasRecordedToday")}
+          total={mad(revenue.extras)}
+          empty={revenue.extraRows.length === 0}
+          emptyText={t("noExtrasToday")}
+        >
           {revenue.extraRows.map((charge) => (
-            <DetailRow key={charge.id} title={charge.label} meta={`${charge.quantity} × · ${timeOnly(charge.created_at)}`} amount={mad(charge.total)} />
+            <DetailRow
+              key={charge.id}
+              title={charge.label}
+              meta={`${charge.quantity} × · ${timeOnly(charge.created_at)}`}
+              amount={mad(charge.total)}
+            />
           ))}
         </DetailGroup>
         <DetailTotal label={t("total")} value={mad(revenue.total)} />
       </DashboardKpiSheet>
 
-      <DashboardKpiSheet open={detail === "payments"} onOpenChange={(open) => !open && setDetail(null)} title={t("paymentsToday")} scope={scope}>
-        {paymentGroups.length === 0 ? <EmptyDetail>{t("noPaymentsToday")}</EmptyDetail> : paymentGroups.map((group) => (
-          <DetailGroup key={group.method} title={methodLabel(group.method)} total={mad(group.total)} empty={false} emptyText="">
-            {group.rows.map((payment) => {
-              const knownStay = activeStays.find((stay) => stay.id === payment.stay_id);
-              return <StayDetailLink key={payment.id} stayId={payment.stay_id} title={knownStay ? `${knownStay.guest?.full_name ?? "—"} · ${roomLabel(knownStay.room)}` : t("openStay")} meta={timeOnly(payment.created_at)} amount={mad(payment.amount)} />;
-            })}
-          </DetailGroup>
-        ))}
-        {paymentGroups.length > 0 ? <DetailTotal label={t("total")} value={mad(paymentsToday)} /> : null}
+      <DashboardKpiSheet
+        open={detail === "payments"}
+        onOpenChange={(open) => !open && setDetail(null)}
+        title={t("paymentsToday")}
+        scope={scope}
+      >
+        {paymentGroups.length === 0 ? (
+          <EmptyDetail>{t("noPaymentsToday")}</EmptyDetail>
+        ) : (
+          paymentGroups.map((group) => (
+            <DetailGroup
+              key={group.method}
+              title={methodLabel(group.method)}
+              total={mad(group.total)}
+              empty={false}
+              emptyText=""
+            >
+              {group.rows.map((payment) => {
+                const knownStay = activeStays.find((stay) => stay.id === payment.stay_id);
+                return (
+                  <StayDetailLink
+                    key={payment.id}
+                    stayId={payment.stay_id}
+                    title={
+                      knownStay
+                        ? `${knownStay.guest?.full_name ?? "—"} · ${roomLabel(knownStay.room)}`
+                        : t("openStay")
+                    }
+                    meta={timeOnly(payment.created_at)}
+                    amount={mad(payment.amount)}
+                  />
+                );
+              })}
+            </DetailGroup>
+          ))
+        )}
+        {paymentGroups.length > 0 ? (
+          <DetailTotal label={t("total")} value={mad(paymentsToday)} />
+        ) : null}
       </DashboardKpiSheet>
 
       {can("cash_reconcile") ? (
-        <DashboardKpiSheet open={detail === "cash"} onOpenChange={(open) => !open && setDetail(null)} title={t("expectedInSafe")} scope={scope} description={t("cashTodayExplanation")}>
-          <DetailGroup title={t("cash")} total={mad(cashToday)} empty={cashPayments.length === 0} emptyText={t("noCashToday")}>
+        <DashboardKpiSheet
+          open={detail === "cash"}
+          onOpenChange={(open) => !open && setDetail(null)}
+          title={t("expectedInSafe")}
+          scope={scope}
+          description={t("cashTodayExplanation")}
+        >
+          <DetailGroup
+            title={t("cash")}
+            total={mad(cashToday)}
+            empty={cashPayments.length === 0}
+            emptyText={t("noCashToday")}
+          >
             {cashPayments.map((payment) => {
               const knownStay = activeStays.find((stay) => stay.id === payment.stay_id);
-              return <StayDetailLink key={payment.id} stayId={payment.stay_id} title={knownStay ? `${knownStay.guest?.full_name ?? "—"} · ${roomLabel(knownStay.room)}` : t("openStay")} meta={timeOnly(payment.created_at)} amount={mad(payment.amount)} />;
+              return (
+                <StayDetailLink
+                  key={payment.id}
+                  stayId={payment.stay_id}
+                  title={
+                    knownStay
+                      ? `${knownStay.guest?.full_name ?? "—"} · ${roomLabel(knownStay.room)}`
+                      : t("openStay")
+                  }
+                  meta={timeOnly(payment.created_at)}
+                  amount={mad(payment.amount)}
+                />
+              );
             })}
           </DetailGroup>
-          <Button asChild className="mt-5 w-full"><Link to="/cash">{t("openCashControl")}</Link></Button>
+          <Button asChild className="mt-5 w-full">
+            <Link to="/cash">{t("openCashControl")}</Link>
+          </Button>
         </DashboardKpiSheet>
       ) : null}
 
-      <DashboardKpiSheet open={detail === "outstanding"} onOpenChange={(open) => !open && setDetail(null)} title={t("outstandingBalances")} scope={scope}>
-        <DetailGroup title={`${t("outstanding")} · ${outstandingStays.length}`} total={mad(outstandingTotal)} empty={outstandingStays.length === 0} emptyText={t("noOutstandingBalances")}>
+      <DashboardKpiSheet
+        open={detail === "outstanding"}
+        onOpenChange={(open) => !open && setDetail(null)}
+        title={t("outstandingBalances")}
+        scope={scope}
+      >
+        <DetailGroup
+          title={`${t("outstanding")} · ${outstandingStays.length}`}
+          total={mad(outstandingTotal)}
+          empty={outstandingStays.length === 0}
+          emptyText={t("noOutstandingBalances")}
+        >
           {outstandingStays.map((row) => (
-            <StayDetailLink key={row.stay.id} stayId={row.stay.id} title={`${row.stay.guest?.full_name ?? "—"} · ${roomLabel(row.stay.room)}`} meta={`${t("billTotal")}: ${mad(row.total)} · ${t("paid")}: ${mad(row.paid)}`} amount={mad(row.outstanding)} />
+            <StayDetailLink
+              key={row.stay.id}
+              stayId={row.stay.id}
+              title={`${row.stay.guest?.full_name ?? "—"} · ${roomLabel(row.stay.room)}`}
+              meta={`${t("billTotal")}: ${mad(row.total)} · ${t("paid")}: ${mad(row.paid)}`}
+              amount={mad(row.outstanding)}
+            />
           ))}
         </DetailGroup>
       </DashboardKpiSheet>
@@ -421,14 +546,30 @@ function Row({ to, left, right }: { to: string; left: string; right: string }) {
   );
 }
 
-function DetailGroup({ title, total, empty, emptyText, children }: { title: string; total?: string; empty: boolean; emptyText: string; children: ReactNode }) {
+function DetailGroup({
+  title,
+  total,
+  empty,
+  emptyText,
+  children,
+}: {
+  title: string;
+  total?: string;
+  empty: boolean;
+  emptyText: string;
+  children: ReactNode;
+}) {
   return (
     <section className="mb-6 last:mb-0">
       <div className="flex items-center justify-between gap-3 border-b border-border pb-2">
         <h3 className="text-sm font-semibold">{title}</h3>
         {total ? <span className="shrink-0 text-sm font-semibold">{total}</span> : null}
       </div>
-      {empty ? <EmptyDetail>{emptyText}</EmptyDetail> : <div className="divide-y divide-border">{children}</div>}
+      {empty ? (
+        <EmptyDetail>{emptyText}</EmptyDetail>
+      ) : (
+        <div className="divide-y divide-border">{children}</div>
+      )}
     </section>
   );
 }
@@ -440,21 +581,46 @@ function EmptyDetail({ children }: { children: ReactNode }) {
 function DetailRow({ title, meta, amount }: { title: string; meta: string; amount: string }) {
   return (
     <div className="flex items-center justify-between gap-3 py-3 text-sm">
-      <div className="min-w-0"><p className="truncate font-medium">{title}</p><p className="mt-0.5 text-xs text-muted-foreground">{meta}</p></div>
+      <div className="min-w-0">
+        <p className="truncate font-medium">{title}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{meta}</p>
+      </div>
       <span className="shrink-0 font-semibold">{amount}</span>
     </div>
   );
 }
 
-function StayDetailLink({ stayId, title, meta, amount }: { stayId: string; title: string; meta: string; amount?: string }) {
+function StayDetailLink({
+  stayId,
+  title,
+  meta,
+  amount,
+}: {
+  stayId: string;
+  title: string;
+  meta: string;
+  amount?: string;
+}) {
   return (
-    <Link to="/stays/$id" params={{ id: stayId }} className="flex items-center justify-between gap-3 py-3 text-sm transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-      <div className="min-w-0"><p className="truncate font-medium">{title}</p><p className="mt-0.5 text-xs text-muted-foreground">{meta}</p></div>
+    <Link
+      to="/stays/$id"
+      params={{ id: stayId }}
+      className="flex items-center justify-between gap-3 py-3 text-sm transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    >
+      <div className="min-w-0">
+        <p className="truncate font-medium">{title}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{meta}</p>
+      </div>
       {amount ? <span className="shrink-0 font-semibold">{amount}</span> : null}
     </Link>
   );
 }
 
 function DetailTotal({ label, value }: { label: string; value: string }) {
-  return <div className="mt-4 flex items-center justify-between border-t-2 border-border pt-4 text-base font-semibold"><span>{label}</span><span>{value}</span></div>;
+  return (
+    <div className="mt-4 flex items-center justify-between border-t-2 border-border pt-4 text-base font-semibold">
+      <span>{label}</span>
+      <span>{value}</span>
+    </div>
+  );
 }

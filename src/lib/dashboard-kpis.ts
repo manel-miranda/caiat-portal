@@ -78,7 +78,13 @@ export function dashboardRevenue(
     0,
   );
   const extras = charges.reduce((sum, charge) => sum + Number(charge.total ?? 0), 0);
-  return { accommodationRows, extraRows: charges, accommodation, extras, total: accommodation + extras };
+  return {
+    accommodationRows,
+    extraRows: charges,
+    accommodation,
+    extras,
+    total: accommodation + extras,
+  };
 }
 
 export function dashboardPaymentGroups(payments: DashboardPayment[]) {
