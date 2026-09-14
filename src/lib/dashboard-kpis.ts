@@ -67,7 +67,12 @@ export function dashboardRevenue(
   charges: DashboardCharge[],
   today: string,
 ) {
-  const accommodationRows = stays.filter((stay) => stay.check_in === today);
+  const accommodationRows = stays.filter(
+    (stay) =>
+      stay.status === "active" &&
+      stay.confirmation_status === "confirmed" &&
+      stay.check_in === today,
+  );
   const accommodation = accommodationRows.reduce(
     (sum, stay) => sum + Number(stay.accommodation_total ?? 0),
     0,
