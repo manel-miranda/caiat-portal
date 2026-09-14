@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { BedDouble, Users, Wallet, Banknote, AlertCircle, Bell, LogIn, LogOut } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { DashboardKpiSheet } from "@/components/DashboardKpiSheet";
 import { useAuth } from "@/lib/auth";
@@ -49,6 +49,12 @@ function DashboardPage() {
   const queryClient = useQueryClient();
   const { user, can } = useAuth();
   const [detail, setDetail] = useState<KpiDetail | null>(null);
+  const detailOpenerRef = useRef<HTMLButtonElement | null>(null);
+
+  function openDetail(next: KpiDetail, event: MouseEvent<HTMLButtonElement>) {
+    detailOpenerRef.current = event.currentTarget;
+    setDetail(next);
+  }
 
   async function decide(stayId: string, accept: boolean) {
     try {
@@ -92,6 +98,7 @@ function DashboardPage() {
   const outstandingStays = dashboardOutstanding(activeStays);
   const outstandingTotal = outstandingStays.reduce((sum, row) => sum + row.outstanding, 0);
   const scope = t("dashboardScopeToday", { date: shortDate(today) });
+  const tonightScope = t("dashboardScopeTonight", { date: shortDate(today) });
 
   const pending = (requests.data ?? []).filter((r) => r.status === "pending");
   // Only what is still ahead of us, within the next 24 hours. Overdue items
@@ -133,27 +140,35 @@ function DashboardPage() {
           label={t("occupancy")}
           value={`${occupiedStays.length}/${roomList.length || 7}`}
           hint={shortDate(today)}
-          onClick={() => setDetail("occupancy")}
+          onClick={(event) => openDetail("occupancy", event)}
+          expanded={detail === "occupancy"}
+          controls="dashboard-kpi-occupancy"
         />
         <StatCard
           icon={<Users className="size-4" />}
           label={t("guestsStaying")}
           value={guestsStaying}
-          onClick={() => setDetail("guests")}
+          onClick={(event) => openDetail("guests", event)}
+          expanded={detail === "guests"}
+          controls="dashboard-kpi-guests"
         />
         <StatCard
           icon={<Wallet className="size-4" />}
           label={t("revenueToday")}
           value={mad(revenueToday)}
           hint={`${mad(chargesToday)} ${t("extras")}`}
-          onClick={() => setDetail("revenue")}
+          onClick={(event) => openDetail("revenue", event)}
+          expanded={detail === "revenue"}
+          controls="dashboard-kpi-revenue"
         />
         <StatCard
           icon={<Banknote className="size-4" />}
           label={t("paymentsToday")}
           value={mad(paymentsToday)}
           tone="success"
-          onClick={() => setDetail("payments")}
+          onClick={(event) => openDetail("payments", event)}
+          expanded={detail === "payments"}
+          controls="dashboard-kpi-payments"
         />
       </section>
 
@@ -164,7 +179,9 @@ function DashboardPage() {
             label={t("expectedInSafe")}
             value={mad(cashToday)}
             hint={t("cashControl")}
-            onClick={() => setDetail("cash")}
+            onClick={(event) => openDetail("cash", event)}
+            expanded={detail === "cash"}
+            controls="dashboard-kpi-cash"
           />
         ) : null}
         <StatCard
@@ -173,7 +190,9 @@ function DashboardPage() {
           value={mad(outstandingTotal)}
           tone={outstandingTotal > 0 ? "warning" : "default"}
           hint={`${outstandingStays.length} ${t("stay").toLowerCase()}`}
-          onClick={() => setDetail("outstanding")}
+          onClick={(event) => openDetail("outstanding", event)}
+          expanded={detail === "outstanding"}
+          controls="dashboard-kpi-outstanding"
         />
       </div>
 
@@ -181,7 +200,9 @@ function DashboardPage() {
         open={detail === "occupancy"}
         onOpenChange={(open) => !open && setDetail(null)}
         title={t("occupancy")}
-        scope={scope}
+        scope={tonightScope}
+        openerRef={detailOpenerRef}
+        contentId="dashboard-kpi-occupancy"
       >
         <DetailGroup
           title={`${t("occupiedRooms")} · ${occupiedStays.length}`}
@@ -215,7 +236,9 @@ function DashboardPage() {
         open={detail === "guests"}
         onOpenChange={(open) => !open && setDetail(null)}
         title={t("guestsStaying")}
-        scope={scope}
+        scope={tonightScope}
+        openerRef={detailOpenerRef}
+        contentId="dashboard-kpi-guests"
       >
         <DetailGroup
           title={`${t("guests")} · ${guestsStaying}`}
@@ -240,6 +263,8 @@ function DashboardPage() {
         title={t("revenueToday")}
         scope={scope}
         description={t("revenueTodayExplanation")}
+        openerRef={detailOpenerRef}
+        contentId="dashboard-kpi-revenue"
       >
         <DetailGroup
           title={t("accommodationArrivals")}
@@ -280,6 +305,8 @@ function DashboardPage() {
         onOpenChange={(open) => !open && setDetail(null)}
         title={t("paymentsToday")}
         scope={scope}
+        openerRef={detailOpenerRef}
+        contentId="dashboard-kpi-payments"
       >
         {paymentGroups.length === 0 ? (
           <EmptyDetail>{t("noPaymentsToday")}</EmptyDetail>
@@ -323,6 +350,8 @@ function DashboardPage() {
           title={t("expectedInSafe")}
           scope={scope}
           description={t("cashTodayExplanation")}
+          openerRef={detailOpenerRef}
+          contentId="dashboard-kpi-cash"
         >
           <DetailGroup
             title={t("cash")}
@@ -357,7 +386,9 @@ function DashboardPage() {
         open={detail === "outstanding"}
         onOpenChange={(open) => !open && setDetail(null)}
         title={t("outstandingBalances")}
-        scope={scope}
+        scope={t("dashboardScopeActiveStays")}
+        openerRef={detailOpenerRef}
+        contentId="dashboard-kpi-outstanding"
       >
         <DetailGroup
           title={`${t("outstanding")} · ${outstandingStays.length}`}

@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { restoreDashboardKpiFocus } from "../src/components/DashboardKpiSheet";
 import {
   dashboardAvailableRooms,
   dashboardCashPayments,
@@ -131,5 +132,26 @@ describe("dashboard KPI breakdowns", () => {
     ]);
     expect(rows.reduce((sum, row) => sum + row.outstanding, 0)).toBe(950);
     expect(dashboardOutstanding([])).toEqual([]);
+  });
+
+  test("outstanding remains null-safe like stayTotals", () => {
+    const row = stay({ id: "nullable", room_id: "r1", accommodation_total: 200 });
+    row.charges = null;
+    row.payments = null;
+    const result = dashboardOutstanding([row])[0];
+    expect(result?.total).toBe(200);
+    expect(result?.paid).toBe(0);
+    expect(result?.outstanding).toBe(200);
+  });
+
+  test("closing a KPI sheet prevents default focus handling and restores its opener", () => {
+    let prevented = false;
+    let focused = false;
+    restoreDashboardKpiFocus(
+      { preventDefault: () => (prevented = true) },
+      { focus: () => (focused = true) },
+    );
+    expect(prevented).toBe(true);
+    expect(focused).toBe(true);
   });
 });

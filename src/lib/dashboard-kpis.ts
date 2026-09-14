@@ -15,8 +15,8 @@ export type DashboardStay = {
   confirmation_status: string;
   guest: { full_name: string } | null;
   room: { number: string; name: string } | null;
-  charges: { total: number }[];
-  payments: { amount: number }[];
+  charges?: { total: number }[] | null;
+  payments?: { amount: number }[] | null;
 };
 
 export type DashboardCharge = {
@@ -106,9 +106,15 @@ export function dashboardCashPayments(payments: DashboardPayment[]) {
 export function dashboardOutstanding(stays: DashboardStay[]) {
   return stays
     .map((stay) => {
-      const charges = stay.charges.reduce((sum, charge) => sum + Number(charge.total ?? 0), 0);
+      const charges = (stay.charges ?? []).reduce(
+        (sum, charge) => sum + Number(charge.total ?? 0),
+        0,
+      );
       const total = Number(stay.accommodation_total ?? 0) + charges;
-      const paid = stay.payments.reduce((sum, payment) => sum + Number(payment.amount ?? 0), 0);
+      const paid = (stay.payments ?? []).reduce(
+        (sum, payment) => sum + Number(payment.amount ?? 0),
+        0,
+      );
       return { stay, total, paid, outstanding: Math.max(0, total - paid) };
     })
     .filter((row) => row.outstanding > 0)
