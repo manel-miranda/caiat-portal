@@ -86,6 +86,8 @@ export type Database = {
           notes: string | null
           quantity: number
           service_type_id: string | null
+          source_food_order_id: string | null
+          source_food_order_item_id: string | null
           source_request_id: string | null
           stay_id: string
           total: number | null
@@ -99,6 +101,8 @@ export type Database = {
           notes?: string | null
           quantity?: number
           service_type_id?: string | null
+          source_food_order_id?: string | null
+          source_food_order_item_id?: string | null
           source_request_id?: string | null
           stay_id: string
           total?: number | null
@@ -112,6 +116,8 @@ export type Database = {
           notes?: string | null
           quantity?: number
           service_type_id?: string | null
+          source_food_order_id?: string | null
+          source_food_order_item_id?: string | null
           source_request_id?: string | null
           stay_id?: string
           total?: number | null
@@ -123,6 +129,20 @@ export type Database = {
             columns: ["service_type_id"]
             isOneToOne: false
             referencedRelation: "service_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "charges_source_food_order_id_fkey"
+            columns: ["source_food_order_id"]
+            isOneToOne: false
+            referencedRelation: "preview_food_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "charges_source_food_order_item_id_fkey"
+            columns: ["source_food_order_item_id"]
+            isOneToOne: false
+            referencedRelation: "preview_food_order_items"
             referencedColumns: ["id"]
           },
           {
@@ -595,10 +615,13 @@ export type Database = {
       }
       preview_food_orders: {
         Row: {
+          billable: boolean
           created_at: string
+          created_by: string | null
           id: string
           is_preview: boolean
           notes: string | null
+          origin: string
           status: string
           stay_id: string
           subtotal: number
@@ -607,10 +630,13 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          billable?: boolean
           created_at?: string
+          created_by?: string | null
           id?: string
           is_preview?: boolean
           notes?: string | null
+          origin?: string
           status?: string
           stay_id: string
           subtotal?: number
@@ -619,10 +645,13 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          billable?: boolean
           created_at?: string
+          created_by?: string | null
           id?: string
           is_preview?: boolean
           notes?: string | null
+          origin?: string
           status?: string
           stay_id?: string
           subtotal?: number
@@ -1376,6 +1405,7 @@ export type Database = {
         }
         Returns: string
       }
+      food_order_bill: { Args: { p_order_id: string }; Returns: number }
       guest_create_preview_food_order: {
         Args: {
           p_items: Json
@@ -1510,6 +1540,15 @@ export type Database = {
           p_user_id: string
         }
         Returns: undefined
+      }
+      staff_create_food_order: {
+        Args: {
+          p_items: Json
+          p_notes?: string
+          p_stay_id: string
+          p_timing?: string
+        }
+        Returns: string
       }
       supplier_set_active: {
         Args: { p_active: boolean; p_id: string }
