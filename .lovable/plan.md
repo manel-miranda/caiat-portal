@@ -1,91 +1,71 @@
-# Caiat Operations — simplicity audit (read-only, no changes made)
+# Customers database + Users, roles & PIN management
 
-Grounded in the current code: `AppShell.tsx`, `MobileMenu.tsx`, `TaskBell.tsx`, `home.tsx`, `requests.tsx`, `calendar.tsx`, `stays.$id.tsx` (924 lines), `stays.new.tsx`, `services.tsx`, `customers*.tsx`, `dashboard.tsx`, `cash.tsx`, `activity.tsx`, `stock.tsx` (1029 lines), `catalogue.tsx` (753 lines), `users.tsx`, `guest.$token.tsx` + guest components.
+## What the team gets
 
-## 1. What is already simple — preserve
+**Customers**
+- A new **Customers** page (all signed-in users) with search by name, phone or email, showing each person's number of stays, last stay date and a New / Returning tag.
+- A **customer profile** page: contact details, first and last stay, total stays, total billed and total paid, the full chronological list of stays linked to each booking, and internal notes only staff can see.
+- **New stay** gets a customer step: search an existing customer and pick them (the booking attaches to that same person, no duplicate created) or create a new one with just a name, optionally phone/email. Picking an existing customer shows "Returning · 2 previous stays · last stayed 12 Aug" right away.
+- **Stay detail** shows "New customer" or "Returning customer · 3 stays" linking to the profile.
+- Same-name people are never merged automatically. Existing bookings and history keep working untouched.
+- The guest QR portal stays exactly as private as today: first name only, no contact details, no history.
 
-- Room grid on Home: 7 colour-coded cards, tap an occupied room to open the stay, tap a free room to start a booking with the room pre-filled (`home.tsx:85-128`). This is the single best thing in the app.
-- Three counters + a "Today" list (arrivals / departures / pending) directly under the grid — the whole daily picture without scrolling into menus.
-- Big segmented button grids instead of dropdowns (room, source, payment method, service) — thumb-friendly, no hidden state.
-- One stay = one page with bill, payments, requests and four large actions.
-- Checkout blocks unpaid departure by default and only offers an override to those entitled (`stays.$id.tsx:426-481`).
-- Guest portal needs no login, is one scroll, and fails closed on a bad token.
-- Offline banner and action blocking when the connection drops.
+**Users, roles and PINs**
+- New **Supervisor** role between Staff and Admin. Ahmed becomes Supervisor.
+- Admin-only **Users & Permissions** page: everyone listed with name, username, role, active/inactive and what they are allowed to do. Admins can change a role, switch individual permissions on or off, deactivate/reactivate someone, reset a PIN, and add a new user.
+- PIN reset never reveals the old PIN. The admin types a new 6-digit PIN or taps **Generate PIN**, and the generated PIN is shown once, right then, to hand over.
+- Everyone signed in gets a **Change my PIN** action.
+- Role changes, permission changes, activation changes and PIN resets are all written to the history log — never the PIN itself.
+- The system refuses to leave itself with zero admins.
 
-## 2. Ten biggest sources of perceived complexity (ranked)
+### Permission defaults
 
-1. **Too many destinations.** Desktop nav shows up to 8 tabs; mobile shows 4 + More with 8 more entries. An admin can reach 14 screens. Bernardo's first impression is formed here.
-2. **The More sheet mixes everything.** Account, language, currency, Customers, Services, Cash, Activity, Catalogue, Users, Stock, Sign out — settings and management in one undifferentiated list (`MobileMenu.tsx:41-162`).
-3. **Three ways to do the same job.** A charge can be added from Stay detail, from Services (quick-charge against a selected stay), and implicitly from completing a billable request. A request can be created from Stay detail, from Services, or by the guest. Nothing tells staff which is "the" way.
-4. **Requests screen carries two mental models at once.** Food orders (multi-step status: requested → accepted → preparing → delivered) and simple requests (complete / cancel) share one list, plus three filter chips and a section called "Activity" that is really request history (`requests.tsx:105-191`).
-5. **Stay detail is long and flat.** Header, bill, payments, requests, guest-access/QR card, then four equally weighted actions. Nothing marks the common daily case (add charge) versus the rare one (checkout with override).
-6. **New stay asks for too much in one screen.** Customer search, name, phone, email, duplicate-suggestion panel, room grid, two dates, guests, accommodation total, 6 sources, a "Confirmed vs Pending request" toggle, notes — around 12 decisions for a walk-in (`stays.new.tsx:191-458`).
-7. **Management vocabulary inside daily work.** "Confirmation status", "Admin override", "Possible duplicates / Merge customers", "Expected in safe / Difference / Discrepancy", "Billable only", "Requestable", "Demo". Several appear on screens ordinary staff use.
-8. **Stock is the heaviest screen in the app.** Three tabs, three status counters, search + 4 filter chips, four row actions (Receive / Adjust / Waste / History), plus Purchases, Purchase lines, Suppliers and prefill — all visible to every signed-in staff member with no route gate (`stock.tsx`).
-9. **Services doubles as a brochure and an action surface.** Six category groups, an "Included" section, price + Requestable/Billable tags, difficulty and activity-mode metadata, and per-item buttons that silently do nothing until a stay is chosen in a dropdown at the top (`services.tsx:120-224`).
-10. **Two overlapping notification surfaces.** TaskBell groups stays/requests/reservations/food orders/low stock; Home's counters and Dashboard's "Next 24h" repeat much of the same, with different counting rules. Numbers that disagree read as unreliable.
+| Permission | Staff | Supervisor | Admin |
+|---|---|---|---|
+| reservations_manage (create/edit/confirm/reject) | no | yes | yes |
+| payments_manage (charges & payments) | yes | yes | yes |
+| checkout_override | no | yes | yes |
+| cash_reconcile | no | yes | yes |
+| customers_manage (edit profile & notes) | no | yes | yes |
+| guest_access_manage (QR links) | no | yes | yes |
+| requests_manage | yes | yes | yes |
+| activity_view (history log) | no | yes | yes |
+| users_manage / roles_manage / pin_reset | admin only, never grantable |
 
-## 3. Screen-by-screen verdict
+Admins can grant or revoke any of the first eight per person; the last three stay admin-only.
 
-| Screen | Verdict | Why |
-| --- | --- | --- |
-| Home / Rooms | KEEP AS-IS | The clearest screen; only trim price/capacity micro-text on room cards. |
-| Requests | SIMPLIFY | Drop the filter chips until volume needs them; rename "Activity" to "Done today"; keep food orders but visually separate. |
-| Calendar | SIMPLIFY | Month grid + room filter + legend + 4-group agenda is a lot; the agenda alone covers most staff use. |
-| Stay detail | REDESIGN | Right content, wrong hierarchy: one primary action, the rest secondary; move the QR card and bill history behind disclosure. |
-| New stay | SIMPLIFY | Two steps (who + which room/dates, then money/source/notes) or sensible defaults for source and booking status. |
-| Services | HIDE-DEEPER | Keep as reference under More; the action buttons duplicate Stay detail and mislead without a selected stay. |
-| Customers | KEEP AS-IS (list) | Search + history is genuinely simple. |
-| Customer detail | SIMPLIFY | Move "Possible duplicates / Merge" behind an admin-only disclosure; it is data admin, not guest info. |
-| Dashboard | SIMPLIFY | Good for Bernardo; the quick-link pill row duplicates navigation and can go. |
-| Cash | KEEP AS-IS | Focused, single-purpose, already gated. |
-| Activity (audit) | HIDE-DEEPER | Correct to keep, wrong to list as a peer destination; reach it from Dashboard only. |
-| Stock | HIDE-DEEPER + SIMPLIFY | Default view should be the shopping list; Receive/Adjust/Waste collapse into one "Update stock" action; Purchases/Suppliers behind a manager entry. |
-| Purchases / Suppliers | HIDE-DEEPER | Grocery-run bookkeeping, not daily staff work. |
-| Catalogue | KEEP AS-IS | Already admin-only and correctly out of the daily path. |
-| Users & permissions | KEEP AS-IS | Admin-only; "Change my PIN" should live only in Account, not duplicated here. |
-| More menu | REDESIGN | Split into Settings (account, language, currency, sign out) and Manage (permission-gated). |
-| TaskBell | SIMPLIFY | One source of truth for "what needs doing"; drop stock from it for staff. |
-| Guest portal | SIMPLIFY | Menu + 3D demo + generic request picker + requests + bill + pay is a long scroll; the 3D "Demo" block reads unfinished. |
+## Technical plan
 
-## 4. Proposed mobile information architecture
+### Migrations (forward only, no data rewritten)
 
-**Ordinary staff (4 tabs, no More management entries)**
-Rooms · Requests · Calendar · Menu(settings only). Everything else reachable contextually from a room or stay. Stock only if they actually shop.
+1. **Enum migration (own transaction):** `ALTER TYPE app_role ADD VALUE 'supervisor';` alone, so later functions can compare against it.
+2. **Customers:** `guests` already carries phone, email, nationality and notes — reuse it as the customer entity, no new table. Add index on lower(full_name), phone, email for search. `guests` write access moves behind `public.customer_upsert(...)` / `customer_update_profile(...)` SECURITY DEFINER RPCs (`SET search_path TO 'public'`) that require `has_permission(auth.uid(),'customers_manage')`; table-level SELECT stays open to authenticated, direct INSERT/UPDATE/DELETE revoked. No anon grants added anywhere.
+3. **Permissions:** `public.user_permissions(user_id, permission text, granted boolean)` with GRANTs (`SELECT` to authenticated, `ALL` to service_role), RLS: authenticated read, no direct writes. `public.role_default_permission(app_role, text) -> boolean` and `public.has_permission(_user_id uuid, _key text) -> boolean` (STABLE, SECURITY DEFINER, fixed search_path) = admin ⇒ true for everything; otherwise override if present, else role default; the three security keys always require the admin role.
+4. **Profiles:** already has `active`. Add `public.set_user_role`, `public.set_user_permission`, `public.set_user_active` SECURITY DEFINER RPCs — each requires `has_role(auth.uid(),'admin')`, refuses to remove the last admin, refuses to grant the three protected keys, and writes an `audit_log` row.
+5. **Existing RPCs updated (CREATE OR REPLACE, same signature where possible):** `edit_stay`, `confirm_reservation`, `reject_reservation`, `checkout_stay` override branch, `guest_token_generate` / `guest_token_revoke` swap `has_role(...,'admin')` for `has_permission(..., '<key>')`. `cash_reconciliations` RLS policy switches to `has_permission(auth.uid(),'cash_reconcile')`.
+6. **`create_stay_with_guest` gains `p_guest_id uuid DEFAULT NULL`** — when supplied and it exists, the stay links to that customer row and no guest is inserted; otherwise unchanged behaviour. Creation/edit now require `reservations_manage`.
+7. **Ahmed → supervisor** applied as a data statement after the enum migration; no other real user touched.
 
-**Supervisor**
-Same four tabs + Manage section in the menu: Stock, Customers, Services, Cash (if granted). No Catalogue, no Users.
+### PIN reset and user creation
 
-**Admin / Bernardo**
-Today (dashboard) · Rooms · Requests · Calendar · Manage. Manage holds Cash, Stock & purchases, Customers, Services, Catalogue, Users, Activity.
+Supabase Auth admin calls cannot happen client-side, so these run as authenticated server functions in `src/lib/users.functions.ts` (`requireSupabaseAuth`, then verify the caller is admin through `context.supabase.rpc('has_role', ...)`, then `await import('@/integrations/supabase/client.server')` inside the handler):
+- `resetUserPin` — validates 6 digits, `supabaseAdmin.auth.admin.updateUserById`, audits `user.pin_reset` with no value. Generation happens on the server; the plaintext is returned once in the response and never stored.
+- `changeMyPin` — the signed-in user updates their own PIN via `supabase.auth.updateUser`, no admin path needed.
+- `createUser` — creates the auth user with a confirmed `<username>@caiat.local` identity, inserts profile + role row, audits.
+- `setUserActive` also disables sign-in through `updateUserById({ ban_duration })` so an inactive user genuinely cannot log in.
 
-## 5. Top five changes with the biggest simplicity gain
+### App code
 
-1. Split the More sheet into **Settings** and **Manage**, and hide Manage entirely for staff with no management permission.
-2. Give Stay detail **one primary action** (Add charge) with Payment / Request / Checkout as a secondary row, and collapse the QR card.
-3. Make **Stock open on the shopping list**, merge Receive/Adjust/Waste into a single "Update stock" sheet, and move Purchases/Suppliers behind a manager entry.
-4. Reduce **New stay** to the essentials on first screen, with source defaulting to Walk-in and booking status defaulting to Confirmed (revealed only when relevant).
-5. Replace management vocabulary with plain words throughout: "Needs approval" instead of confirmation status, "Allow leaving with unpaid balance" instead of Admin override, "Same guest?" instead of Possible duplicates / Merge.
+- `src/lib/permissions.ts` — permission keys, role defaults mirrored client-side for UI, `usePermission()` reading a single `user_permissions` + role query; `src/lib/auth.tsx` extended with `role` and effective permissions. `src/lib/admin-guard.ts` gains `requirePermission(key)`.
+- Replace scattered `isAdmin` checks in `stays.$id.tsx`, `stays.$id_.edit.tsx`, `dashboard.tsx`, `cash.tsx`, `activity.tsx`, `GuestAccessCard.tsx`, `AppShell.tsx` nav with permission checks. Backend enforcement is the migrations above; the UI only mirrors it.
+- New routes: `_authenticated/customers.tsx`, `_authenticated/customers.$id.tsx`, `_authenticated/users.tsx` (admin-only).
+- `src/lib/customers.ts` — list/search/detail queries and stay-count aggregation; `stays.new.tsx` gains the customer picker; `mutations.ts` gains customer + admin mutations with audit entries.
+- `src/lib/realtime.ts` — add `user_permissions`, `user_roles`, `profiles` keys.
+- `src/lib/i18n.tsx` — new EN/PT/FR/AR keys; layout already uses logical properties so RTL holds.
 
-## 6. First implementation batch (one focused PR)
-
-Frontend/presentation only, no schema, no permission changes:
-
-- Restructure `MobileMenu.tsx` into Settings and Manage groups; hide Manage when the user has no management permission.
-- Remove Services and Activity from the staff-visible nav path (keep routes and admin access intact).
-- Re-rank Stay detail actions: one primary, three secondary; collapse `GuestAccessCard` behind a "Guest link" toggle.
-- Remove the Dashboard quick-link pill row (duplicates navigation).
-- Rename the Requests "Activity" heading to "Done today" and drop the filter chips while volume is low.
-- New EN/PT/FR/AR strings for every renamed label.
-
-Estimated blast radius: 5 files, no database work, fully reversible.
-
-## 7. Do not change until Bernardo has been observed using it
-
-- Home's room grid and counter layout — it is likely the part he already understood.
-- Calendar structure — we do not yet know whether he plans by month or by day.
-- Food-order status chain (requested → accepted → preparing → delivered) — needs real kitchen use before shortening.
-- Whether Stock belongs to staff at all, or only to whoever shops.
-- Checkout's unpaid-balance guard and the override — safety behaviour; change only with evidence.
-- Whether the guest portal's 3D/AR block should stay, be polished, or be removed.
-- Any permission defaults or role boundaries — those are backend-enforced and should follow observed behaviour, not guesses.
+### Verification
+- `tsgo` typecheck and production build.
+- Backend tests in rolled-back transactions: permission resolution per role, override precedence, protected keys not grantable, last-admin protection, stay creation with an existing `p_guest_id` creating no duplicate guest, supervisor allowed to confirm/edit, staff denied, anon still blocked from `guests`/`user_permissions`.
+- Temporary QA user for the PIN reset round trip (old PIN fails, new PIN works), then deleted.
+- Browser pass at 390px and desktop, EN and Arabic, if a session can be minted; otherwise reported as unverified.
+- Ahmed left as Supervisor. Nothing published.
