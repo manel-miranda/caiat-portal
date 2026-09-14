@@ -399,6 +399,36 @@ export type Database = {
           },
         ]
       }
+      inventory_simulation_runs: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          days: number
+          id: string
+          meals: number
+          scenario: string
+          summary: Json
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          days?: number
+          id?: string
+          meals?: number
+          scenario: string
+          summary?: Json
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          days?: number
+          id?: string
+          meals?: number
+          scenario?: string
+          summary?: Json
+        }
+        Relationships: []
+      }
       payment_sessions: {
         Row: {
           amount_mad: number
@@ -1411,6 +1441,15 @@ export type Database = {
         Args: { p_components: Json; p_service_type_id: string }
         Returns: number
       }
+      inventory_simulate_purchase: {
+        Args: { p_purchase_id: string }
+        Returns: Json
+      }
+      inventory_simulate_week: {
+        Args: { p_run_id: string; p_scenario: string }
+        Returns: Json
+      }
+      inventory_simulation_reset: { Args: never; Returns: Json }
       inventory_upsert_item: {
         Args: {
           p_active: boolean
