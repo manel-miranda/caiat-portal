@@ -89,8 +89,8 @@ BEGIN
       END IF;
       RETURN NEW;
     END IF;
-    IF (to_jsonb(NEW) - ARRAY['last_sign_in_at','updated_at'])
-      IS DISTINCT FROM (to_jsonb(OLD) - ARRAY['last_sign_in_at','updated_at']) THEN
+    IF (to_jsonb(NEW) - ARRAY['last_sign_in_at','updated_at','confirmed_at'])
+      IS DISTINCT FROM (to_jsonb(OLD) - ARRAY['last_sign_in_at','updated_at','confirmed_at']) THEN
       RAISE EXCEPTION 'DEMO_SECURITY_LOCKED';
     END IF;
   END IF;
@@ -123,8 +123,8 @@ BEGIN
     RETURN NEW;
   END IF;
   IF TG_OP = 'UPDATE' AND
-    (to_jsonb(NEW) - ARRAY['last_sign_in_at','updated_at']) =
-    (to_jsonb(OLD) - ARRAY['last_sign_in_at','updated_at']) THEN
+    (to_jsonb(NEW) - ARRAY['last_sign_in_at','updated_at','email']) =
+    (to_jsonb(OLD) - ARRAY['last_sign_in_at','updated_at','email']) THEN
     RETURN NEW;
   END IF;
   RAISE EXCEPTION 'DEMO_SECURITY_LOCKED';

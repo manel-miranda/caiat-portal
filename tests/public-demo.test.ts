@@ -41,9 +41,11 @@ run("isolated public demo database", () => {
     DELETE FROM auth.users;
     ALTER TABLE auth.users ADD COLUMN raw_app_meta_data jsonb DEFAULT '{}',
       ADD COLUMN encrypted_password text, ADD COLUMN last_sign_in_at timestamptz,
-      ADD COLUMN updated_at timestamptz;
+      ADD COLUMN updated_at timestamptz, ADD COLUMN email_confirmed_at timestamptz,
+      ADD COLUMN phone_confirmed_at timestamptz,
+      ADD COLUMN confirmed_at timestamptz GENERATED ALWAYS AS (LEAST(email_confirmed_at, phone_confirmed_at)) STORED;
     CREATE TABLE auth.identities(id uuid DEFAULT gen_random_uuid(), user_id uuid REFERENCES auth.users,
-      provider text, identity_data jsonb, last_sign_in_at timestamptz, updated_at timestamptz);
+      provider text, identity_data jsonb, email text GENERATED ALWAYS AS (lower(identity_data ->> 'email')) STORED, last_sign_in_at timestamptz, updated_at timestamptz);
     CREATE TABLE auth.mfa_factors(id uuid DEFAULT gen_random_uuid(), user_id uuid REFERENCES auth.users);
     `);
     await expect(Promise.resolve(db.sql.unsafe(install))).rejects.toThrow("DEMO_TARGET_REQUIRED");
@@ -54,8 +56,10 @@ run("isolated public demo database", () => {
     await q`INSERT INTO auth.users(id, email, encrypted_password)
       VALUES (${visitor}, 'public-demo@caiat.invalid', 'test-only')`;
     // Mirror Auth Admin API's post-insert updates within the creation transaction.
-    await q`UPDATE auth.users SET raw_app_meta_data = '{"caiat_demo":true}' WHERE id = ${visitor}`;
+    await q`UPDATE auth.users SET email_confirmed_at = now(), raw_app_meta_data = '{"caiat_demo":true}' WHERE id = ${visitor}`;
     await db.sql.unsafe("COMMIT");
+    await q`INSERT INTO auth.identities(user_id, provider, identity_data)
+      VALUES (${visitor}, 'email', '{"email":"public-demo@caiat.invalid"}')`;
     await actAs(db.sql, visitor);
   }, 60_000);
   afterAll(async () => {
@@ -91,6 +95,12 @@ run("isolated public demo database", () => {
     await expect(
       Promise.resolve(
         q`INSERT INTO auth.identities(user_id, provider) VALUES (${visitor}, 'github')`,
+      ),
+    ).rejects.toThrow("DEMO_SECURITY_LOCKED");
+    await q`UPDATE auth.identities SET last_sign_in_at = now() WHERE user_id = ${visitor}`;
+    await expect(
+      Promise.resolve(
+        q`UPDATE auth.identities SET identity_data = '{"email":"changed@example.test"}' WHERE user_id = ${visitor}`,
       ),
     ).rejects.toThrow("DEMO_SECURITY_LOCKED");
     await q`UPDATE auth.users SET last_sign_in_at = now(), updated_at = now() WHERE id = ${visitor}`;

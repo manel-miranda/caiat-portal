@@ -12,8 +12,10 @@ The app is TanStack Start + React + Vite + Nitro. Do not choose a Next.js deploy
 - `scripts/demo/install.sql` and `scripts/demo/schedule.sql` were applied to the demo project as `public_demo_restrictions_and_reset` and `public_demo_hourly_schedule`. The follow-up `public_demo_auth_provisioning_compatibility` adapts the Auth guard to Supabase’s transactional account creation. New installations already include that fix in `install.sql`; do not apply `provisioning-compat.sql` a second time.
 - Five fictional guests and five stays use dates relative to today; phone/email fields are empty.
 - Database permissions, simulated-payment enforcement, and hourly reset jobs are installed.
-- The separate Vercel deployment is Ready at `https://caiat-portal-demo.vercel.app` (deployment `dpl_2tS31UNdr9AJTH4XTnwv3TegqtnT`, application commit `a29690e`). Hosted checks confirm the demo landing page and disabled PayPal. Login safely returns `DEMO_NOT_CONFIGURED` until account provisioning and the server password are completed.
-- Account provisioning, interactive launch checks and the custom domain remain pending before advertising a live demo link.
+- The demo account is provisioned and the separate deployment is live at `https://caiat-portal-demo.vercel.app` (deployment `dpl_6428EhZiUrRBr9bi87dRu7zt8qhK`). The browser's Try demo button opens the operational dashboard.
+- Hosted verification passed: login, stay creation, charge entry, simulated payment, checkout, role-change denial and account-metadata-change denial. PayPal remains disabled. Scheduled jobs have successful runs.
+- `public_demo_auth_generated_columns_compatibility` was applied after testing against Supabase's generated Auth columns. BEFORE triggers cannot inspect generated values; their underlying email/confirmation fields remain protected. New installs contain this fix; existing installs use `generated-columns-compat.sql` once.
+- Vercel accepted `demo.caiat-portal.com`; Amen DNS and custom-domain HTTPS verification remain pending. The README custom-domain link must wait for those checks.
 
 ## 1. Provision the demo account locally
 
@@ -42,7 +44,7 @@ The script refuses any other Supabase URL. It also refuses to overwrite an exist
 
 ## 2. Configure the separate Vercel project
 
-The separate project `caiat-portal-demo` (`prj_L9h43OEgxAfZVrgOzQxyAPAhwqYv`) has been created in team `team_GRqPbwW56IJrlHglj1j019u5` through the authenticated CLI. Its build settings and demo-only public environment variables are configured. Account provisioning and the private `DEMO_LOGIN_PASSWORD` remain pending. The connector still returns zero projects; use the CLI or dashboard to inspect this existing demo project. Do not create a duplicate.
+The separate project `caiat-portal-demo` (`prj_L9h43OEgxAfZVrgOzQxyAPAhwqYv`) has been created in team `team_GRqPbwW56IJrlHglj1j019u5` through the authenticated CLI. Its build settings and demo-only public environment variables are configured. The account is provisioned and `DEMO_LOGIN_PASSWORD` is stored as a Sensitive variable for Production and Preview. The temporary local server-key file was removed. The connector still returns zero projects; use the CLI or dashboard to inspect this existing demo project. Do not create a duplicate.
 
 The following settings document the setup and remaining launch steps:
 
@@ -86,7 +88,7 @@ After the Vercel URL works:
 4. Wait for Vercel to show valid DNS and HTTPS, then retest `https://demo.caiat-portal.com`.
 5. Only then add `[Try the public demo](https://demo.caiat-portal.com)` near the top of README and use that URL as the GitHub repository's demo link.
 
-No DNS value is recorded here because Vercel has not yet supplied one for the new project.
+Vercel supplied this exact record on 2026-09-16: **CNAME**, host **demo**, target **1b326ea547255a3d.vercel-dns-017.com.** DNS is hosted at Amen and was still unconfigured at verification time. No ownership TXT challenge was requested.
 
 ## Security design
 
