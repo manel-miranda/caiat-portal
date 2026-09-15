@@ -82,20 +82,25 @@ export type MenuDishLike = {
   guest_subcategory?: string | null;
   guest_visible?: boolean | null;
   available_today?: boolean | null;
+  active?: boolean | null;
   preview_only?: boolean | null;
   requestable?: boolean | null;
 };
 
-/** Mirrors the server-side eligibility check in `staff_create_food_order`. */
+/** Restaurant identity is independent of whether the dish can be ordered now. */
 export function isKitchenMenuDish(s: MenuDishLike | undefined | null): boolean {
-  if (!s) return false;
+  return s?.guest_category === "food" && MENU_SUBCATEGORIES.has(s.guest_subcategory ?? "");
+}
+
+/** Mirrors the server-side eligibility check in `staff_create_food_order`. */
+export function isOrderableKitchenDish(s: MenuDishLike | undefined | null): boolean {
   return (
-    s.guest_category === "food" &&
-    MENU_SUBCATEGORIES.has(s.guest_subcategory ?? "") &&
-    s.preview_only !== true &&
-    s.guest_visible !== false &&
-    s.available_today !== false &&
-    s.requestable !== false
+    isKitchenMenuDish(s) &&
+    s?.active === true &&
+    s.preview_only === false &&
+    s.guest_visible === true &&
+    s.available_today === true &&
+    s.requestable === true
   );
 }
 
