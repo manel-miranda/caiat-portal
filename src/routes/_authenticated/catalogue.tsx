@@ -399,11 +399,11 @@ function CataloguePage() {
                     ) : null}
                   </div>
                 </div>
-                <div className="flex shrink-0 gap-2">
+                <div className="flex w-full flex-wrap justify-end gap-2 sm:w-auto">
                   <Button
                     size="sm"
                     variant="outline"
-                    className="rounded-xl"
+                    className="h-auto min-h-9 flex-1 whitespace-normal rounded-xl px-3 py-1.5 text-xs sm:flex-initial"
                     disabled={busy}
                     onClick={() =>
                       setDraft(
@@ -416,7 +416,7 @@ function CataloguePage() {
                   <Button
                     size="sm"
                     variant={item.active ? "outline" : "default"}
-                    className="rounded-xl"
+                    className="h-auto min-h-9 flex-1 whitespace-normal rounded-xl px-3 py-1.5 text-xs sm:flex-initial"
                     disabled={busy}
                     onClick={() => void toggleActive(item)}
                   >
@@ -426,7 +426,7 @@ function CataloguePage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="rounded-xl"
+                      className="h-auto min-h-9 flex-1 whitespace-normal rounded-xl px-3 py-1.5 text-xs sm:flex-initial"
                       onClick={() => setRecipeFor(item)}
                     >
                       {t("recipeButton")}
@@ -435,7 +435,7 @@ function CataloguePage() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="rounded-xl"
+                    className="h-auto min-h-9 flex-1 whitespace-normal rounded-xl px-3 py-1.5 text-xs sm:flex-initial"
                     disabled={busy}
                     onClick={() => void toggleAvailable(item)}
                   >
