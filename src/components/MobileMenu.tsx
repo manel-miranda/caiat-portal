@@ -171,6 +171,8 @@ export function MobileMenu({ variant = "icon" }: { variant?: "icon" | "tab" | "m
                 </label>
               </div>
 
+              <InstallAppButton className="mt-2" onDone={() => setOpen(false)} />
+
               <Button
                 type="button"
                 variant="outline"
