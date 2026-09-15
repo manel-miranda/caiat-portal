@@ -15,7 +15,7 @@ The app is TanStack Start + React + Vite + Nitro. Do not choose a Next.js deploy
 - The demo account is provisioned and the separate deployment is live at `https://caiat-portal-demo.vercel.app` (deployment `dpl_6428EhZiUrRBr9bi87dRu7zt8qhK`). The browser's Try demo button opens the operational dashboard.
 - Hosted verification passed: login, stay creation, charge entry, simulated payment, checkout, role-change denial and account-metadata-change denial. PayPal remains disabled. Scheduled jobs have successful runs.
 - `public_demo_auth_generated_columns_compatibility` was applied after testing against Supabase's generated Auth columns. BEFORE triggers cannot inspect generated values; their underlying email/confirmation fields remain protected. New installs contain this fix; existing installs use `generated-columns-compat.sql` once.
-- Vercel accepted `demo.caiat-portal.com`; Amen DNS and custom-domain HTTPS verification remain pending. The README custom-domain link must wait for those checks.
+- `https://demo.caiat-portal.com` is live. Amen CNAME, Vercel domain configuration, certificate validation, HTTPS landing page and real login were verified on 2026-09-16. README links to the working demo.
 
 ## 1. Provision the demo account locally
 
@@ -88,7 +88,7 @@ After the Vercel URL works:
 4. Wait for Vercel to show valid DNS and HTTPS, then retest `https://demo.caiat-portal.com`.
 5. Only then add `[Try the public demo](https://demo.caiat-portal.com)` near the top of README and use that URL as the GitHub repository's demo link.
 
-Vercel supplied this exact record on 2026-09-16: **CNAME**, host **demo**, target **1b326ea547255a3d.vercel-dns-017.com.** DNS is hosted at Amen and was still unconfigured at verification time. No ownership TXT challenge was requested.
+Vercel supplied this exact record on 2026-09-16: **CNAME**, host **demo**, target **1b326ea547255a3d.vercel-dns-017.com.** DNS is hosted at Amen and now resolves correctly; HTTPS and custom-domain login were verified. No ownership TXT challenge was requested.
 
 ## Security design
 
