@@ -517,5 +517,4 @@ AGENTS.md                         # Engineering rules and high-risk areas
 
 Built by **Manel Miranda** — [GitHub](https://github.com/manel-miranda)
 
-Built for a friend running a guesthouse in Morocco, and as a way to learn what it actually
-takes to ship software that handles other people's money.
+Built for a friend running a guesthouse in Morocco to try to help him on his daily tasks, and as a personal challenge and a way to learn more about software development while using and learning how to use and create AI Tools and AI Agents.
