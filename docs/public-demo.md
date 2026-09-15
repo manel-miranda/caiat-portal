@@ -9,7 +9,7 @@ The app is TanStack Start + React + Vite + Nitro. Do not choose a Next.js deploy
 
 - Dedicated branch: `feature/public-demo`, based on `ef114a6ebaf638c0118dc3d23df2641254802309`.
 - The demo's grouped baseline migration history was inspected before setup; the repository migrations were **not** replayed.
-- `scripts/demo/install.sql` and `scripts/demo/schedule.sql` were applied to the demo project as `public_demo_restrictions_and_reset` and `public_demo_hourly_schedule`.
+- `scripts/demo/install.sql` and `scripts/demo/schedule.sql` were applied to the demo project as `public_demo_restrictions_and_reset` and `public_demo_hourly_schedule`. The follow-up `public_demo_auth_provisioning_compatibility` adapts the Auth guard to Supabase’s transactional account creation. New installations already include that fix in `install.sql`; do not apply `provisioning-compat.sql` a second time.
 - Five fictional guests and five stays use dates relative to today; phone/email fields are empty.
 - Database permissions, simulated-payment enforcement, and hourly reset jobs are installed.
 - Account provisioning, hosted deployment and the custom domain must pass the launch checks below before advertising a live demo link.
@@ -37,7 +37,7 @@ This is a one-time setup. Visitors will not register, see the password, or recei
 4. The script creates the restricted account and writes its random password to `.env.demo-password.local`. Keep this file private. Copy its `DEMO_LOGIN_PASSWORD` value into **only the demo Vercel project** in step 2. Never paste keys/passwords into chat or commit them.
 5. Remove the temporary bootstrap file after provisioning. The running app does **not** need the Supabase server key.
 
-The script refuses any other Supabase URL. It also refuses to overwrite an existing password file. Account changes, MFA enrollment, identity linking and new registrations are blocked in the demo database. Do not rotate this account's password through the ordinary application; maintenance requires an explicit database maintenance window for the demo guard.
+The script refuses any other Supabase URL. It also refuses to overwrite an existing password file. A fixed user ID, available only through the Auth Admin API, identifies the one account during provisioning. Account changes, MFA enrollment, identity linking and new registrations are blocked in the demo database. Do not rotate this account's password through the ordinary application; maintenance requires an explicit database maintenance window for the demo guard.
 
 ## 2. Create a separate Vercel project in your dashboard
 
@@ -97,7 +97,7 @@ No DNS value is recorded here because Vercel has not yet supplied one for the ne
 
 ### Advisor review
 
-The remaining SECURITY DEFINER execution notices are expected for the explicit operational RPC allowlist and token-validated guest portal. These functions need their existing permission/token checks to perform atomic workflows under RLS. The anonymous login quota endpoint only increments a bounded private counter. Security administration and private reset functions are not visitor-executable. The private login quota table intentionally has RLS with no browser policy; only its bounded SECURITY DEFINER function can update it.
+The remaining SECURITY DEFINER execution notices are expected for the explicit operational RPC allowlist and token-validated guest portal. These functions need their existing permission/token checks to perform atomic workflows under RLS. The anonymous login quota endpoint only increments a bounded private counter. Security administration and private reset functions are not visitor-executable. The private login quota and provisioning tables intentionally have RLS with no browser policy; only their narrowly scoped definer functions can update them.
 
 See Supabase's explanations for [anonymous function execution](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable) and [authenticated function execution](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable).
 

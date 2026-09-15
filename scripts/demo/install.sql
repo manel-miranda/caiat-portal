@@ -60,19 +60,35 @@ BEGIN
   END LOOP;
 END $$;
 
--- Auth Admin API creates the one demo identity; browser signup cannot supply app_metadata.
+-- Public signup cannot choose a user ID; only Auth Admin API can provision this fixed identity.
+-- Supabase sets role, metadata and confirmation AFTER insertion in the same transaction.
+-- Remember only that insertion's transaction ID, never an ID inferred from later row updates.
+CREATE TABLE demo_private.provisioning (
+  singleton boolean PRIMARY KEY DEFAULT true CHECK (singleton),
+  creation_transaction bigint
+);
+ALTER TABLE demo_private.provisioning ENABLE ROW LEVEL SECURITY;
+INSERT INTO demo_private.provisioning VALUES (true, NULL);
 CREATE FUNCTION demo_private.guard_auth_user() RETURNS trigger
-LANGUAGE plpgsql SET search_path = '' AS $$
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 BEGIN
   IF TG_OP = 'INSERT' THEN
-    IF NEW.email IS DISTINCT FROM 'public-demo@caiat.invalid'
-      OR NEW.raw_app_meta_data->>'caiat_demo' IS DISTINCT FROM 'true' THEN
+    IF NEW.id IS DISTINCT FROM 'df101cea-e2ed-4a3a-956b-b817038bb648'::uuid
+      OR NEW.email IS DISTINCT FROM 'public-demo@caiat.invalid' THEN
       RAISE EXCEPTION 'DEMO_SECURITY_LOCKED';
     END IF;
+    UPDATE demo_private.provisioning SET creation_transaction = txid_current() WHERE singleton;
   ELSIF TG_OP = 'DELETE' THEN
     RAISE EXCEPTION 'DEMO_SECURITY_LOCKED';
   ELSE
-    -- Permit password-login bookkeeping only, not credential, metadata or identity changes.
+    IF EXISTS (SELECT 1 FROM demo_private.provisioning
+      WHERE singleton AND creation_transaction = txid_current()) THEN
+      -- This exception is reachable only inside the account's original admin creation transaction.
+      IF NEW.id IS DISTINCT FROM OLD.id OR NEW.email IS DISTINCT FROM OLD.email THEN
+        RAISE EXCEPTION 'DEMO_SECURITY_LOCKED';
+      END IF;
+      RETURN NEW;
+    END IF;
     IF (to_jsonb(NEW) - ARRAY['last_sign_in_at','updated_at'])
       IS DISTINCT FROM (to_jsonb(OLD) - ARRAY['last_sign_in_at','updated_at']) THEN
       RAISE EXCEPTION 'DEMO_SECURITY_LOCKED';

@@ -49,9 +49,13 @@ run("isolated public demo database", () => {
     await expect(Promise.resolve(db.sql.unsafe(install))).rejects.toThrow("DEMO_TARGET_REQUIRED");
     await q`SELECT set_config('caiat.demo_target', 'llyihdkuplsyduxirvcg', false)`;
     await db.sql.unsafe(`BEGIN; ${install} COMMIT;`);
-    const [user] = await q`INSERT INTO auth.users(email, raw_app_meta_data, encrypted_password)
-      VALUES ('public-demo@caiat.invalid', '{"caiat_demo":true}', 'test-only') RETURNING id`;
-    visitor = String(user!.id);
+    visitor = "df101cea-e2ed-4a3a-956b-b817038bb648";
+    await db.sql.unsafe("BEGIN");
+    await q`INSERT INTO auth.users(id, email, encrypted_password)
+      VALUES (${visitor}, 'public-demo@caiat.invalid', 'test-only')`;
+    // Mirror Auth Admin API's post-insert updates within the creation transaction.
+    await q`UPDATE auth.users SET raw_app_meta_data = '{"caiat_demo":true}' WHERE id = ${visitor}`;
+    await db.sql.unsafe("COMMIT");
     await actAs(db.sql, visitor);
   }, 60_000);
   afterAll(async () => {
