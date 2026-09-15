@@ -18,7 +18,7 @@ export function InstallAppButton({
   className?: string;
   onDone?: () => void;
 }) {
-  const { canShow, hasPrompt, busy, promptInstall } = useInstallApp();
+  const { canShow, hasPrompt, ios, busy, promptInstall } = useInstallApp();
   const [hint, setHint] = useState(false);
 
   if (!canShow) return null;
