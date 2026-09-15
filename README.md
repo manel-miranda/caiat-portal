@@ -87,7 +87,8 @@ staff who are not comfortable with software.
 
 ## Screenshots
 
-Desktop views. All data shown is fictional test data.
+Desktop views. Guest and operational data are fictional test data; the administrator
+display name is real.
 
 |                                                                                                                                                     |                                                                                                                                                         |
 | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -260,9 +261,11 @@ anonymously are revoked accordingly — `guest_stay_for_token` is revoked from `
 
 PayPal orders are created and captured entirely server-side. On return, the handler
 verifies that PayPal reports `COMPLETED`, that the captured **amount and currency match
-what was recorded** for the payment session, and only then records a payment. Duplicate
-capture is impossible: `payments.external_reference` carries a unique index, so a refreshed
-return URL is a no-op.
+what was recorded** for the payment session, and only then records a payment. A unique
+index on `payments.external_reference` prevents the same capture reference from being
+recorded twice. The handler skips capture when the stored session is already completed;
+these safeguards do not by themselves establish that every retry or concurrent capture
+scenario is safe.
 
 ```ts
 // src/routes/api/public/paypal.return.ts
@@ -273,8 +276,10 @@ const ok =
   Math.abs((result.amount ?? 0) - expected) < 0.01;
 ```
 
-No query parameter from the redirect is trusted. The PayPal credentials live in server-side
-environment variables and are never shipped to the browser or logged.
+Redirect parameters identify the payment session and indicate cancellation; they do not
+prove payment success. The handler verifies the server-side PayPal capture response against
+the stored session before recording a payment. PayPal credentials are kept in server-side
+environment variables and are not shipped to the browser.
 
 To be precise about status: this flow is **implemented and reviewed by reading, but
 end-to-end Sandbox verification is pending**. There are no automated tests covering the
@@ -418,9 +423,16 @@ credible.
 git clone https://github.com/manel-miranda/caiat-portal.git
 cd caiat-portal
 bun install --frozen-lockfile
-cp .env.example .env    # then fill in your Supabase project values
+cp .env.example .env.local    # then fill in your own Supabase project values
 bun run dev
 ```
+
+**Local configuration:** `.env` is currently tracked in Git. Do not put secrets in it or
+commit private configuration values. Use `.env.local`, which is covered by the existing
+`*.local` ignore rule, for local overrides and any server-only secrets needed for testing.
+Fill in all project-specific values so the local app uses your intended Supabase project.
+Keep deployed secrets in your hosting provider's secret store, and never prefix a secret
+with `VITE_`, which exposes it to the browser.
 
 ### Environment variables
 
