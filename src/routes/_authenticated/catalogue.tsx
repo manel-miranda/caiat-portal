@@ -407,7 +407,7 @@ function CataloguePage() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-auto min-h-9 flex-1 whitespace-normal rounded-xl px-3 py-1.5 text-xs sm:flex-initial"
+                    className="h-auto min-h-11 flex-1 whitespace-normal rounded-xl px-3 py-1.5 text-xs sm:min-h-9 sm:flex-initial"
                     disabled={busy}
                     onClick={() =>
                       setDraft(
@@ -420,7 +420,7 @@ function CataloguePage() {
                   <Button
                     size="sm"
                     variant={item.active ? "outline" : "default"}
-                    className="h-auto min-h-9 flex-1 whitespace-normal rounded-xl px-3 py-1.5 text-xs sm:flex-initial"
+                    className="h-auto min-h-11 flex-1 whitespace-normal rounded-xl px-3 py-1.5 text-xs sm:min-h-9 sm:flex-initial"
                     disabled={busy}
                     onClick={() => void toggleActive(item)}
                   >
@@ -430,7 +430,7 @@ function CataloguePage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-auto min-h-9 flex-1 whitespace-normal rounded-xl px-3 py-1.5 text-xs sm:flex-initial"
+                      className="h-auto min-h-11 flex-1 whitespace-normal rounded-xl px-3 py-1.5 text-xs sm:min-h-9 sm:flex-initial"
                       onClick={() => setRecipeFor(item)}
                     >
                       {t("recipeButton")}
@@ -439,7 +439,7 @@ function CataloguePage() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-auto min-h-9 flex-1 whitespace-normal rounded-xl px-3 py-1.5 text-xs sm:flex-initial"
+                    className="h-auto min-h-11 flex-1 whitespace-normal rounded-xl px-3 py-1.5 text-xs sm:min-h-9 sm:flex-initial"
                     disabled={busy}
                     onClick={() => void toggleAvailable(item)}
                   >
