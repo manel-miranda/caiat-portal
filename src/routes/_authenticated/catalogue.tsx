@@ -156,7 +156,10 @@ function CataloguePage() {
   const recMap = useMemo(() => {
     const map = new Map<string, string[]>();
     for (const r of recs.data ?? []) {
-      map.set(r.service_type_id, [...(map.get(r.service_type_id) ?? []), r.recommended_service_type_id]);
+      map.set(r.service_type_id, [
+        ...(map.get(r.service_type_id) ?? []),
+        r.recommended_service_type_id,
+      ]);
     }
     return map;
   }, [recs.data]);
@@ -188,7 +191,8 @@ function CataloguePage() {
     });
     list = [...list];
     if (sortBy === "name") list.sort((a, b) => a.label.localeCompare(b.label));
-    else if (sortBy === "price") list.sort((a, b) => Number(b.default_price) - Number(a.default_price));
+    else if (sortBy === "price")
+      list.sort((a, b) => Number(b.default_price) - Number(a.default_price));
     else list.sort((a, b) => a.display_order - b.display_order || a.sort_order - b.sort_order);
     return list;
   }, [all, search, status, category, kind, sortBy]);
@@ -399,11 +403,11 @@ function CataloguePage() {
                     ) : null}
                   </div>
                 </div>
-                <div className="flex shrink-0 gap-2">
+                <div className="flex w-full flex-wrap justify-end gap-2 sm:w-auto">
                   <Button
                     size="sm"
                     variant="outline"
-                    className="rounded-xl"
+                    className="h-auto min-h-9 flex-1 whitespace-normal rounded-xl px-3 py-1.5 text-xs sm:flex-initial"
                     disabled={busy}
                     onClick={() =>
                       setDraft(
@@ -416,7 +420,7 @@ function CataloguePage() {
                   <Button
                     size="sm"
                     variant={item.active ? "outline" : "default"}
-                    className="rounded-xl"
+                    className="h-auto min-h-9 flex-1 whitespace-normal rounded-xl px-3 py-1.5 text-xs sm:flex-initial"
                     disabled={busy}
                     onClick={() => void toggleActive(item)}
                   >
@@ -426,7 +430,7 @@ function CataloguePage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="rounded-xl"
+                      className="h-auto min-h-9 flex-1 whitespace-normal rounded-xl px-3 py-1.5 text-xs sm:flex-initial"
                       onClick={() => setRecipeFor(item)}
                     >
                       {t("recipeButton")}
@@ -435,7 +439,7 @@ function CataloguePage() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="rounded-xl"
+                    className="h-auto min-h-9 flex-1 whitespace-normal rounded-xl px-3 py-1.5 text-xs sm:flex-initial"
                     disabled={busy}
                     onClick={() => void toggleAvailable(item)}
                   >
