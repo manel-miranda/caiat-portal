@@ -1,8 +1,8 @@
 # Caiat Operations
 
-**An internal operations app for a 7-room guesthouse in Morocco** — rooms, stays, charges,
+**An internal operations app for a 7-room guesthouse in Morocco**  (rooms, stays, charges,
 payments, cash reconciliation, kitchen orders and stock, built mobile-first for staff who
-previously worked from paper and WhatsApp.
+previously worked from paper and WhatsApp.)
 
 ## Try the public demo
 
@@ -40,33 +40,33 @@ staff who are not comfortable with software.
 
 ### Staff
 
-- **Room board** — all 7 rooms at a glance: available, occupied, arriving today, departing today.
-- **Stays** — the core object. Create a stay against a guest and room, record the
+- **Room board** - all 7 rooms at a glance: available, occupied, arriving today, departing today.
+- **Stays** - the core object. Create a stay against a guest and room, record the
   accommodation total, then attach charges, service requests and payments to it.
-- **Charges & services** — a configurable catalogue (dinner, breakfast, transfer, laundry,
+- **Charges & services** - a configurable catalogue (dinner, breakfast, transfer, laundry,
   activities…) with standard prices, so staff pick rather than type.
-- **Requests** — guest requests with a scheduled time and a pending/completed/cancelled
+- **Requests** - guest requests with a scheduled time and a pending/completed/cancelled
   lifecycle. Completing a billable request offers to add the matching charge.
-- **Payments** — cash, card or bank transfer, with the receiving user and timestamp
+- **Payments** - cash, card or bank transfer, with the receiving user and timestamp
   recorded automatically. Cash payments are flagged as expected in the safe.
-- **Checkout** — bill summary with total, paid and outstanding. Checkout is blocked while a
+- **Checkout** - bill summary with total, paid and outstanding. Checkout is blocked while a
   balance is outstanding or a kitchen order is unfinished; an explicit admin override
   exists for genuine exceptions.
-- **Kitchen orders & stock** — dish orders deduct ingredients from an inventory ledger via
+- **Kitchen orders & stock** - dish orders deduct ingredients from an inventory ledger via
   recipe components, with supplier and purchase tracking on the other side.
 
 ### Owner / admin
 
-- **Dashboard** — occupancy, guests in house, revenue and payments recorded today,
+- **Dashboard** - occupancy, guests in house, revenue and payments recorded today,
   outstanding balances, cash expected in the safe, next-24h arrivals and departures, each
   with a drill-down.
-- **Cash control** — cash payments for a business day grouped by employee, the expected
+- **Cash control** - cash payments for a business day grouped by employee, the expected
   safe total, an actual-count input and the resulting difference, saved as a closed
   reconciliation.
-- **Users & permissions** — three roles (admin, supervisor, staff) with per-user permission
+- **Users & permissions** - three roles (admin, supervisor, staff) with per-user permission
   overrides on top of role defaults.
-- **Activity log** — an append-only audit trail of every significant action.
-- **Stock simulation** — an admin testing tool that runs a simulated week of consumption
+- **Activity log** - an append-only audit trail of every significant action.
+- **Stock simulation** - an admin testing tool that runs a simulated week of consumption
   through the real inventory ledger, so stock behaviour can be exercised before it matters.
 
 ### Guest
@@ -79,11 +79,11 @@ staff who are not comfortable with software.
 
 ### Throughout
 
-- **PWA** — installable to the home screen with a web app manifest and an explicit install
+- **PWA** - installable to the home screen with a web app manifest and an explicit install
   prompt, plus connectivity awareness that blocks mutations while offline rather than losing
   them silently. (There is no service worker yet, so it is installable but not offline-capable.)
-- **Four languages** — English, Portuguese, French and Arabic, including full RTL layout.
-- **MAD-native** — Moroccan dirham is the accounting currency throughout, with
+- **Four languages** - English, Portuguese, French and Arabic, including full RTL layout.
+- **MAD-native** - Moroccan dirham is the accounting currency throughout, with
   `Africa/Casablanca` as the business day boundary.
 
 ---
@@ -95,9 +95,9 @@ display name is real.
 
 |                                                                                                                                                     |                                                                                                                                                         |
 | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ![Staff room board](docs/screenshots/caiat-room-board.jpg)<br>**Staff room board** — all 7 rooms with status, above today's arrivals and departures | ![Stay detail](docs/screenshots/caiat-stay-detail.jpg)<br>**Stay detail** — itemised bill with total, paid and outstanding balance                      |
-| ![Owner dashboard](docs/screenshots/caiat-dashboard.jpg)<br>**Owner dashboard** — occupancy, revenue, cash expected in safe, each with a drill-down | ![Cash control](docs/screenshots/caiat-cash-control.jpg)<br>**Cash control** — cash by employee and expected in safe, against the counted total         |
-| ![Guest portal](docs/screenshots/caiat-guest-portal.jpg)<br>**Guest portal** — the service catalogue, reached only through a per-stay access token  | ![Stock and groceries](docs/screenshots/caiat-stock.jpg)<br>**Stock & groceries** — ingredient levels, buy suggestions and receive/adjust/waste actions |
+| ![Staff room board](docs/screenshots/caiat-room-board.jpg)<br>**Staff room board** - all 7 rooms with status, above today's arrivals and departures | ![Stay detail](docs/screenshots/caiat-stay-detail.jpg)<br>**Stay detail** - itemised bill with total, paid and outstanding balance                      |
+| ![Owner dashboard](docs/screenshots/caiat-dashboard.jpg)<br>**Owner dashboard** - occupancy, revenue, cash expected in safe, each with a drill-down | ![Cash control](docs/screenshots/caiat-cash-control.jpg)<br>**Cash control** - cash by employee and expected in safe, against the counted total         |
+| ![Guest portal](docs/screenshots/caiat-guest-portal.jpg)<br>**Guest portal** - the service catalogue, reached only through a per-stay access token  | ![Stock and groceries](docs/screenshots/caiat-stock.jpg)<br>**Stock & groceries** - ingredient levels, buy suggestions and receive/adjust/waste actions |
 
 ---
 
@@ -108,14 +108,14 @@ display name is real.
 | Framework       | [TanStack Start](https://tanstack.com/start) (full-stack React, file-based routing + server routes) |
 | UI              | React 19, TypeScript, Tailwind CSS 4, [shadcn/ui](https://ui.shadcn.com) on Radix primitives        |
 | Data            | TanStack Query for client cache, TanStack Router for routing                                        |
-| Backend         | [Supabase](https://supabase.com) — PostgreSQL, Auth, Row Level Security                             |
+| Backend         | [Supabase](https://supabase.com) - PostgreSQL, Auth, Row Level Security                             |
 | Payments        | PayPal REST Orders v2 (sandbox), captured server-side                                               |
 | Build / runtime | Vite 8, [Bun](https://bun.sh)                                                                       |
-| CI              | GitHub Actions — typecheck, build, and database regression tests on a real PostgreSQL service       |
+| CI              | GitHub Actions - typecheck, build, and database regression tests on a real PostgreSQL service       |
 | Hosting         | Vercel serves `caiat-portal.com`; this GitHub repository is also connected to Lovable               |
 
 This is a **TanStack Start** application on React, Vite and Supabase. It is **not** a Next.js
-project — the ESLint config actively blocks Next's `server-only` import, because server code
+project, the ESLint config actively blocks Next's `server-only` import, because server code
 here is marked with the `*.server.ts` convention instead.
 
 ### Deployment
@@ -128,7 +128,7 @@ Verified from the live site and this repository:
 - Vercel builds a **preview deployment for each pull request** on this repository; preview
   URLs sit behind Vercel's deployment protection and are not publicly browsable.
 - The repository is connected to **Lovable**, which syncs product changes to its connected
-  branch — hence the "do not rewrite published history" rule in [`AGENTS.md`](AGENTS.md).
+  branch, hence the "do not rewrite published history" rule in [`AGENTS.md`](AGENTS.md).
 
 Which branch Vercel promotes to production, and the exact division of responsibility between
 the Lovable and Vercel pipelines, is configured outside this repository and is not documented
@@ -176,10 +176,10 @@ it.
 charges, requests and payments hang off. Around it sit an inventory ledger
 (`inventory_items`, `inventory_movements`, `inventory_recipe_components`, `purchases`,
 `suppliers`), kitchen orders, cash reconciliations, guest access tokens, payment sessions
-and an append-only audit log — 25 tables across 47 additive migrations.
+and an append-only audit log (25 tables across 47 additive migrations).
 
-**Mutations go through RPCs, not table writes.** Anything with a rule attached — creating a
-stay, checking out, reconciling cash, completing a request, consuming inventory — is a
+**Mutations go through RPCs, not table writes.** Anything with a rule attached  (creating a
+stay, checking out, reconciling cash, completing a request, consuming inventory) is a
 `SECURITY DEFINER` PostgreSQL function that checks permissions, enforces the rule, writes
 the audit row and returns. Direct `INSERT`/`UPDATE` on those tables is revoked from the
 `authenticated` role, so the rule cannot be bypassed by a crafted client request.
@@ -199,7 +199,7 @@ most want someone to read.
 ### Server-authoritative state transitions
 
 Anything the client could lie about is recomputed server-side. Cash reconciliation is the
-clearest example — the browser submits **only the physical count**:
+clearest example, the browser submits **only the physical count**:
 
 ```sql
 -- supabase/migrations/20260914003000_security_review_hardening.sql
@@ -217,17 +217,17 @@ client cannot report a convenient "expected" figure, because it never supplies o
 ### Permissions enforced once, mirrored for UX
 
 Three roles (`admin`, `supervisor`, `staff`) supply defaults; a `user_permissions` table
-carries per-user grants and revocations. Three keys — `users_manage`, `roles_manage`,
-`pin_reset` — are admin-only and not grantable at all.
+carries per-user grants and revocations. Three keys, `users_manage`, `roles_manage`,
+`pin_reset` are admin-only and not grantable at all.
 
 `has_permission(uid, key)` in the database is the single enforcement point.
 `src/lib/permissions.ts` mirrors the same rules on the client **only so the UI can hide what
-the server would refuse anyway** — it grants nothing.
+the server would refuse anyway**, it grants nothing.
 
 ### Hardened function definitions
 
 `SECURITY DEFINER` functions pin their schema resolution with `SET search_path`. Without
-that, a definer function is vulnerable to schema-shadowing privilege escalation — a subtle
+that, a definer function is vulnerable to schema-shadowing privilege escalation, a subtle
 failure mode that is easy to miss and expensive to discover late.
 
 Execution grants fall into **two deliberately different classes**, and the distinction
@@ -243,7 +243,7 @@ GRANT EXECUTE ON FUNCTION public.cash_reconcile(date, numeric, text) TO authenti
 ```
 
 **Guest-token RPCs intentionally permit `anon`**, because the guest portal has no account
-to authenticate with. Three functions are granted this way — `guest_portal`,
+to authenticate with. Three functions are granted this way,`guest_portal`,
 `guest_create_request` and `guest_create_preview_food_order`. Each takes a token as its
 first argument and validates it internally before returning or writing anything:
 
@@ -257,7 +257,7 @@ GRANT EXECUTE ON FUNCTION public.guest_create_preview_food_order(text, jsonb, te
 So the security boundary for guest access is **token validation inside the function**, not
 the execution grant. The underlying tables stay closed to `anon` regardless; the token
 scopes every read and write to one stay. Supporting functions that should never be reachable
-anonymously are revoked accordingly — `guest_stay_for_token` is revoked from `anon` _and_
+anonymously are revoked accordingly, `guest_stay_for_token` is revoked from `anon` _and_
 `authenticated`, and `guest_token_generate` / `guest_token_revoke` are staff-only.
 
 ### Payments
@@ -307,9 +307,9 @@ the tests are.
 The **12 database suites** (~3,100 lines) each create a throwaway PostgreSQL database, apply
 a small prelude plus **every real file in `supabase/migrations`**, and then call the **real
 RPCs** as users with real roles and permissions. No hosted Supabase project is contacted and
-nothing is stubbed — if a migration breaks a permission boundary, the test fails.
+nothing is stubbed if a migration breaks a permission boundary, the test fails.
 
-The **2 unit suites** (~280 lines) — `dashboard-kpis` and `pwa-install` — exercise pure
+The **2 unit suites** (~280 lines), `dashboard-kpis` and `pwa-install`, exercise pure
 TypeScript logic directly. They apply no migrations, need no database, and run everywhere.
 
 That split matters when reading `bun test` output: without a database URL the 12 database
@@ -329,7 +329,7 @@ Coverage focuses on the areas where a bug costs money or leaks data:
 | `request-billing-permissions` | Completing a billable request requires the right permission |
 
 CI runs them against a `postgres:16` service container and sets `INVENTORY_TESTS_REQUIRED=1`,
-which turns "no database available" into a **failure** rather than a silent skip — a
+which turns "no database available" into a **failure** rather than a silent skip, a
 skipped security test is worse than no test, because it reads green.
 
 ```sh
@@ -347,20 +347,20 @@ See [`tests/README.md`](tests/README.md) for the full harness description.
 
 I should be straightforward about this, because the repository makes it obvious anyway.
 
-**This project was built with heavy AI assistance**, using several tools:
+**This project was built with AI assistance**, using several tools:
 [Lovable](https://lovable.dev) for the initial scaffold and much of the UI iteration, and
 Codex/ChatGPT together with [Claude Code](https://claude.com/claude-code) for the hardening,
 testing and review passes. `AGENTS.md`, `CLAUDE.md` and the commit history all reflect that.
 
-My background is management and economics, not software engineering. What I brought to this
-was the domain — I specified the operational model, the roles, the data model and every
-workflow from how a real 7-room guesthouse actually runs — and, increasingly as the project
+My background is management and economics, not software engineering even though I always had interest in this area and I've always been curious about this area (specially if it involves AI too). What I brought to this
+was mainly my problem solving ability skill, my vision and my knowledge working with AI models, such as tools, skills and some other "tweaks" but also how to write prompts following the best practices. I've also brought  the domain and I specified the operational model, the roles, the data model and every
+workflow from how a real 7-room guesthouse actually runs, and, increasingly as the project
 went on, the engineering process around the generated code:
 
 - **Continuous integration** that typechecks the application _and_ the test sources
   separately, builds for production, and runs the database suites on every pull request.
 - **Database regression tests** against real migrations and real RPCs, targeted at the
-  guarantees that are easy to break silently — for example, that a kitchen order deducts
+  guarantees that are easy to break silently, for example, that a kitchen order deducts
   its ingredients exactly once even if the status transition is retried, which depends on a
   partial unique index, an `ON CONFLICT` target and an RPC all staying in agreement.
 - **A security review pass** ([`20260914003000_security_review_hardening.sql`](supabase/migrations/20260914003000_security_review_hardening.sql))
@@ -368,14 +368,14 @@ went on, the engineering process around the generated code:
   tables that matter, and closed legacy write paths that had been left open.
 - **Written engineering rules** in [`AGENTS.md`](AGENTS.md) that name payments, checkout,
   permissions/auth, cash reconciliation and inventory idempotency as high-risk areas
-  requiring focused verification — so that neither I nor an assistant touches them casually.
+  requiring focused verification, so that neither I nor an assistant touches them casually.
 
 The honest framing is that I directed, reviewed and hardened this system rather than typing
-every line of it. I can explain the core workflows and the principal security decisions —
+every line of it. I can explain the core workflows and the principal security decisions,
 how a stay accumulates charges and closes out, why cash reconciliation is recomputed
 server-side, why guest access is a validated token rather than an account. Treating AI
-output as a draft that needs a test suite and a threat model around it — rather than as a
-finished product — is the main thing I learned building this.
+output as a draft that needs a test suite and a threat model around it, rather than as a
+finished product is the main thing I learned building this.
 
 ---
 
@@ -390,7 +390,7 @@ credible.
   → add charge → take payment → checkout is the next thing on the list.
 - **Lint is non-blocking in CI.** There is pre-existing lint debt from the scaffold, and
   `@typescript-eslint/no-unused-vars` is currently disabled. The rule is "do not add new
-  errors in files you touch" — which is a stopgap, not a standard.
+  errors in files you touch", which is a stopgap, not a standard.
 - **Some files are too large.** `src/lib/i18n.tsx` (~2,800 lines) should be split into one
   data file per locale, and the larger route components (`stays.$id.tsx`, `stock.tsx`, both
   over 1,000 lines) should be broken into components.
@@ -406,7 +406,7 @@ credible.
 - **Offline support is awareness, not queueing.** There is no service worker, so the app is
   installable but not usable offline. Mutations are blocked while the browser reports itself
   offline, so nothing is silently lost, and the payloads are structured so a real offline
-  queue could buffer them — but that queue has not been built.
+  queue could buffer them, but that queue has not been built.
 - **Not yet in production use.** The app is complete enough to run a guesthouse day-to-day,
   but it has not been through a real season yet.
 
@@ -442,13 +442,13 @@ with `VITE_`, which exposes it to the browser.
 | Variable                        | Where           | Purpose                                                                  |
 | ------------------------------- | --------------- | ------------------------------------------------------------------------ |
 | `VITE_SUPABASE_URL`             | client          | Supabase project URL                                                     |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | client          | Publishable (anon) key — public by design; RLS is what protects the data |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | client          | Publishable (anon) key - public by design; RLS is what protects the data |
 | `VITE_SUPABASE_PROJECT_ID`      | client          | Supabase project ref                                                     |
 | `SUPABASE_URL`                  | server          | Same URL, for server routes                                              |
 | `SUPABASE_PUBLISHABLE_KEY`      | server          | Same publishable key, for server routes                                  |
 | `SUPABASE_PROJECT_ID`           | server          | Same project ref, for server routes                                      |
 | `SUPABASE_SERVICE_ROLE_KEY`     | **server only** | Bypasses RLS. Never expose this to the browser.                          |
-| `PAYPAL_CLIENT_ID`              | server only     | Optional — online payment is disabled while unset                        |
+| `PAYPAL_CLIENT_ID`              | server only     | Optional - online payment is disabled while unset                        |
 | `PAYPAL_CLIENT_SECRET`          | server only     | Optional                                                                 |
 | `PAYPAL_ENVIRONMENT`            | server only     | `sandbox` (default) or `live`                                            |
 
@@ -457,7 +457,7 @@ in `src/integrations/supabase/cron-auth.ts`, a Lovable auto-generated helper. Th
 (`authenticateCronRequest`) is **not imported anywhere** and this repository has no scheduled
 or cron endpoints, so neither variable needs to be set for the application to work. They
 would only become relevant if a cron-triggered server route were added and wired to that
-helper — at which point `LOVABLE_CRON_SECRET` would hold the bearer token the scheduler
+helper, at which point `LOVABLE_CRON_SECRET` would hold the bearer token the scheduler
 sends, and `LOVABLE_CRON_SECRET_PREVIOUS` would let an old secret keep working during a
 rotation. They are deliberately left out of `.env.example` so they are not mistaken for
 required configuration.
@@ -465,7 +465,7 @@ required configuration.
 ### Database
 
 Apply the migrations in `supabase/migrations/` to your project, in filename order, using the
-Supabase CLI or dashboard. Migrations are **additive and backward-compatible** by policy — see
+Supabase CLI or dashboard. Migrations are **additive and backward-compatible** by policy - see
 [`AGENTS.md`](AGENTS.md).
 
 ### Commands
@@ -477,7 +477,7 @@ Supabase CLI or dashboard. Migrations are **additive and backward-compatible** b
 | `bun run typecheck` | Typecheck application and test sources                    |
 | `bun run test`      | Test suites (database suites skip without a database URL) |
 | `bun run lint`      | ESLint                                                    |
-| `bun run check`     | `typecheck` + `build` — the pre-PR gate                   |
+| `bun run check`     | `typecheck` + `build` - the pre-PR gate                   |
 | `bun run format`    | Prettier                                                  |
 
 ---
@@ -498,7 +498,7 @@ src/
 │       ├── stock.tsx             #   Inventory & purchases
 │       ├── users.tsx             #   Roles & permissions
 │       └── …
-├── lib/                          # Data layer — one concern per module
+├── lib/                          # Data layer - one concern per module
 │   ├── queries.ts / mutations.ts #   TanStack Query wrappers over RPCs
 │   ├── permissions.ts            #   Client mirror of the server rules
 │   ├── guest.ts                  #   Guest-portal RPC layer
@@ -508,7 +508,7 @@ src/
 ├── components/                   # Feature components (ui/ is shadcn primitives)
 └── integrations/supabase/        # Generated client + database types
 
-supabase/migrations/              # 47 additive migrations — the real schema
+supabase/migrations/              # 47 additive migrations - the real schema
 tests/                            # Database regression suites (real Postgres, real RPCs)
 docs/original-brief.md            # The original V1 specification
 AGENTS.md                         # Engineering rules and high-risk areas
@@ -518,6 +518,6 @@ AGENTS.md                         # Engineering rules and high-risk areas
 
 ## Author
 
-Built by **Manel Miranda** — [GitHub](https://github.com/manel-miranda)
+Built by **Manuel Miranda** - [GitHub](https://github.com/manel-miranda)
 
 Built for a friend running a guesthouse in Morocco to try to help him on his daily tasks, and as a personal challenge and a way to learn more about software development while using and learning how to use and create AI Tools and AI Agents.
