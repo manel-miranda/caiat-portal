@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, usernameToEmail } from "@/lib/auth";
 import { resolveLandingPath } from "@/lib/landing";
+import { isPublicDemo } from "@/lib/demo";
 import { t } from "@/lib/i18n";
 
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,11 @@ import { InstallAppButton } from "@/components/InstallAppButton";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Caiat Operations — Guesthouse staff sign in" },
+      {
+        title: isPublicDemo
+          ? "Try Caiat Portal — public demo"
+          : "Caiat Operations — Guesthouse staff sign in",
+      },
       {
         name: "description",
         content:
@@ -55,6 +60,26 @@ function LoginPage() {
     }
   }, [loading, session, goToLanding]);
 
+  async function tryDemo() {
+    setBusy(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/public/demo/login", { method: "POST" });
+      if (!response.ok)
+        throw new Error(
+          "The demo is busy or temporarily unavailable. Please try again in a minute.",
+        );
+      const tokens = await response.json();
+      const { error: sessionError } = await supabase.auth.setSession(tokens);
+      if (sessionError) throw sessionError;
+      await goToLanding();
+    } catch {
+      setError("The demo is busy or temporarily unavailable. Please try again in a minute.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -81,37 +106,67 @@ function LoginPage() {
           </p>
         </div>
 
-        <form onSubmit={submit} className="surface-card space-y-4 p-5">
-          <div className="space-y-2">
-            <Label htmlFor="username">{t("usernameOrPhone")}</Label>
-            <Input
-              id="username"
-              autoCapitalize="none"
-              autoCorrect="off"
-              className="tap-target text-base"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="pin">{t("pin")}</Label>
-            <Input
-              id="pin"
-              type="password"
-              inputMode="numeric"
-              autoComplete="current-password"
-              className="tap-target text-center text-2xl tracking-[0.4em]"
-              value={pin}
-              onChange={(e) => setPin(e.target.value)}
-              required
-            />
-          </div>
-          {error ? <p className="text-sm font-medium text-destructive">{error}</p> : null}
-          <Button type="submit" className="tap-target w-full rounded-xl text-base" disabled={busy}>
-            {busy ? t("loading") : t("enter")}
-          </Button>
-        </form>
+        {isPublicDemo ? (
+          <section className="surface-card space-y-4 p-5">
+            <h2 className="text-xl font-semibold">Explore Caiat Portal</h2>
+            <p className="text-sm text-muted-foreground">
+              Try managing a stay, adding charges and recording a simulated payment before checkout.
+              No registration needed.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              This is a shared demo with fictional data. Changes reset every hour. Please use
+              invented names and details. No real payments are processed.
+            </p>
+            {error ? (
+              <p role="alert" className="text-sm text-destructive">
+                {error}
+              </p>
+            ) : null}
+            <Button
+              className="tap-target w-full"
+              disabled={busy || loading}
+              onClick={() => void tryDemo()}
+            >
+              {busy ? "Opening demo…" : "Try demo"}
+            </Button>
+          </section>
+        ) : (
+          <form onSubmit={submit} className="surface-card space-y-4 p-5">
+            <div className="space-y-2">
+              <Label htmlFor="username">{t("usernameOrPhone")}</Label>
+              <Input
+                id="username"
+                autoCapitalize="none"
+                autoCorrect="off"
+                className="tap-target text-base"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pin">{t("pin")}</Label>
+              <Input
+                id="pin"
+                type="password"
+                inputMode="numeric"
+                autoComplete="current-password"
+                className="tap-target text-center text-2xl tracking-[0.4em]"
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
+                required
+              />
+            </div>
+            {error ? <p className="text-sm font-medium text-destructive">{error}</p> : null}
+            <Button
+              type="submit"
+              className="tap-target w-full rounded-xl text-base"
+              disabled={busy}
+            >
+              {busy ? t("loading") : t("enter")}
+            </Button>
+          </form>
+        )}
 
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
           <LanguageSwitcher />
@@ -120,7 +175,11 @@ function LoginPage() {
 
         <InstallAppButton className="mx-auto mt-4 max-w-[16rem]" />
 
-        <p className="mt-4 text-center text-xs text-muted-foreground">{t("loginHelp")}</p>
+        <p className="mt-4 text-center text-xs text-muted-foreground">
+          {isPublicDemo
+            ? "Public demo · Account and security settings are locked."
+            : t("loginHelp")}
+        </p>
       </div>
     </div>
   );

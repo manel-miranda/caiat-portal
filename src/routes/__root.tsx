@@ -1,3 +1,4 @@
+import { isPublicDemo } from "../lib/demo";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -132,6 +133,16 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <I18nProvider>
+          {isPublicDemo ? (
+            <aside className="border-b border-amber-300 bg-amber-50 px-4 py-2 text-center text-sm text-amber-950">
+              <strong>Public demo</strong> · Fictional, shared data · All payments are simulated ·
+              Resets hourly.
+              <span className="block text-xs">
+                Use invented details. Account and security settings are locked.
+              </span>
+            </aside>
+          ) : null}
+
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
           <Toaster position="top-center" richColors />

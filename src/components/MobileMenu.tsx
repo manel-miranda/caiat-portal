@@ -1,3 +1,4 @@
+import { isPublicDemo } from "@/lib/demo";
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -56,7 +57,9 @@ export function MobileMenu({ variant = "icon" }: { variant?: "icon" | "tab" | "m
           { to: "/users", label: t("navUsers"), icon: UserCog, permission: "users_manage" },
         ] as MenuLink[])
       : []
-  ).filter((link) => !link.permission || can(link.permission));
+  ).filter(
+    (link) => (!isPublicDemo || link.to !== "/stock") && (!link.permission || can(link.permission)),
+  );
 
   if (desktopManage && links.length === 0) return null;
 
@@ -64,7 +67,7 @@ export function MobileMenu({ variant = "icon" }: { variant?: "icon" | "tab" | "m
     setOpen(false);
     await queryClient.cancelQueries();
     queryClient.clear();
-    await supabase.auth.signOut();
+    await supabase.auth.signOut(isPublicDemo ? { scope: "local" } : undefined);
     navigate({ to: "/", replace: true });
   }
 

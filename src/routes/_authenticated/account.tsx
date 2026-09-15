@@ -1,3 +1,4 @@
+import { isPublicDemo } from "@/lib/demo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -43,6 +44,16 @@ function AccountPage() {
     } finally {
       setBusy(false);
     }
+  }
+
+  if (isPublicDemo) {
+    return (
+      <AppShell title="Demo account">
+        <p className="surface-card p-4">
+          Account and security settings are locked in the public demo.
+        </p>
+      </AppShell>
+    );
   }
 
   return (

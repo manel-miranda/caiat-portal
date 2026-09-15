@@ -1,3 +1,4 @@
+import { isPublicDemo } from "@/lib/demo";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { BedDouble, Bell, CalendarDays, LogOut, LayoutDashboard } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -55,7 +56,7 @@ export function AppShell({ title, children }: { title?: string; children: ReactN
   async function signOut() {
     await queryClient.cancelQueries();
     queryClient.clear();
-    await supabase.auth.signOut();
+    await supabase.auth.signOut(isPublicDemo ? { scope: "local" } : undefined);
     navigate({ to: "/", replace: true });
   }
 

@@ -1,3 +1,4 @@
+import { demoEnvironment } from "./demo-config.server";
 /**
  * PayPal (Sandbox) REST Orders v2 helper — SERVER ONLY.
  *
@@ -21,6 +22,7 @@ export type PaypalConfig = {
 
 /** Reads config at call time (env is injected per request, not at import). */
 export function paypalConfig(): PaypalConfig | null {
+  if (demoEnvironment()) return null;
   const clientId = process.env["PAYPAL_CLIENT_ID"];
   const clientSecret = process.env["PAYPAL_CLIENT_SECRET"];
   const environment = (process.env["PAYPAL_ENVIRONMENT"] ?? "sandbox").toLowerCase();
@@ -49,6 +51,7 @@ export function madToCharge(amountMad: number): { amount: number; currency: stri
 }
 
 async function accessToken(cfg: PaypalConfig): Promise<string> {
+  if (demoEnvironment()) throw new Error("DEMO_PAYMENTS_DISABLED");
   const basic = Buffer.from(`${cfg.clientId}:${cfg.clientSecret}`).toString("base64");
   const res = await fetch(`${cfg.apiBase}/v1/oauth2/token`, {
     method: "POST",

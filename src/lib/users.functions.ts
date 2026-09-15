@@ -1,3 +1,5 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -11,7 +13,9 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const pinSchema = z.string().regex(/^\d{6}$/, "PIN_INVALID");
 
-async function assertAdmin(context: { supabase: any; userId: string }) {
+async function assertAdmin(context: { supabase: SupabaseClient<Database>; userId: string }) {
+  const { demoEnvironment } = await import("./demo-config.server");
+  if (demoEnvironment()) throw new Error("DEMO_SECURITY_LOCKED");
   const { data, error } = await context.supabase.rpc("has_role", {
     _user_id: context.userId,
     _role: "admin",
