@@ -34,6 +34,7 @@ import { serviceLabel } from "@/lib/service-i18n";
 import {
   PREVIEW_STATUS_LABEL,
   isKitchenMenuDish,
+  isOrderableKitchenDish,
   PREVIEW_TIMINGS,
   PREVIEW_TIMING_LABEL,
   staffCreateFoodOrder,
@@ -455,7 +456,9 @@ function StayDetailPage() {
         title={t("addRequest")}
       >
         <RequestForm
-          services={services.filter((s) => s.requestable)}
+          services={services.filter(
+            (s) => s.requestable && (!isMenuDish(s) || isOrderableKitchenDish(s)),
+          )}
           onSubmit={async (values) => {
             if (!online) {
               toast.error(t("offline"));
@@ -463,6 +466,8 @@ function StayDetailPage() {
             }
             try {
               const dish = services.find((s) => s.id === values.serviceTypeId);
+              // A catalogue refresh may remove a selected dish; never treat it as custom.
+              if (values.serviceTypeId && !dish) throw new Error(t("foodOrderInvalidItem"));
               if (isMenuDish(dish)) {
                 await staffCreateFoodOrder({
                   stayId: id,
