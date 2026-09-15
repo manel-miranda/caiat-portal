@@ -156,7 +156,10 @@ function CataloguePage() {
   const recMap = useMemo(() => {
     const map = new Map<string, string[]>();
     for (const r of recs.data ?? []) {
-      map.set(r.service_type_id, [...(map.get(r.service_type_id) ?? []), r.recommended_service_type_id]);
+      map.set(r.service_type_id, [
+        ...(map.get(r.service_type_id) ?? []),
+        r.recommended_service_type_id,
+      ]);
     }
     return map;
   }, [recs.data]);
@@ -188,7 +191,8 @@ function CataloguePage() {
     });
     list = [...list];
     if (sortBy === "name") list.sort((a, b) => a.label.localeCompare(b.label));
-    else if (sortBy === "price") list.sort((a, b) => Number(b.default_price) - Number(a.default_price));
+    else if (sortBy === "price")
+      list.sort((a, b) => Number(b.default_price) - Number(a.default_price));
     else list.sort((a, b) => a.display_order - b.display_order || a.sort_order - b.sort_order);
     return list;
   }, [all, search, status, category, kind, sortBy]);
