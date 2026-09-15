@@ -1,39 +1,39 @@
 # Screenshots
 
-The README has a screenshot table ready to go — it is currently commented out so that
-GitHub does not render broken images. To activate it:
+The README has a screenshot table ready to go. It is currently **commented out** so that
+GitHub does not render broken images while the image files are missing.
 
-1. Capture the six shots below and save them in this directory using the exact filenames.
-2. Open [`README.md`](../../README.md), find the `## Screenshots` section, and delete the
-   `<!--` line above the table and the `-->` line below it.
-3. Delete the "_Screenshots pending_" line underneath.
+## To activate
+
+1. Save the six desktop **JPG** screenshots in this directory using exactly the filenames in
+   the table below.
+2. Open [`README.md`](../../README.md), find the `## Screenshots` section, delete the `<!--`
+   line above the table and the `-->` line below it.
+3. Delete the "_Screenshot files are not committed yet_" line underneath.
+4. Commit the images together with that README change.
 
 ## Shot list
 
-| Filename           | Screen           | What it should show                                                                                                                      |
-| ------------------ | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `room-board.png`   | `/home`          | All 7 rooms with a mix of statuses — at least one occupied, one arrival today, one departure today — plus the Today summary strip        |
-| `stay-detail.png`  | `/stays/<id>`    | A stay with several charges, at least one pending request, a partial payment, and a visible outstanding balance                          |
-| `dashboard.png`    | `/dashboard`     | The owner KPI cards populated with non-zero numbers                                                                                      |
-| `cash-control.png` | `/cash`          | A day with cash payments grouped by employee, and a non-zero difference between expected and counted so the discrepancy state is visible |
-| `guest-portal.png` | `/guest/<token>` | The guest's bill and the service catalogue                                                                                               |
-| `stock.png`        | `/stock`         | Inventory items with varied stock levels, ideally one low-stock item                                                                     |
+| Filename           | Screen           | What it shows                                                                   |
+| ------------------ | ---------------- | ------------------------------------------------------------------------------- |
+| `room-board.jpg`   | `/home`          | All 7 rooms with status, plus today's arrivals, departures and pending requests |
+| `stay-detail.jpg`  | `/stays/<id>`    | A stay's itemised bill with total, paid and outstanding balance                 |
+| `dashboard.jpg`    | `/dashboard`     | The owner KPI cards                                                             |
+| `cash-control.jpg` | `/cash`          | Cash grouped by employee, expected in safe, counted cash and the difference     |
+| `guest-portal.jpg` | `/guest/<token>` | The guest-facing service catalogue                                              |
+| `stock.jpg`        | `/stock`         | Ingredient stock levels, buy suggestions and the receive/adjust/waste actions   |
 
-## How to capture them
+## Before committing images
 
-**Use a mobile viewport.** This is a mobile-first app and it looks its best at phone width —
-a desktop screenshot of a mobile-first layout reads as a stretched, empty page.
+These files go into a **public repository**, so check each one before adding it:
 
-In Chrome or Firefox: open DevTools → toggle the device toolbar → choose iPhone 14 Pro
-(393 × 852) or similar → use the DevTools menu → "Capture screenshot".
-
-**Populate real-looking data first.** Empty states make the app look unfinished. Seed a few
-stays, charges, payments and requests before capturing, and use plausible guest names rather
-than "test test".
-
-**Check for real data before publishing.** These images go into a public repository — make
-sure no real guest names, phone numbers, booking references or payment details are visible.
-Use demo data throughout.
+- **No real guest data.** Names, phone numbers, nationalities, booking references and bill
+  amounts must all be fictional test data.
+- **No credentials.** No PINs, no passwords, no Supabase keys, no PayPal identifiers.
+- **No guest access tokens.** The guest portal URL contains a live per-stay token. If the
+  browser address bar is visible in a `/guest/<token>` screenshot, crop it out or revoke the
+  token afterwards with the "revoke" action on the stay.
+- **Staff/admin display names** are fine to leave visible.
 
 ## Optional but worth it
 
