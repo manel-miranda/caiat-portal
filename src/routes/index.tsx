@@ -71,7 +71,6 @@ function LoginPage() {
     setBusy(false);
   }
 
-
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-5 py-10">
       <div className="w-full max-w-sm">

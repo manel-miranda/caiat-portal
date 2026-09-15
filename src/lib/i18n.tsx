@@ -65,7 +65,8 @@ export const en = {
   installAccepted: "Caiat was installed",
   installDismissed: "Installation cancelled",
   installManualHintIos: "In Safari, tap the Share button, then \u201cAdd to Home Screen\u201d.",
-  installManualHintAndroid: "In Chrome, open the browser menu and tap \u201cInstall app\u201d or \u201cAdd to Home screen\u201d.",
+  installManualHintAndroid:
+    "In Chrome, open the browser menu and tap \u201cInstall app\u201d or \u201cAdd to Home screen\u201d.",
   recentActivity: "Recent activity",
   // calendar
   navCalendar: "Calendar",
@@ -746,8 +747,10 @@ const pt: Dict = {
   installApp: "Instalar Caiat",
   installAccepted: "Caiat foi instalado",
   installDismissed: "Instala\u00e7\u00e3o cancelada",
-  installManualHintIos: "No Safari, toque no bot\u00e3o Partilhar e depois em \u201cAdicionar ao ecr\u00e3 principal\u201d.",
-  installManualHintAndroid: "No Chrome, abra o menu do navegador e toque em \u201cInstalar aplica\u00e7\u00e3o\u201d ou \u201cAdicionar ao ecr\u00e3 principal\u201d.",
+  installManualHintIos:
+    "No Safari, toque no bot\u00e3o Partilhar e depois em \u201cAdicionar ao ecr\u00e3 principal\u201d.",
+  installManualHintAndroid:
+    "No Chrome, abra o menu do navegador e toque em \u201cInstalar aplica\u00e7\u00e3o\u201d ou \u201cAdicionar ao ecr\u00e3 principal\u201d.",
   recentActivity: "Atividade recente",
   navCalendar: "Calendário",
   calendarTitle: "Calendário de reservas",
@@ -1405,8 +1408,10 @@ const fr: Dict = {
   installApp: "Installer Caiat",
   installAccepted: "Caiat a \u00e9t\u00e9 install\u00e9",
   installDismissed: "Installation annul\u00e9e",
-  installManualHintIos: "Dans Safari, appuyez sur Partager puis sur \u00ab Sur l\u2019\u00e9cran d\u2019accueil \u00bb.",
-  installManualHintAndroid: "Dans Chrome, ouvrez le menu du navigateur et appuyez sur \u00ab Installer l\u2019application \u00bb.",
+  installManualHintIos:
+    "Dans Safari, appuyez sur Partager puis sur \u00ab Sur l\u2019\u00e9cran d\u2019accueil \u00bb.",
+  installManualHintAndroid:
+    "Dans Chrome, ouvrez le menu du navigateur et appuyez sur \u00ab Installer l\u2019application \u00bb.",
   recentActivity: "Activité récente",
   navCalendar: "Calendrier",
   calendarTitle: "Calendrier des réservations",
@@ -2065,9 +2070,12 @@ const ar: Dict = {
   manage: "الإدارة",
   installApp: "\u062a\u062b\u0628\u064a\u062a \u0643\u0627\u064a\u0627\u062a",
   installAccepted: "\u062a\u0645 \u062a\u062b\u0628\u064a\u062a \u0643\u0627\u064a\u0627\u062a",
-  installDismissed: "\u062a\u0645 \u0625\u0644\u063a\u0627\u0621 \u0627\u0644\u062a\u062b\u0628\u064a\u062a",
-  installManualHintIos: "\u0641\u064a Safari\u060c \u0627\u0636\u063a\u0637 \u0639\u0644\u0649 \u0632\u0631 \u0627\u0644\u0645\u0634\u0627\u0631\u0643\u0629 \u062b\u0645 \u00ab\u0625\u0636\u0627\u0641\u0629 \u0625\u0644\u0649 \u0627\u0644\u0634\u0627\u0634\u0629 \u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629\u00bb.",
-  installManualHintAndroid: "\u0641\u064a Chrome\u060c \u0627\u0641\u062a\u062d \u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u0645\u062a\u0635\u0641\u062d \u062b\u0645 \u0627\u0636\u063a\u0637 \u00ab\u062a\u062b\u0628\u064a\u062a \u0627\u0644\u062a\u0637\u0628\u064a\u0642\u00bb.",
+  installDismissed:
+    "\u062a\u0645 \u0625\u0644\u063a\u0627\u0621 \u0627\u0644\u062a\u062b\u0628\u064a\u062a",
+  installManualHintIos:
+    "\u0641\u064a Safari\u060c \u0627\u0636\u063a\u0637 \u0639\u0644\u0649 \u0632\u0631 \u0627\u0644\u0645\u0634\u0627\u0631\u0643\u0629 \u062b\u0645 \u00ab\u0625\u0636\u0627\u0641\u0629 \u0625\u0644\u0649 \u0627\u0644\u0634\u0627\u0634\u0629 \u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629\u00bb.",
+  installManualHintAndroid:
+    "\u0641\u064a Chrome\u060c \u0627\u0641\u062a\u062d \u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u0645\u062a\u0635\u0641\u062d \u062b\u0645 \u0627\u0636\u063a\u0637 \u00ab\u062a\u062b\u0628\u064a\u062a \u0627\u0644\u062a\u0637\u0628\u064a\u0642\u00bb.",
   recentActivity: "النشاط الأخير",
   navCalendar: "التقويم",
   calendarTitle: "تقويم الحجوزات",

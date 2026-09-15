@@ -34,7 +34,9 @@ if (typeof window !== "undefined") {
 function isStandalone(): boolean {
   if (typeof window === "undefined") return false;
   const navStandalone = (window.navigator as Navigator & { standalone?: boolean }).standalone;
-  return window.matchMedia?.("(display-mode: standalone)").matches === true || navStandalone === true;
+  return (
+    window.matchMedia?.("(display-mode: standalone)").matches === true || navStandalone === true
+  );
 }
 
 function isIos(): boolean {
