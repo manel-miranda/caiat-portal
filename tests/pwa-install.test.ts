@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeEach } from "bun:test";
+import { describe, expect, test } from "bun:test";
 
 /**
  * Focused checks for the one-shot install prompt lifecycle. The module reads
@@ -48,18 +48,20 @@ function makePromptEvent(outcome: "accepted" | "dismissed", fail = false) {
   };
 }
 
-beforeEach(() => {
+function reset() {
   standaloneMatches = false;
   mod.resetInstallStateForTests();
-});
+}
 
 describe("install prompt lifecycle", () => {
   test("no captured event means nothing to prompt", async () => {
+    reset();
     expect(mod.getInstallSnapshot().hasPrompt).toBe(false);
     expect(await mod.promptInstall()).toBe("unavailable");
   });
 
   test("accepted marks installed and clears the one-shot event", async () => {
+    reset();
     const p = makePromptEvent("accepted");
     fireWindowEvent("beforeinstallprompt", p.event);
     expect(mod.getInstallSnapshot().hasPrompt).toBe(true);
@@ -73,6 +75,7 @@ describe("install prompt lifecycle", () => {
   });
 
   test("dismissed clears the event and does not mark installed", async () => {
+    reset();
     const p = makePromptEvent("dismissed");
     fireWindowEvent("beforeinstallprompt", p.event);
     expect(await mod.promptInstall()).toBe("dismissed");
@@ -82,6 +85,7 @@ describe("install prompt lifecycle", () => {
   });
 
   test("a failing prompt reports an error and still clears the event", async () => {
+    reset();
     const p = makePromptEvent("accepted", true);
     fireWindowEvent("beforeinstallprompt", p.event);
     expect(await mod.promptInstall()).toBe("error");
@@ -91,6 +95,7 @@ describe("install prompt lifecycle", () => {
   });
 
   test("concurrent clicks only prompt once", async () => {
+    reset();
     const p = makePromptEvent("dismissed");
     fireWindowEvent("beforeinstallprompt", p.event);
     const [a, b] = await Promise.all([mod.promptInstall(), mod.promptInstall()]);
@@ -100,6 +105,7 @@ describe("install prompt lifecycle", () => {
   });
 
   test("appinstalled hides later buttons for the rest of the session", () => {
+    reset();
     fireWindowEvent("beforeinstallprompt", makePromptEvent("accepted").event);
     fireWindowEvent("appinstalled", {});
     expect(mod.getInstallSnapshot().installed).toBe(true);
@@ -107,6 +113,7 @@ describe("install prompt lifecycle", () => {
   });
 
   test("standalone display mode is detected", () => {
+    reset();
     expect(mod.isStandalone()).toBe(false);
     standaloneMatches = true;
     expect(mod.isStandalone()).toBe(true);
