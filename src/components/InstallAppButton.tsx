@@ -6,8 +6,9 @@ import { useInstallApp } from "@/lib/pwa-install";
 import { t } from "@/lib/i18n";
 
 /**
- * Unobtrusive install affordance. Renders nothing unless the browser offers a
- * real install prompt, or the device is iOS where install is manual.
+ * Unobtrusive install affordance. Hidden once the app is installed or already
+ * running standalone; otherwise it either triggers the browser prompt or shows
+ * manual instructions for the current platform.
  */
 export function InstallAppButton({
   variant = "outline",
@@ -23,6 +24,8 @@ export function InstallAppButton({
 
   if (!canShow) return null;
 
+  // Called directly from the click handler so the browser still treats the
+  // prompt as user-initiated.
   async function handleClick() {
     if (!hasPrompt) {
       setHint(true);
@@ -32,12 +35,14 @@ export function InstallAppButton({
     if (outcome === "accepted") {
       toast.success(t("installAccepted"));
       onDone?.();
-    } else if (outcome === "dismissed") {
-      toast(t("installDismissed"));
-    } else {
-      setHint(true);
+      return;
     }
+    if (outcome === "dismissed") toast(t("installDismissed"));
+    // Keep guidance on screen: the one-shot prompt is now gone.
+    setHint(true);
   }
+
+  const Icon = ios && !hasPrompt ? Share : Download;
 
   return (
     <div className={className}>
@@ -48,11 +53,11 @@ export function InstallAppButton({
         disabled={busy}
         className="min-h-11 w-full rounded-xl text-sm"
       >
-        {hasPrompt ? <Download className="size-4" /> : <Share className="size-4" />}
+        <Icon className="size-4" />
         {t("installApp")}
       </Button>
       {hint ? (
-        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+        <p className="mt-2 text-xs leading-relaxed text-muted-foreground" role="status">
           {t(ios ? "installManualHintIos" : "installManualHintAndroid")}
         </p>
       ) : null}
