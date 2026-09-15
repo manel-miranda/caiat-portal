@@ -53,7 +53,7 @@ export function InstallAppButton({
       </Button>
       {hint ? (
         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-          {t("installManualHint")}
+          {t(ios ? "installManualHintIos" : "installManualHintAndroid")}
         </p>
       ) : null}
     </div>
