@@ -4,9 +4,9 @@
 payments, cash reconciliation, kitchen orders and stock, built mobile-first for staff who
 previously worked from paper and WhatsApp.
 
-🔗 **Live instance:** [caiat-portal.lovable.app](https://caiat-portal.lovable.app) — the sign-in
-screen and the guest portal are public; the staff app itself is behind a login, so the
-screenshots below are the quickest way to see the inside.
+🔗 **Live instance:** [caiat-portal.com](https://caiat-portal.com) — the sign-in screen is
+public; the staff app itself is behind a login, so the screenshots below are the quickest
+way to see the inside.
 
 ---
 
