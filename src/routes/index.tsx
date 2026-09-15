@@ -118,6 +118,8 @@ function LoginPage() {
           <CurrencySwitcher />
         </div>
 
+        <InstallAppButton className="mx-auto mt-4 max-w-[16rem]" />
+
         <p className="mt-4 text-center text-xs text-muted-foreground">{t("loginHelp")}</p>
       </div>
     </div>
