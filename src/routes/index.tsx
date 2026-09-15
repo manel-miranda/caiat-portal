@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { CurrencySwitcher } from "@/components/CurrencySwitcher";
+import { InstallAppButton } from "@/components/InstallAppButton";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -70,7 +71,6 @@ function LoginPage() {
     setBusy(false);
   }
 
-
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-5 py-10">
       <div className="w-full max-w-sm">
@@ -117,6 +117,8 @@ function LoginPage() {
           <LanguageSwitcher />
           <CurrencySwitcher />
         </div>
+
+        <InstallAppButton className="mx-auto mt-4 max-w-[16rem]" />
 
         <p className="mt-4 text-center text-xs text-muted-foreground">{t("loginHelp")}</p>
       </div>

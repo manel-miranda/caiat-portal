@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { InstallAppButton } from "@/components/InstallAppButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { LANGUAGES, t, useLang, type Lang } from "@/lib/i18n";
@@ -170,6 +171,8 @@ export function MobileMenu({ variant = "icon" }: { variant?: "icon" | "tab" | "m
                   </select>
                 </label>
               </div>
+
+              <InstallAppButton className="mt-2" onDone={() => setOpen(false)} />
 
               <Button
                 type="button"
