@@ -89,21 +89,11 @@ staff who are not comfortable with software.
 
 Desktop views. All data shown is fictional test data.
 
-<!--
-  TO ACTIVATE: commit the six .jpg files into docs/screenshots/ using exactly the filenames
-  below, then delete this comment's opening line and its closing marker so the table renders.
-  Kept commented out so GitHub does not display broken images while the files are missing.
-  See docs/screenshots/README.md.
-
-|  |  |
-| --- | --- |
-| ![Staff room board](docs/screenshots/room-board.jpg)<br>**Staff room board** — all 7 rooms with status, and today's arrivals, departures and pending requests | ![Stay detail](docs/screenshots/stay-detail.jpg)<br>**Stay detail** — itemised bill with total, paid and outstanding balance |
-| ![Owner dashboard](docs/screenshots/dashboard.jpg)<br>**Owner dashboard** — operational KPIs with drill-down | ![Cash control](docs/screenshots/cash-control.jpg)<br>**Cash control** — cash by employee, expected in safe vs. counted |
-| ![Guest portal](docs/screenshots/guest-portal.jpg)<br>**Guest portal** — service catalogue, reached only via a per-stay token | ![Stock and groceries](docs/screenshots/stock.jpg)<br>**Stock & groceries** — ingredient levels, buy suggestions and purchase actions |
--->
-
-> _Screenshot files are not committed yet — see
-> [`docs/screenshots/README.md`](docs/screenshots/README.md)._
+|                                                                                                                                                     |                                                                                                                                                         |
+| --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![Staff room board](docs/screenshots/caiat-room-board.jpg)<br>**Staff room board** — all 7 rooms with status, above today's arrivals and departures | ![Stay detail](docs/screenshots/caiat-stay-detail.jpg)<br>**Stay detail** — itemised bill with total, paid and outstanding balance                      |
+| ![Owner dashboard](docs/screenshots/caiat-dashboard.jpg)<br>**Owner dashboard** — occupancy, revenue, cash expected in safe, each with a drill-down | ![Cash control](docs/screenshots/caiat-cash-control.jpg)<br>**Cash control** — cash by employee and expected in safe, against the counted total         |
+| ![Guest portal](docs/screenshots/caiat-guest-portal.jpg)<br>**Guest portal** — the service catalogue, reached only through a per-stay access token  | ![Stock and groceries](docs/screenshots/caiat-stock.jpg)<br>**Stock & groceries** — ingredient levels, buy suggestions and receive/adjust/waste actions |
 
 ---
 
