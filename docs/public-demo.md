@@ -12,7 +12,8 @@ The app is TanStack Start + React + Vite + Nitro. Do not choose a Next.js deploy
 - `scripts/demo/install.sql` and `scripts/demo/schedule.sql` were applied to the demo project as `public_demo_restrictions_and_reset` and `public_demo_hourly_schedule`. The follow-up `public_demo_auth_provisioning_compatibility` adapts the Auth guard to Supabase’s transactional account creation. New installations already include that fix in `install.sql`; do not apply `provisioning-compat.sql` a second time.
 - Five fictional guests and five stays use dates relative to today; phone/email fields are empty.
 - Database permissions, simulated-payment enforcement, and hourly reset jobs are installed.
-- Account provisioning, hosted deployment and the custom domain must pass the launch checks below before advertising a live demo link.
+- The separate Vercel deployment is Ready at `https://caiat-portal-demo.vercel.app` (deployment `dpl_2tS31UNdr9AJTH4XTnwv3TegqtnT`, application commit `a29690e`). Hosted checks confirm the demo landing page and disabled PayPal. Login safely returns `DEMO_NOT_CONFIGURED` until account provisioning and the server password are completed.
+- Account provisioning, interactive launch checks and the custom domain remain pending before advertising a live demo link.
 
 ## 1. Provision the demo account locally
 
@@ -39,12 +40,14 @@ This is a one-time setup. Visitors will not register, see the password, or recei
 
 The script refuses any other Supabase URL. It also refuses to overwrite an existing password file. A fixed user ID, available only through the Auth Admin API, identifies the one account during provisioning. Account changes, MFA enrollment, identity linking and new registrations are blocked in the demo database. Do not rotate this account's password through the ordinary application; maintenance requires an explicit database maintenance window for the demo guard.
 
-## 2. Create a separate Vercel project in your dashboard
+## 2. Configure the separate Vercel project
 
-The connector currently returns zero projects for team `team_GRqPbwW56IJrlHglj1j019u5`, and the local CLI token was invalid. Neither result means the existing production project is missing.
+The separate project `caiat-portal-demo` (`prj_L9h43OEgxAfZVrgOzQxyAPAhwqYv`) has been created in team `team_GRqPbwW56IJrlHglj1j019u5` through the authenticated CLI. Its build settings and demo-only public environment variables are configured. Account provisioning and the private `DEMO_LOGIN_PASSWORD` remain pending. The connector still returns zero projects; use the CLI or dashboard to inspect this existing demo project. Do not create a duplicate.
 
-1. Open your own Vercel dashboard, choose `mjlamiranda-gmailcoms-projects`, then **Add New → Project**.
-2. Import `manel-miranda/caiat-portal` as a **new project** named `caiat-portal-demo`.
+The following settings document the setup and remaining launch steps:
+
+1. Open your Vercel dashboard, choose `mjlamiranda-gmailcoms-projects`, then open **caiat-portal-demo**.
+2. Confirm the connected repository is `manel-miranda/caiat-portal`.
 3. Use the repository root, Framework Preset **Other**, Install Command `bun install --frozen-lockfile`, and Build Command `bun run build`. Leave Output Directory at its default: Nitro supplies the Vercel Build Output API files.
 4. Add the following variables to this project's Production and Preview environments. Get the publishable key from the same demo API Keys page; it starts with `sb_publishable_` and is safe for browser use.
 
@@ -60,7 +63,7 @@ The connector currently returns zero projects for team `team_GRqPbwW56IJrlHglj1j
 
    Do not copy production environment variables. Do not add PayPal credentials or a Supabase service-role key to this Vercel project.
 
-5. In the **new demo project's Settings → Environments → Production → Branch Tracking**, set `feature/public-demo` while the PR is under review. Once the PR is approved and merged, switch this **demo project's** tracking to `main`. Do not change the live project's tracking.
+5. The demo project currently ignores automatic builds outside `feature/public-demo` using `test "$VERCEL_GIT_COMMIT_REF" != "feature/public-demo"` as its Ignored Build Step. Remove that temporary rule after merge. The initial demo deployment explicitly targets Production from the demo branch. In the **new demo project's Settings → Environments → Production → Branch Tracking**, set `feature/public-demo` while the PR is under review. Once the PR is approved and merged, switch this **demo project's** tracking to `main`. Do not change the live project's tracking.
 6. In Deployments, create a deployment from the selected branch. Confirm its commit includes this implementation; an initial import from older `main` does not include the demo login.
 7. Open the generated Vercel URL and complete the checks below. A public demo ultimately needs its production URL accessible without Vercel account login; retain protection on previews if desired.
 
