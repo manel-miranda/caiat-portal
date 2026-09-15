@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { CurrencySwitcher } from "@/components/CurrencySwitcher";
+import { InstallAppButton } from "@/components/InstallAppButton";
 
 export const Route = createFileRoute("/")({
   head: () => ({
