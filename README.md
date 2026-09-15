@@ -13,6 +13,8 @@ screenshots below are therefore the quickest way to see the inside.
 
 ---
 
+> Public demo setup is in progress. See the [isolated demo setup guide](docs/public-demo.md) for deployment and verification status.
+
 ## Contents
 
 - [What it does](#what-it-does)

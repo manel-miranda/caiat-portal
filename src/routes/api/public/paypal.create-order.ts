@@ -15,6 +15,17 @@ export const Route = createFileRoute("/api/public/paypal/create-order")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const { demoEnvironment } = await import("@/lib/demo-config.server");
+        if (demoEnvironment()) {
+          return Response.json(
+            { error: "DEMO_PAYMENTS_DISABLED" },
+            {
+              status: 403,
+              headers: { "Cache-Control": "no-store" },
+            },
+          );
+        }
+
         const json = (msg: Record<string, unknown>, status = 200) =>
           new Response(JSON.stringify(msg), {
             status,

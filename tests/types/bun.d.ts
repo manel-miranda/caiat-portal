@@ -21,6 +21,10 @@ declare module "bun:test" {
 
   interface Matchers {
     toBe(expected: unknown): void;
+    toBeNull(): void;
+    toThrow(expected?: string): void;
+    toMatchObject(expected: unknown): void;
+    rejects: { toThrow(expected?: string): Promise<void> };
     toEqual(expected: unknown): void;
     toContain(expected: unknown): void;
     toBeGreaterThan(expected: number): void;
@@ -28,7 +32,8 @@ declare module "bun:test" {
 
   export const describe: SuiteFunction;
   export const test: (name: string, body: TestBody) => void;
-  export const beforeAll: (hook: Hook) => void;
+  export const beforeAll: (hook: Hook, timeout?: number) => void;
+  export const afterEach: (hook: Hook) => void;
   export const afterAll: (hook: Hook) => void;
   export const expect: (value: unknown) => Matchers;
 }
