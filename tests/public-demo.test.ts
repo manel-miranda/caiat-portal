@@ -16,11 +16,17 @@ const quotaFinalize = await readFile(
   new URL("../scripts/demo/login-quota-finalize.sql", import.meta.url),
   "utf8",
 );
+const roleSelector = await readFile(
+  new URL("../scripts/demo/role-selector.sql", import.meta.url),
+  "utf8",
+);
 const quotaSecret = "a".repeat(64); // Disposable test fixture, never a deployed secret.
 const run = databaseAvailable() ? describe : describe.skip;
 run("isolated public demo database", () => {
   let db: TestDatabase;
   let visitor: string;
+  let staff: string;
+  let admin: string;
   type Row = {
     id: string;
     role: string;
@@ -53,8 +59,11 @@ run("isolated public demo database", () => {
       ADD COLUMN updated_at timestamptz, ADD COLUMN email_confirmed_at timestamptz,
       ADD COLUMN phone_confirmed_at timestamptz,
       ADD COLUMN confirmed_at timestamptz GENERATED ALWAYS AS (LEAST(email_confirmed_at, phone_confirmed_at)) STORED;
-    CREATE TABLE auth.identities(id uuid DEFAULT gen_random_uuid(), user_id uuid REFERENCES auth.users,
-      provider text, identity_data jsonb, email text GENERATED ALWAYS AS (lower(identity_data ->> 'email')) STORED, last_sign_in_at timestamptz, updated_at timestamptz);
+    CREATE TABLE auth.identities(id uuid DEFAULT gen_random_uuid(), provider_id text,
+      user_id uuid REFERENCES auth.users, identity_data jsonb, provider text,
+      email text GENERATED ALWAYS AS (lower(identity_data ->> 'email')) STORED,
+      last_sign_in_at timestamptz, created_at timestamptz, updated_at timestamptz,
+      UNIQUE(provider_id, provider));
     CREATE TABLE auth.mfa_factors(id uuid DEFAULT gen_random_uuid(), user_id uuid REFERENCES auth.users);
     `);
     await expect(Promise.resolve(db.sql.unsafe(install))).rejects.toThrow("DEMO_TARGET_REQUIRED");
@@ -64,25 +73,32 @@ run("isolated public demo database", () => {
     await q`INSERT INTO demo_private.login_rate_config(secret_hash)
       VALUES (encode(sha256(convert_to(${quotaSecret}, 'UTF8')), 'hex'))`;
     await db.sql.unsafe(`BEGIN; ${quotaFinalize} COMMIT;`);
+    staff = "6ffc1230-ee90-473d-b2fb-9c36736d37f2";
     visitor = "df101cea-e2ed-4a3a-956b-b817038bb648";
+    admin = "55672d38-529a-49c8-88a6-f604ad6096ca";
     await db.sql.unsafe("BEGIN");
     await q`INSERT INTO auth.users(id, email, encrypted_password)
       VALUES (${visitor}, 'public-demo@caiat.invalid', 'test-only')`;
     // Mirror Auth Admin API's post-insert updates within the creation transaction.
     await q`UPDATE auth.users SET email_confirmed_at = now(), raw_app_meta_data = '{"caiat_demo":true}' WHERE id = ${visitor}`;
     await db.sql.unsafe("COMMIT");
-    await q`INSERT INTO auth.identities(user_id, provider, identity_data)
-      VALUES (${visitor}, 'email', '{"email":"public-demo@caiat.invalid"}')`;
+    await q`INSERT INTO auth.identities(provider_id, user_id, provider, identity_data)
+      VALUES (${visitor}, ${visitor}, 'email', '{"email":"public-demo@caiat.invalid"}')`;
+    await db.sql.unsafe(`BEGIN; ${roleSelector} COMMIT;`);
     await actAs(db.sql, visitor);
   }, 60_000);
   afterAll(async () => {
     if (db) await db.drop();
   });
 
-  test("one fictional account, no browser registration or credential/MFA changes", async () => {
-    expect((await q`SELECT role FROM public.user_roles WHERE user_id = ${visitor}`)[0]!.role).toBe(
-      "supervisor",
-    );
+  test("three fixed role accounts, no browser registration or credential/MFA changes", async () => {
+    const roles = await q`SELECT user_id id, role FROM public.user_roles
+      WHERE user_id IN (${staff}, ${visitor}, ${admin}) ORDER BY role`;
+    expect(roles).toEqual([
+      { id: admin, role: "admin" },
+      { id: staff, role: "staff" },
+      { id: visitor, role: "supervisor" },
+    ]);
     await expect(
       Promise.resolve(q`INSERT INTO auth.users(email, raw_user_meta_data)
       VALUES ('intruder@example.test', '{"caiat_demo":true}')`),
@@ -117,6 +133,36 @@ run("isolated public demo database", () => {
       ),
     ).rejects.toThrow("DEMO_SECURITY_LOCKED");
     await q`UPDATE auth.users SET last_sign_in_at = now(), updated_at = now() WHERE id = ${visitor}`;
+  });
+
+  test("each identity receives its fixed role and permission set", async () => {
+    await actAs(db.sql, staff);
+    expect((await q`SELECT public.has_role(${staff}, 'staff') allowed`)[0]!.allowed).toBe(true);
+    expect(
+      (await q`SELECT public.has_permission(${staff}, 'payments_manage') allowed`)[0]!.allowed,
+    ).toBe(true);
+    expect(
+      (await q`SELECT public.has_permission(${staff}, 'reservations_manage') allowed`)[0]!.allowed,
+    ).toBe(false);
+
+    await actAs(db.sql, visitor);
+    expect(
+      (await q`SELECT public.has_permission(${visitor}, 'activity_view') allowed`)[0]!.allowed,
+    ).toBe(true);
+    expect(
+      (await q`SELECT public.has_permission(${visitor}, 'users_manage') allowed`)[0]!.allowed,
+    ).toBe(false);
+
+    await actAs(db.sql, admin);
+    expect((await q`SELECT public.has_role(${admin}, 'admin') allowed`)[0]!.allowed).toBe(true);
+    expect(
+      (await q`SELECT public.has_permission(${admin}, 'users_manage') allowed`)[0]!.allowed,
+    ).toBe(true);
+    await expect(
+      Promise.resolve(q`SELECT public.set_user_role(${staff}, 'admin')`),
+    ).rejects.toThrow("permission denied");
+
+    await actAs(db.sql, visitor);
   });
 
   test("raw authenticated calls cannot change security or reset data", async () => {
@@ -214,7 +260,7 @@ run("isolated public demo database", () => {
     });
     await db.sql.unsafe("SELECT demo_private.reset()");
     expect((await q`SELECT count(*)::int n FROM public.stays`)[0]!.n).toBe(5);
-    expect((await q`SELECT count(*)::int n FROM auth.users`)[0]!.n).toBe(1);
+    expect((await q`SELECT count(*)::int n FROM auth.users`)[0]!.n).toBe(3);
   });
 
   test("anonymous access only exposes guest-token operations and bounded login quota", async () => {
