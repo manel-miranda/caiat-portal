@@ -17,9 +17,9 @@ The app is TanStack Start + React + Vite + Nitro. Do not choose a Next.js deploy
 - `public_demo_auth_generated_columns_compatibility` was applied after testing against Supabase's generated Auth columns. BEFORE triggers cannot inspect generated values; their underlying email/confirmation fields remain protected. New installs contain this fix; existing installs use `generated-columns-compat.sql` once.
 - `https://demo.caiat-portal.com` is live. Amen CNAME, Vercel domain configuration, certificate validation, HTTPS landing page and real login were verified on 2026-09-16. README links to the working demo.
 
-## 1. Provision the demo account locally
+## 1. Provision the demo role accounts locally
 
-This is a one-time setup. Visitors will not register, see the password, or receive an email.
+This is a one-time setup. Visitors choose Staff, Supervisor, or Admin. They cannot register, see the shared hidden password, or receive an email.
 
 1. In the [demo project's API Keys page](https://supabase.com/dashboard/project/llyihdkuplsyduxirvcg/settings/api-keys), copy a server secret key (or legacy service-role key).
 2. Put it in the ignored local `.env.demo-bootstrap.local` file, together with the exact demo URL:
@@ -37,14 +37,14 @@ This is a one-time setup. Visitors will not register, see the password, or recei
 
    If the setup file is in a different checkout, supply its absolute path instead.
 
-4. The script creates the restricted account and writes its random password to `.env.demo-password.local`. Keep this file private. Copy its `DEMO_LOGIN_PASSWORD` value into **only the demo Vercel project** in step 2. Never paste keys/passwords into chat or commit them.
+4. The script creates three restricted role accounts with one random hidden password and writes it to `.env.demo-password.local`. Keep this file private. Copy its `DEMO_LOGIN_PASSWORD` value into **only the demo Vercel project** in step 2. Never paste keys/passwords into chat or commit them.
 5. Remove the temporary bootstrap file after provisioning. The running app does **not** need the Supabase server key.
 
-The script refuses any other Supabase URL. It also refuses to overwrite an existing password file. A fixed user ID, available only through the Auth Admin API, identifies the one account during provisioning. Account changes, MFA enrollment, identity linking and new registrations are blocked in the demo database. Do not rotate this account's password through the ordinary application; maintenance requires an explicit database maintenance window for the demo guard.
+The script refuses any other Supabase URL. It also refuses to overwrite an existing password file. Three fixed user IDs, available only through the Auth Admin API, identify the role accounts during provisioning. Account changes, MFA enrollment, identity linking and new registrations are blocked in the demo database. Do not rotate this account's password through the ordinary application; maintenance requires an explicit database maintenance window for the demo guard.
 
 ## 2. Configure the separate Vercel project
 
-The separate project `caiat-portal-demo` (`prj_L9h43OEgxAfZVrgOzQxyAPAhwqYv`) has been created in team `team_GRqPbwW56IJrlHglj1j019u5` through the authenticated CLI. Its build settings and demo-only public environment variables are configured. The account is provisioned and `DEMO_LOGIN_PASSWORD` is stored as a Sensitive variable for Production and Preview. The temporary local server-key file was removed. The connector still returns zero projects; use the CLI or dashboard to inspect this existing demo project. Do not create a duplicate.
+The separate project `caiat-portal-demo` (`prj_L9h43OEgxAfZVrgOzQxyAPAhwqYv`) has been created in team `team_GRqPbwW56IJrlHglj1j019u5` through the authenticated CLI. Its build settings and demo-only public environment variables are configured. The role accounts are provisioned and `DEMO_LOGIN_PASSWORD` is stored as a Sensitive variable for Production and Preview. The temporary local server-key file was removed. The connector still returns zero projects; use the CLI or dashboard to inspect this existing demo project. Do not create a duplicate.
 
 The following settings document the setup and remaining launch steps:
 
@@ -73,8 +73,8 @@ Vercel references: [Git deployments and branch tracking](https://vercel.com/docs
 
 ## 3. Verify before adding DNS or the GitHub link
 
-- The landing page says **Public demo**, shows **Try demo**, and needs no registration.
-- Clicking it opens the operational screens; `/account` explains that settings are locked, and `/users` is denied.
+- The landing page says **Public demo**, offers **Staff**, **Supervisor**, and **Admin**, and needs no registration.
+- Staff opens the daily operational view; Supervisor opens the broader operational view; Admin shows all management destinations. `/account` explains that settings are locked. Admin can inspect `/users` and `/catalogue`, but security and persistent configuration changes remain locked.
 - Create a stay in a free room, add a charge, record a simulated cash/card payment, then check out. These ledger entries do not contact a payment provider.
 - `GET /api/public/paypal/status` reports `available: false`; create-order and return requests are blocked with `DEMO_PAYMENTS_DISABLED`.
 - The hourly reset removes visitor changes and restores five current fictional stays. Refresh an open page after a reset; a form holding an old stay ID can fail because that stay no longer exists.
@@ -92,11 +92,11 @@ Vercel supplied this exact record on 2026-09-16: **CNAME**, host **demo**, targe
 
 ## Security design
 
-- The shared demo identity has operational supervisor capabilities. `has_role` can never return admin, and `has_permission` uses a fixed operational allowlist instead of editable metadata or permission rows.
-- All public function execution grants are revoked first, then only the reviewed stay/customer/request/checkout/cash/guest-portal operations are granted back. User/security RPCs, catalogue editing and inventory configuration/simulation RPCs remain inaccessible.
+- Three fixed demo identities represent Staff, Supervisor, and Admin. `has_role` checks the signed-in identity against its immutable database role. `has_permission` uses fixed role allowlists instead of editable metadata or permission rows.
+- All public function execution grants are revoked first, then only reviewed operational and guest-portal functions are granted back. Admin can inspect management screens, while user/security RPCs and persistent catalogue or inventory configuration remain inaccessible.
 - Table privileges prevent security-table changes. Auth-table triggers also block direct Auth API credential changes, registration, identity linking and MFA enrollment.
 - PayPal is blocked in the route handlers and provider helper even if live credentials are mistakenly present. The demo database rejects provider payment sessions and stamps ordinary ledger payments as simulated.
-- The browser receives a normal restricted session; the shared password remains on the server. The login response is not cacheable, checks its Origin, and has a database-backed limit of 120 attempts/hour across server instances. Supabase's own Auth rate limits also apply.
+- The browser receives a normal restricted session; the shared password remains on the server. The login response is not cacheable, checks its Origin, and uses a server-authenticated database quota of 20 attempts per client IP per hour across server instances. Supabase's own Auth rate limits also apply.
 - Visitors share data and can affect one another's operational work. Sign-out in the UI uses local session scope. The database reset is transactional, runs hourly at minute zero, and has a five-second lock timeout; a blocked reset fails safely and the next scheduled run retries. Sessions older than 24 hours are pruned at minute 15.
 - `demo_private` is not exposed through the Data API; visitors cannot reset data or edit the login quota. Future schema changes must review this demo allowlist and reset's explicit table list.
 
@@ -133,3 +133,13 @@ INVENTORY_TEST_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/postgres
 ```
 
 The tests use disposable PostgreSQL databases. `tests/public-demo.test.ts` applies the normal repository baseline and then the demo-only installer, verifying both permitted operational work and direct bypass attempts. `tests/demo-server.test.ts` checks environment isolation, login origin/configuration checks and provider blocking. Full end-to-end authentication requires the actual demo account and its local/server-only password.
+
+
+## Demo role selector
+
+The public landing page sends only the selected role name to the server. The server maps it to one
+of three fixed demo emails and signs in with the existing server-only password. The browser never
+receives that password. Staff receives payment and request permissions; Supervisor receives the full
+operational allowlist; Admin receives complete navigation and read-only access to security and
+configuration screens. Auth guards, table grants and the demo-only RPC allowlist keep credential,
+role, catalogue configuration and real-payment changes locked.
