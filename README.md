@@ -1,23 +1,45 @@
 # Caiat Operations
 
-**An internal operations app for a 7-room guesthouse in Morocco**  (rooms, stays, charges,
-payments, cash reconciliation, kitchen orders and stock, built mobile-first for staff who
-previously worked from paper and WhatsApp.)
+**A mobile-first guesthouse operations portal built for a real 7-room property in Morocco.**
+It brings reservations, stays, customers, staff permissions, service requests, billing,
+cash control, kitchen orders, inventory and the guest experience into one system.
 
 ## Try the public demo
 
-**[Try Caiat Portal](https://demo.caiat-portal.com)** — choose **Try demo**, with no registration required.
+**[Open Caiat Portal](https://demo.caiat-portal.com)** — no registration required.
 
-Explore fictional stays, charges and simulated checkout. Real payments and account administration are disabled. Demo data is shared and resets hourly.
+Choose **Staff**, **Supervisor**, or **Admin** to see how the interface and permissions adapt
+to each role. The demo uses shared fictional data, resets hourly and simulates every payment.
+Admin can inspect the complete navigation, including Users, Catalogue and Stock, while
+credential, security and persistent configuration changes remain locked.
 
-**Live staff instance:** [caiat-portal.com](https://caiat-portal.com). Staff access requires authentication; guest links use private per-stay tokens.
+**Live staff instance:** [caiat-portal.com](https://caiat-portal.com). Staff access requires
+authentication; guest links use private per-stay tokens.
 
 See the [isolated demo operations guide](docs/public-demo.md) for setup, restrictions and reset details.
 
 ---
 
+## Feature overview
+
+| Area | Capabilities |
+| --- | --- |
+| **Daily operations** | Live room board, stays, arrivals and departures, reservation calendar, charges, service requests, payments and guarded checkout |
+| **Customers** | Searchable customer database, returning-guest indicators, contact details, internal notes, stay history and billed/paid totals |
+| **Users & access** | Supabase authentication; Admin, Supervisor and Staff roles; user creation and deactivation; PIN management; role defaults and per-user permission overrides |
+| **Dashboard & control** | Occupancy, guests in house, daily revenue and payments, outstanding balances, expected cash, reconciliation and drill-downs |
+| **Kitchen & inventory** | Food orders, ingredient recipes, automatic stock consumption, purchase and supplier records, low/out-of-stock alerts, shopping recommendations, waste/adjustments and forecast simulation |
+| **Catalogue** | Multilingual items, prices, categories, availability, featured/signature flags, configurable recipes and curated cross-sell recommendations |
+| **Guest portal** | Revocable per-stay access link and QR code, bill and request tracking, service catalogue, food ordering, PayPal Sandbox flow, recommendations and a 3D/AR dish prototype |
+| **Realtime alerts** | Supabase Realtime refreshes operational screens; the task bell combines pending reservations, overdue requests, food orders and low-stock warnings |
+| **Audit & security** | Append-only activity log, actor and timestamp tracking, Row Level Security, permission-checked database RPCs and token-scoped guest access |
+| **Mobile & localisation** | Installable PWA, offline awareness, Moroccan dirham accounting, Casablanca business-day rules, and English, Portuguese, French and Arabic with RTL support |
+
+---
+
 ## Contents
 
+- [Feature overview](#feature-overview)
 - [What it does](#what-it-does)
 - [Screenshots](#screenshots)
 - [Tech stack](#tech-stack)
@@ -33,58 +55,69 @@ See the [isolated demo operations guide](docs/public-demo.md) for setup, restric
 
 ## What it does
 
-The guesthouse owner was running a 7-room property on paper, WhatsApp and memory, and
-could not step away without losing visibility. Caiat Operations replaces the paper
-without replacing the habits: it is deliberately small, mobile-first, and designed for
-staff who are not comfortable with software.
+The guesthouse owner was running a 7-room property through paper, WhatsApp and memory and
+could not step away without losing visibility. Caiat replaces those disconnected routines
+with a small, mobile-first system designed for staff who are not comfortable with software.
 
 ### Staff
 
-- **Room board** - all 7 rooms at a glance: available, occupied, arriving today, departing today.
-- **Stays** - the core object. Create a stay against a guest and room, record the
-  accommodation total, then attach charges, service requests and payments to it.
-- **Charges & services** - a configurable catalogue (dinner, breakfast, transfer, laundry,
-  activities…) with standard prices, so staff pick rather than type.
-- **Requests** - guest requests with a scheduled time and a pending/completed/cancelled
-  lifecycle. Completing a billable request offers to add the matching charge.
-- **Payments** - cash, card or bank transfer, with the receiving user and timestamp
-  recorded automatically. Cash payments are flagged as expected in the safe.
-- **Checkout** - bill summary with total, paid and outstanding. Checkout is blocked while a
-  balance is outstanding or a kitchen order is unfinished; an explicit admin override
-  exists for genuine exceptions.
-- **Kitchen orders & stock** - dish orders deduct ingredients from an inventory ledger via
-  recipe components, with supplier and purchase tracking on the other side.
+- **Room board and calendar** - see room status, occupancy, arrivals, departures and pending
+  reservations, then open or create a stay directly from the monthly calendar.
+- **Stays and customer context** - create a booking for a new or returning customer and keep
+  accommodation, charges, requests, payments and guest access together.
+- **Charges and requests** - choose services from the configured catalogue, schedule guest
+  requests, track pending/completed/cancelled states and add the matching charge when needed.
+- **Payments and checkout** - record cash, card or bank transfer with the receiving user and
+  timestamp. Checkout validates the balance and unfinished kitchen orders before closing.
+- **Kitchen orders** - staff and guests can place food orders; delivery bills the stay and
+  consumes each recipe ingredient exactly once.
+- **Live task bell** - pending reservations, scheduled or overdue requests, requested food
+  orders and low-stock items update as the underlying records change.
 
-### Owner / admin
+### Supervisor / admin
 
-- **Dashboard** - occupancy, guests in house, revenue and payments recorded today,
-  outstanding balances, cash expected in the safe, next-24h arrivals and departures, each
-  with a drill-down.
-- **Cash control** - cash payments for a business day grouped by employee, the expected
-  safe total, an actual-count input and the resulting difference, saved as a closed
-  reconciliation.
-- **Users & permissions** - three roles (admin, supervisor, staff) with per-user permission
-  overrides on top of role defaults.
-- **Activity log** - an append-only audit trail of every significant action.
-- **Stock simulation** - an admin testing tool that runs a simulated week of consumption
-  through the real inventory ledger, so stock behaviour can be exercised before it matters.
+- **Operational dashboard** - occupancy, guests in house, revenue and payments recorded
+  today, outstanding balances, cash expected in the safe, and the next 24 hours, all with
+  drill-down detail.
+- **Customer history** - search by name, phone or email; see first/last stay, full stay
+  history, billed and paid totals, returning-customer status and private staff notes.
+- **Cash control** - compare cash received by employee with the physical safe count and save
+  the resulting reconciliation for the business day.
+- **Users, roles and permissions** - create or deactivate users, assign Admin, Supervisor or
+  Staff, reset PINs and apply per-user grants or revocations over the role defaults.
+- **Catalogue and recommendations** - configure multilingual items, prices, visibility,
+  availability, categories, ordering, featured/signature status and curated cross-sells.
+- **Recipes, purchasing and stock forecast** - map dish portions to ingredients, record
+  suppliers and purchases, track estimated stock, receive/adjust/waste stock, generate a
+  recommended shopping list and simulate future consumption.
+- **Activity log** - inspect the append-only record of who performed each important action,
+  what changed and when.
 
 ### Guest
 
-- A tokenised guest portal (`/guest/<token>`). The guest needs no account, but the link is
-  not public either: staff generate a per-stay access token, and that token is what scopes
-  and authorises everything the page shows. Within it the guest sees their bill, their
-  requests and a service catalogue, and can order from the kitchen or pay their outstanding
-  balance online via PayPal. Staff can revoke a token at any time.
+- **Private QR portal** - staff generate, display, copy, regenerate or revoke a per-stay link.
+  The guest needs no account; the bearer token scopes all portal data to that stay.
+- **Self-service stay view** - guests see their bill and request statuses, browse the service
+  catalogue, submit requests and place kitchen orders.
+- **Discovery features** - configured recommendations suggest related items, while a
+  prototype 3D/AR tajine viewer lets guests rotate a dish or place it on a supported device.
+- **PayPal Sandbox flow** - server-side order creation, redirect, capture and amount/currency
+  validation mirror the real payment path. The public demo keeps provider calls disabled and
+  records only clearly marked simulated payments.
 
 ### Throughout
 
-- **PWA** - installable to the home screen with a web app manifest and an explicit install
-  prompt, plus connectivity awareness that blocks mutations while offline rather than losing
-  them silently. (There is no service worker yet, so it is installable but not offline-capable.)
+- **Realtime synchronisation** - one Supabase Realtime channel refreshes affected screens
+  when stays, charges, payments, requests, customers, permissions or inventory change in
+  another tab or device.
+- **Database-enforced security** - PostgreSQL roles, Row Level Security and permission-checked
+  RPCs remain authoritative; the client hides unavailable actions only for usability.
+- **PWA** - installable to the home screen, with connectivity awareness that blocks mutations
+  while offline instead of losing them silently. There is no service worker yet, so it is
+  installable but not offline-capable.
 - **Four languages** - English, Portuguese, French and Arabic, including full RTL layout.
-- **MAD-native** - Moroccan dirham is the accounting currency throughout, with
-  `Africa/Casablanca` as the business day boundary.
+- **MAD-native** - Moroccan dirham is the accounting currency, with `Africa/Casablanca` as
+  the business-day boundary.
 
 ---
 
@@ -107,12 +140,12 @@ display name is real.
 | --------------- | --------------------------------------------------------------------------------------------------- |
 | Framework       | [TanStack Start](https://tanstack.com/start) (full-stack React, file-based routing + server routes) |
 | UI              | React 19, TypeScript, Tailwind CSS 4, [shadcn/ui](https://ui.shadcn.com) on Radix primitives        |
-| Data            | TanStack Query for client cache, TanStack Router for routing                                        |
+| Data            | TanStack Query, TanStack Router and Supabase Realtime                                               |
 | Backend         | [Supabase](https://supabase.com) - PostgreSQL, Auth, Row Level Security                             |
-| Payments        | PayPal REST Orders v2 (sandbox), captured server-side                                               |
+| Payments        | PayPal REST Orders v2 Sandbox flow; simulated and provider-disabled in the public demo             |
 | Build / runtime | Vite 8, [Bun](https://bun.sh)                                                                       |
 | CI              | GitHub Actions - typecheck, build, and database regression tests on a real PostgreSQL service       |
-| Hosting         | Vercel serves `caiat-portal.com`; this GitHub repository is also connected to Lovable               |
+| Hosting         | Vercel serves `caiat-portal.com` and the isolated `demo.caiat-portal.com` deployment               |
 
 This is a **TanStack Start** application on React, Vite and Supabase. It is **not** a Next.js
 project, the ESLint config actively blocks Next's `server-only` import, because server code
@@ -300,21 +333,19 @@ timestamp and the affected entity.
 ## Testing strategy
 
 Most of the guarantees in this application live in the database, so that is where most of
-the tests are.
+the tests are. The current CI run passes **133 tests across 17 files**, together with
+separate application/test typechecks and a production build.
 
-**14 suites in total: 12 PostgreSQL-backed and 2 plain unit suites.**
+The PostgreSQL-backed suites each create a throwaway database, apply a small Supabase
+prelude plus **every real file in `supabase/migrations`**, and call the real RPCs as users
+with real roles and permissions. No hosted Supabase project is contacted. The public-demo
+suite also applies the separate demo installer and role-selector SQL, checking permitted
+work as well as credential, role and configuration bypass attempts.
 
-The **12 database suites** (~3,100 lines) each create a throwaway PostgreSQL database, apply
-a small prelude plus **every real file in `supabase/migrations`**, and then call the **real
-RPCs** as users with real roles and permissions. No hosted Supabase project is contacted and
-nothing is stubbed if a migration breaks a permission boundary, the test fails.
-
-The **2 unit suites** (~280 lines), `dashboard-kpis` and `pwa-install`, exercise pure
-TypeScript logic directly. They apply no migrations, need no database, and run everywhere.
-
-That split matters when reading `bun test` output: without a database URL the 12 database
-suites **skip**, and only the 2 unit suites actually run. CI closes that gap with
-`INVENTORY_TESTS_REQUIRED=1` (see below).
+Pure TypeScript suites cover logic that does not require PostgreSQL, including dashboard
+calculations, PWA behaviour and the server-side public-demo login boundary. Without a
+database URL the PostgreSQL suites skip locally; CI sets `INVENTORY_TESTS_REQUIRED=1` so a
+missing database becomes a failure rather than a misleading green run.
 
 Coverage focuses on the areas where a bug costs money or leaks data:
 
@@ -384,10 +415,10 @@ finished product is the main thing I learned building this.
 Written down deliberately, because a portfolio project that claims to be finished is not
 credible.
 
-- **No frontend tests.** 12 of the 14 suites are database-level and the other 2 test pure
-  logic; none render a component or drive a browser. There is no end-to-end coverage of the
-  critical UI flows. This is the largest gap, and Playwright coverage of login → create stay
-  → add charge → take payment → checkout is the next thing on the list.
+- **No automated browser tests.** The suite covers database and pure TypeScript behaviour,
+  but it does not render components or drive the critical UI flows. Hosted flows are checked
+  manually; automated browser coverage of login → create stay → add charge → take payment →
+  checkout remains the largest testing gap.
 - **Lint is non-blocking in CI.** There is pre-existing lint debt from the scaffold, and
   `@typescript-eslint/no-unused-vars` is currently disabled. The rule is "do not add new
   errors in files you touch", which is a stopgap, not a standard.
