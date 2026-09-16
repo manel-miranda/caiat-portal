@@ -338,6 +338,21 @@ run("isolated public demo database", () => {
     });
     await db.sql.unsafe("SELECT demo_private.reset()");
     expect((await q`SELECT count(*)::int n FROM public.stays`)[0]!.n).toBe(5);
+    expect(
+      (
+        await q`SELECT count(*)::int n FROM public.purchases WHERE notes LIKE '[FICTIONAL FINANCE V1]%'`
+      )[0]!.n,
+    ).toBeGreaterThan(0);
+    const [costs] =
+      await q`SELECT count(*)::int n FROM public.inventory_purchase_context WHERE last_unit_cost IS NOT NULL`;
+    expect(costs!.n).toBeGreaterThan(0);
+    await actAs(db.sql, visitor);
+    const [finance] = (await db.sql`SELECT public.finance_profitability(true) AS report`) as {
+      report: { dishes: { cost: number | null; marginPercent: number | null }[] };
+    }[];
+    expect(finance!.report.dishes.some((d) => d.cost !== null && d.marginPercent !== null)).toBe(
+      true,
+    );
     expect((await q`SELECT count(*)::int n FROM auth.users`)[0]!.n).toBe(3);
   });
 
