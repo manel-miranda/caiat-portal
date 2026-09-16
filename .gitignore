@@ -33,3 +33,8 @@ dist-ssr
 
 # Vercel local build output and project metadata
 .vercel/
+
+# Local environment values; tracked public configuration is handled separately.
+.env
+.env.*
+!.env.example
