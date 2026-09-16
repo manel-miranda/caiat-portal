@@ -176,12 +176,3 @@ REVOKE INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER
   FROM authenticated;
 REVOKE ALL ON public.payment_sessions FROM authenticated;
 
-SELECT cron.schedule(
-  'caiat-demo-session-cleanup',
-  '15 * * * *',
-  $job$DELETE FROM auth.sessions
-    WHERE user_id IN (
-      SELECT id FROM auth.users WHERE raw_app_meta_data ->> 'caiat_demo' = 'true'
-    )
-    AND created_at < now() - interval '24 hours'$job$
-);
