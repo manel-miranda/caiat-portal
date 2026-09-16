@@ -15,7 +15,8 @@ const demoUrl = "https://llyihdkuplsyduxirvcg.supabase.co";
 if (
   env["VITE_DEMO_MODE"] === "true" ||
   env["DEMO_MODE"] === "true" ||
-  env["VITE_SUPABASE_URL"] === demoUrl
+  env["VITE_SUPABASE_URL"] === demoUrl ||
+  env["SUPABASE_URL"] === demoUrl
 ) {
   if (
     env["VITE_DEMO_MODE"] !== "true" ||
