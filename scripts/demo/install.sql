@@ -254,6 +254,7 @@ BEGIN
   INSERT INTO public.inventory_movements(inventory_item_id, movement_type, quantity, source_type, notes)
     SELECT id, 'receipt', greatest(safety_stock * 3, 10), 'demo_reset', 'Fictional opening stock'
       FROM public.inventory_items WHERE active;
+  PERFORM finance_sample_private.seed_history();
 END $$;
 REVOKE ALL ON ALL FUNCTIONS IN SCHEMA demo_private FROM PUBLIC, anon, authenticated, service_role;
 SELECT demo_private.reset();
