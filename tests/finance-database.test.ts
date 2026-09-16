@@ -46,6 +46,8 @@ suite("finance database boundaries and calculations", () => {
     const [item] =
       await sql`INSERT INTO public.inventory_items (key,label,unit) VALUES ('finance_test','Finance test','kg') RETURNING id`;
     ingredient = String((item as { id: string }).id);
+    // Legacy ingredients can retain preview flags even when real recipes use them.
+    await sql`UPDATE public.inventory_items SET preview_only = true WHERE id = ${ingredient}`;
     const [unknown] =
       await sql`INSERT INTO public.inventory_items (key,label,unit) VALUES ('finance_unknown','Unknown','kg') RETURNING id`;
     for (const [name, price, quantity] of [
@@ -60,9 +62,14 @@ suite("finance database boundaries and calculations", () => {
         await sql`INSERT INTO public.service_types (key,label,default_price,billable,active,requestable,guest_visible,preview_only,guest_category,guest_subcategory)
         VALUES (${`finance_${name}`},${name},${price},true,true,true,true,${name === "preview"},'food','mains') RETURNING id`;
       dishes[name] = String((dish as { id: string }).id);
+      if (name === "preview") {
+        await sql`UPDATE public.service_types SET billable = false WHERE id = ${(dish as { id: string }).id}`;
+      }
       await sql`INSERT INTO public.inventory_recipe_components (service_type_id,inventory_item_id,qty_per_portion)
         VALUES (${(dish as { id: string }).id},${name === "missing" ? (unknown as { id: string }).id : ingredient},${quantity})`;
     }
+    await sql`INSERT INTO public.service_types (key,label,default_price,billable,active,guest_category)
+      VALUES ('finance_no_recipe','Unconfigured recipe',100,true,true,'food')`;
     for (const [date, cost] of [
       ["2020-01-01", 5],
       ["2020-02-01", 20],
@@ -86,6 +93,11 @@ suite("finance database boundaries and calculations", () => {
   test("uses latest purchase costs, preserves unknowns and zero-price semantics, excludes preview recipes", async () => {
     const [row] = await manager`SELECT public.finance_profitability() AS report`;
     const report = (row as { report: FinanceReport }).report as FinanceReport;
+    expect(report.dishes.find((d) => d.label === "Unconfigured recipe")).toMatchObject({
+      cost: null,
+      missingCost: true,
+      marginPercent: null,
+    });
     expect(report.dishes.find((d) => d.id === dishes.high)).toMatchObject({
       cost: 20,
       grossProfit: 80,
@@ -136,6 +148,16 @@ suite("finance database boundaries and calculations", () => {
     await expect(
       Promise.resolve(unauthenticated`SELECT public.finance_profitability()`),
     ).rejects.toThrow("PERMISSION_DENIED");
+  });
+
+  test("staff can access finance when explicitly granted activity_view", async () => {
+    const id = await createStaffUser(sql, "finance_override");
+    await sql`INSERT INTO public.user_permissions (user_id, permission, granted) VALUES (${id}, 'activity_view', true)`;
+    const user = db.connect();
+    await actAs(user, id);
+    await user.unsafe("SET ROLE authenticated");
+    const [result] = await user`SELECT public.finance_profitability() AS report`;
+    expect((result as { report: FinanceReport }).report.dishes.length).toBeGreaterThan(0);
   });
 
   test("ranks margins descending, preserves curated ties, and leaves uncomputable margins last", async () => {

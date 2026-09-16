@@ -36,7 +36,7 @@ dish's suggestions, with unknown margins last and curated order preserved for ti
 Guest responses never include internal costs or margins. This feature does not
 provide sales forecasts or customer-level profitability profiling.
 
-Deploy the two `20260916` finance migrations before releasing the frontend, to both
+Deploy the three `20260916` finance migrations before releasing the frontend, to both
 the production and isolated demo databases. The demo installer also allowlists the
 read-only finance RPC; existing demo installations receive its grant via migration.
 

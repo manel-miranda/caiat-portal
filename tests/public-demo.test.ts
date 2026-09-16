@@ -180,6 +180,9 @@ run("isolated public demo database", () => {
       for (const user of [visitor, admin]) {
         await actAs(db.sql, user);
         const [report] = await db.sql`SELECT public.finance_profitability(true) AS report`;
+        expect((report as { report: { dishes: unknown[] } }).report.dishes.length).toBeGreaterThan(
+          0,
+        );
         expect(Array.isArray((report as { report: { dishes: unknown[] } }).report.dishes)).toBe(
           true,
         );

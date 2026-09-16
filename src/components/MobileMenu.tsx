@@ -47,12 +47,6 @@ export function MobileMenu({ variant = "icon" }: { variant?: "icon" | "tab" | "m
           { to: "/customers", label: t("navCustomers"), icon: Users },
           { to: "/services", label: t("navServices"), icon: ConciergeBell },
           { to: "/stock", label: t("navStock"), icon: Boxes },
-          {
-            to: "/finance",
-            label: t("navFinance"),
-            icon: ChartNoAxesCombined,
-            permission: "activity_view",
-          },
           { to: "/cash", label: t("navCash"), icon: Banknote, permission: "cash_reconcile" },
           { to: "/activity", label: t("navActivity"), icon: History, permission: "activity_view" },
           {
@@ -64,11 +58,18 @@ export function MobileMenu({ variant = "icon" }: { variant?: "icon" | "tab" | "m
           { to: "/users", label: t("navUsers"), icon: UserCog, permission: "users_manage" },
         ] as MenuLink[])
       : []
-  ).filter(
-    (link) =>
-      (!isPublicDemo || link.to !== "/stock" || role === "admin") &&
-      (!link.permission || can(link.permission)),
-  );
+  )
+    .concat({
+      to: "/finance",
+      label: t("navFinance"),
+      icon: ChartNoAxesCombined,
+      permission: "activity_view",
+    })
+    .filter(
+      (link) =>
+        (!isPublicDemo || link.to !== "/stock" || role === "admin") &&
+        (!link.permission || can(link.permission)),
+    );
 
   if (desktopManage && links.length === 0) return null;
 
