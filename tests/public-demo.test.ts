@@ -7,10 +7,7 @@ import {
   type TestDatabase,
 } from "./support/preview-db";
 
-const install = await readFile(
-  new URL("../scripts/demo/install.sql", import.meta.url),
-  "utf8",
-);
+const install = await readFile(new URL("../scripts/demo/install.sql", import.meta.url), "utf8");
 const quotaV2 = await readFile(
   new URL("../scripts/demo/login-quota-v2.sql", import.meta.url),
   "utf8",
@@ -33,10 +30,7 @@ run("isolated public demo database", () => {
     status: string;
     n: number;
   };
-  async function q(
-    strings: TemplateStringsArray,
-    ...values: unknown[]
-  ): Promise<Row[]> {
+  async function q(strings: TemplateStringsArray, ...values: unknown[]): Promise<Row[]> {
     return (await db.sql(strings, ...values)) as Row[];
   }
   beforeAll(async () => {
@@ -63,9 +57,7 @@ run("isolated public demo database", () => {
       provider text, identity_data jsonb, email text GENERATED ALWAYS AS (lower(identity_data ->> 'email')) STORED, last_sign_in_at timestamptz, updated_at timestamptz);
     CREATE TABLE auth.mfa_factors(id uuid DEFAULT gen_random_uuid(), user_id uuid REFERENCES auth.users);
     `);
-    await expect(Promise.resolve(db.sql.unsafe(install))).rejects.toThrow(
-      "DEMO_TARGET_REQUIRED",
-    );
+    await expect(Promise.resolve(db.sql.unsafe(install))).rejects.toThrow("DEMO_TARGET_REQUIRED");
     await q`SELECT set_config('caiat.demo_target', 'llyihdkuplsyduxirvcg', false)`;
     await db.sql.unsafe(`BEGIN; ${install} COMMIT;`);
     await db.sql.unsafe(`BEGIN; ${quotaV2} COMMIT;`);
@@ -88,11 +80,9 @@ run("isolated public demo database", () => {
   });
 
   test("one fictional account, no browser registration or credential/MFA changes", async () => {
-    expect(
-      (
-        await q`SELECT role FROM public.user_roles WHERE user_id = ${visitor}`
-      )[0]!.role,
-    ).toBe("supervisor");
+    expect((await q`SELECT role FROM public.user_roles WHERE user_id = ${visitor}`)[0]!.role).toBe(
+      "supervisor",
+    );
     await expect(
       Promise.resolve(q`INSERT INTO auth.users(email, raw_user_meta_data)
       VALUES ('intruder@example.test', '{"caiat_demo":true}')`),
@@ -113,9 +103,7 @@ run("isolated public demo database", () => {
       ),
     ).rejects.toThrow("DEMO_SECURITY_LOCKED");
     await expect(
-      Promise.resolve(
-        q`INSERT INTO auth.mfa_factors(user_id) VALUES (${visitor})`,
-      ),
+      Promise.resolve(q`INSERT INTO auth.mfa_factors(user_id) VALUES (${visitor})`),
     ).rejects.toThrow("DEMO_SECURITY_LOCKED");
     await expect(
       Promise.resolve(
@@ -136,42 +124,35 @@ run("isolated public demo database", () => {
     try {
       for (const key of ["users_manage", "roles_manage", "pin_reset"]) {
         expect(
-          (
-            await q`SELECT public.has_permission(${visitor}, ${key}) allowed`
-          )[0]!.allowed,
+          (await q`SELECT public.has_permission(${visitor}, ${key}) allowed`)[0]!.allowed,
         ).toBe(false);
       }
-      expect(
-        (await q`SELECT public.has_role(${visitor}, 'admin') allowed`)[0]!
-          .allowed,
-      ).toBe(false);
+      expect((await q`SELECT public.has_role(${visitor}, 'admin') allowed`)[0]!.allowed).toBe(
+        false,
+      );
       await expect(
         Promise.resolve(q`SELECT public.set_user_role(${visitor}, 'admin')`),
       ).rejects.toThrow("permission denied");
       await expect(
-        Promise.resolve(
-          q`SELECT public.set_user_permission(${visitor}, 'roles_manage', true)`,
-        ),
+        Promise.resolve(q`SELECT public.set_user_permission(${visitor}, 'roles_manage', true)`),
       ).rejects.toThrow("permission denied");
       await expect(
         Promise.resolve(q`SELECT public.set_user_active(${visitor}, false)`),
       ).rejects.toThrow("permission denied");
       await expect(
-        Promise.resolve(
-          q`UPDATE public.profiles SET username = 'admin' WHERE id = ${visitor}`,
-        ),
+        Promise.resolve(q`UPDATE public.profiles SET username = 'admin' WHERE id = ${visitor}`),
       ).rejects.toThrow("permission denied");
       await expect(
         Promise.resolve(
           q`INSERT INTO public.user_roles(user_id, role) VALUES (${visitor}, 'admin')`,
         ),
       ).rejects.toThrow("permission denied");
-      await expect(
-        Promise.resolve(db.sql.unsafe("SELECT demo_private.reset()")),
-      ).rejects.toThrow("permission denied");
-      await expect(
-        Promise.resolve(q`SELECT public.inventory_simulation_reset()`),
-      ).rejects.toThrow("permission denied");
+      await expect(Promise.resolve(db.sql.unsafe("SELECT demo_private.reset()"))).rejects.toThrow(
+        "permission denied",
+      );
+      await expect(Promise.resolve(q`SELECT public.inventory_simulation_reset()`)).rejects.toThrow(
+        "permission denied",
+      );
     } finally {
       await db.sql.unsafe("RESET ROLE");
     }
@@ -180,17 +161,16 @@ run("isolated public demo database", () => {
   test("visitor can create a stay, add a charge, simulate payment and check out", async () => {
     await db.sql.unsafe("SET ROLE authenticated");
     try {
-      const [room] =
-        await q`SELECT id FROM public.rooms ORDER BY sort_order DESC LIMIT 1`;
+      const [room] = await q`SELECT id FROM public.rooms ORDER BY sort_order DESC LIMIT 1`;
       const [result] = await q`SELECT public.create_stay_with_guest(
         'Test Fiction', ${room!.id}::uuid, CURRENT_DATE, CURRENT_DATE+1, 1,
         'walk_in'::public.stay_source, 100, '', 'confirmed', NULL, NULL, NULL) id`;
       const stay = String(result!.id);
       await q`INSERT INTO public.charges(stay_id, label, quantity, unit_price, created_by)
         VALUES (${stay}, 'Demo charge', 2, 25, ${visitor})`;
-      await expect(
-        Promise.resolve(q`SELECT public.checkout_stay(${stay}, false)`),
-      ).rejects.toThrow("OVERRIDE_REQUIRED");
+      await expect(Promise.resolve(q`SELECT public.checkout_stay(${stay}, false)`)).rejects.toThrow(
+        "OVERRIDE_REQUIRED",
+      );
       await q`INSERT INTO public.payments(stay_id, amount, method, received_by)
         VALUES (${stay}, 150, 'cash', ${visitor})`;
       const [payment] =
@@ -198,10 +178,9 @@ run("isolated public demo database", () => {
       expect(payment!.provider).toBe("demo");
       expect(payment!.notes).toContain("SIMULATED PAYMENT");
       await q`SELECT public.checkout_stay(${stay}, false)`;
-      expect(
-        (await q`SELECT status FROM public.stays WHERE id = ${stay}`)[0]!
-          .status,
-      ).toBe("completed");
+      expect((await q`SELECT status FROM public.stays WHERE id = ${stay}`)[0]!.status).toBe(
+        "completed",
+      );
     } finally {
       await db.sql.unsafe("RESET ROLE");
     }
@@ -221,8 +200,7 @@ run("isolated public demo database", () => {
 
   test("reset restores fictional current stays and removes visitor changes atomically", async () => {
     await db.sql.unsafe("SELECT demo_private.reset()");
-    const [counts] =
-      await q`SELECT (SELECT count(*)::int FROM public.guests) guests,
+    const [counts] = await q`SELECT (SELECT count(*)::int FROM public.guests) guests,
       (SELECT count(*)::int FROM public.stays) stays,
       (SELECT count(*)::int FROM public.guests WHERE email IS NOT NULL OR phone IS NOT NULL) contacts,
       (SELECT count(*)::int FROM public.stays WHERE check_in = CURRENT_DATE-1 AND check_out > CURRENT_DATE) current_stays,
@@ -243,15 +221,15 @@ run("isolated public demo database", () => {
     await actAs(db.sql, "");
     await db.sql.unsafe("SET ROLE anon");
     try {
-      await expect(
-        Promise.resolve(q`SELECT * FROM public.stays`),
-      ).rejects.toThrow("permission denied");
+      await expect(Promise.resolve(q`SELECT * FROM public.stays`)).rejects.toThrow(
+        "permission denied",
+      );
       await expect(
         Promise.resolve(q`SELECT public.set_user_role(${visitor}, 'admin')`),
       ).rejects.toThrow("permission denied");
-      await expect(
-        Promise.resolve(q`SELECT public.demo_login_allowed()`),
-      ).rejects.toThrow("permission denied");
+      await expect(Promise.resolve(q`SELECT public.demo_login_allowed()`)).rejects.toThrow(
+        "permission denied",
+      );
       await expect(
         Promise.resolve(q`SELECT * FROM demo_private.login_rate_config`),
       ).rejects.toThrow("permission denied");
@@ -306,9 +284,7 @@ run("isolated public demo database", () => {
     }
     await q`UPDATE demo_private.login_rate_buckets SET window_start = now() - interval '2 hours' WHERE bucket = ${bucket}`;
     expect(
-      (
-        await q`SELECT public.demo_login_allowed_v2(${quotaSecret}, ${bucket}) allowed`
-      )[0]!.allowed,
+      (await q`SELECT public.demo_login_allowed_v2(${quotaSecret}, ${bucket}) allowed`)[0]!.allowed,
     ).toBe(true);
     await q`UPDATE demo_private.login_rate_buckets SET window_start = now() - interval '2 days' WHERE bucket = ${bucket}`;
     await q`SELECT public.demo_login_allowed_v2(${quotaSecret}, ${"4".repeat(64)})`;
