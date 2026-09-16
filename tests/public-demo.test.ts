@@ -56,13 +56,13 @@ run("isolated public demo database", () => {
     DELETE FROM auth.users;
     ALTER TABLE auth.users
       ADD COLUMN instance_id uuid, ADD COLUMN aud text, ADD COLUMN role text,
-      ADD COLUMN raw_app_meta_data jsonb DEFAULT '{}', ADD COLUMN raw_user_meta_data jsonb,
+      ADD COLUMN raw_app_meta_data jsonb DEFAULT '{}',
       ADD COLUMN encrypted_password text, ADD COLUMN invited_at timestamptz,
       ADD COLUMN confirmation_token text, ADD COLUMN confirmation_sent_at timestamptz,
       ADD COLUMN recovery_token text, ADD COLUMN recovery_sent_at timestamptz,
       ADD COLUMN email_change_token_new text, ADD COLUMN email_change text,
       ADD COLUMN email_change_sent_at timestamptz, ADD COLUMN last_sign_in_at timestamptz,
-      ADD COLUMN updated_at timestamptz, ADD COLUMN created_at timestamptz,
+      ADD COLUMN updated_at timestamptz,
       ADD COLUMN email_confirmed_at timestamptz, ADD COLUMN phone text,
       ADD COLUMN phone_confirmed_at timestamptz, ADD COLUMN phone_change text,
       ADD COLUMN phone_change_token text, ADD COLUMN phone_change_sent_at timestamptz,
