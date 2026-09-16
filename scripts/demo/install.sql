@@ -24,16 +24,16 @@ REVOKE INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER
 REVOKE ALL ON public.payment_sessions FROM authenticated;
 
 CREATE OR REPLACE FUNCTION public.has_role(_user_id uuid, _role public.app_role)
-RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $$
   SELECT _user_id = auth.uid()
     AND EXISTS (
       SELECT 1 FROM public.profiles p
       JOIN public.user_roles r ON r.user_id = p.id
       WHERE p.id = _user_id AND p.active AND p.username LIKE 'public-demo-%' AND r.role = _role
     )
-$;
+$$;
 CREATE OR REPLACE FUNCTION public.has_permission(_user_id uuid, _key text)
-RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $$
   SELECT CASE
     WHEN public.has_role(_user_id, 'admin'::public.app_role) THEN
       _key IN ('reservations_manage','payments_manage','checkout_override','cash_reconcile',
@@ -46,7 +46,7 @@ RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $
       _key IN ('payments_manage','requests_manage')
     ELSE false
   END
-$;
+$$;
 
 DO $$
 DECLARE f record;
@@ -84,7 +84,7 @@ CREATE TABLE demo_private.provisioning (
 ALTER TABLE demo_private.provisioning ENABLE ROW LEVEL SECURITY;
 INSERT INTO demo_private.provisioning VALUES (true, NULL);
 CREATE FUNCTION demo_private.guard_auth_user() RETURNS trigger
-LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 BEGIN
   IF TG_OP = 'INSERT' THEN
     IF NOT (
@@ -114,12 +114,12 @@ BEGIN
     END IF;
   END IF;
   RETURN NEW;
-END $;
+END $$;
 CREATE TRIGGER caiat_demo_auth_guard BEFORE INSERT OR UPDATE OR DELETE ON auth.users
   FOR EACH ROW EXECUTE FUNCTION demo_private.guard_auth_user();
 
 CREATE FUNCTION demo_private.provision_profile() RETURNS trigger
-LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 DECLARE demo_role public.app_role;
 DECLARE demo_username text;
 DECLARE demo_name text;
@@ -138,7 +138,7 @@ BEGIN
   INSERT INTO public.profiles(id, username, full_name) VALUES (NEW.id, demo_username, demo_name);
   INSERT INTO public.user_roles(user_id, role) VALUES (NEW.id, demo_role);
   RETURN NEW;
-END $;
+END $$;
 CREATE TRIGGER caiat_demo_profile AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION demo_private.provision_profile();
 
@@ -149,7 +149,7 @@ BEGIN
 END $$;
 -- Prevent MFA enrollment and identity linking through the Auth API too.
 CREATE FUNCTION demo_private.guard_identity() RETURNS trigger
-LANGUAGE plpgsql SET search_path = '' AS $
+LANGUAGE plpgsql SET search_path = '' AS $$
 BEGIN
   IF TG_OP = 'INSERT' AND NEW.provider = 'email'
     AND EXISTS (
@@ -170,7 +170,7 @@ BEGIN
     RETURN NEW;
   END IF;
   RAISE EXCEPTION 'DEMO_SECURITY_LOCKED';
-END $;
+END $$;
 CREATE TRIGGER caiat_demo_identity_guard BEFORE INSERT OR UPDATE OR DELETE ON auth.identities
   FOR EACH ROW EXECUTE FUNCTION demo_private.guard_identity();
 CREATE TRIGGER caiat_demo_mfa_guard BEFORE INSERT OR UPDATE OR DELETE ON auth.mfa_factors
