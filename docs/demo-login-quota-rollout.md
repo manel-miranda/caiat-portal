@@ -1,4 +1,4 @@
-# Demo login quota v2 — deployment pending
+# Demo login quota v2 — rollout guide
 
 This change is not active until the database, server secret and deployment are coordinated.
 Only target Supabase `llyihdkuplsyduxirvcg` and Vercel `caiat-portal-demo`.
@@ -64,3 +64,10 @@ quota issue. Do not silently restore those grants or disable rate limiting.
 
 Rotate the quota secret only as a coordinated server/database operation; it is
 independent of staff PINs and of the shared demo account password.
+
+## Rollout checkpoint — 2026-09-16
+
+The additive v2 schema and secret digest have been applied to the verified demo
+project. The Vercel secret has been configured by the project owner. A fresh
+preview must verify the paired configuration before merge. Legacy RPC access
+remains enabled until the final deployment verification and finalize step.
