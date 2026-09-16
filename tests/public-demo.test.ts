@@ -174,6 +174,26 @@ run("isolated public demo database", () => {
     await actAs(db.sql, visitor);
   });
 
+  test("finance RPC is available to demo managers but denied to demo staff", async () => {
+    try {
+      await db.sql.unsafe("SET ROLE authenticated");
+      for (const user of [visitor, admin]) {
+        await actAs(db.sql, user);
+        const [report] = await db.sql`SELECT public.finance_profitability(true) AS report`;
+        expect(Array.isArray((report as { report: { dishes: unknown[] } }).report.dishes)).toBe(
+          true,
+        );
+      }
+      await actAs(db.sql, staff);
+      await expect(Promise.resolve(db.sql`SELECT public.finance_profitability()`)).rejects.toThrow(
+        "PERMISSION_DENIED",
+      );
+    } finally {
+      await db.sql.unsafe("RESET ROLE");
+      await actAs(db.sql, visitor);
+    }
+  });
+
   test("stock RPCs are executable but still enforce the caller's demo role", async () => {
     const [grants] = await q`SELECT bool_and(
       has_function_privilege('authenticated', signature, 'EXECUTE')

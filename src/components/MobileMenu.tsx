@@ -6,6 +6,7 @@ import {
   Banknote,
   BookOpen,
   Boxes,
+  ChartNoAxesCombined,
   ConciergeBell,
   History,
   LogOut,
@@ -46,6 +47,12 @@ export function MobileMenu({ variant = "icon" }: { variant?: "icon" | "tab" | "m
           { to: "/customers", label: t("navCustomers"), icon: Users },
           { to: "/services", label: t("navServices"), icon: ConciergeBell },
           { to: "/stock", label: t("navStock"), icon: Boxes },
+          {
+            to: "/finance",
+            label: t("navFinance"),
+            icon: ChartNoAxesCombined,
+            permission: "activity_view",
+          },
           { to: "/cash", label: t("navCash"), icon: Banknote, permission: "cash_reconcile" },
           { to: "/activity", label: t("navActivity"), icon: History, permission: "activity_view" },
           {

@@ -588,6 +588,7 @@ export const en = {
   catalogueMarkAvailable: "Mark available",
   // stock / groceries (preview)
   navStock: "Stock",
+  navFinance: "Finance",
   stockTitle: "Stock & groceries",
   stockIntro:
     "Estimated stock based on what you buy and what the kitchen serves. Demo data for now.",
@@ -1251,6 +1252,7 @@ const pt: Dict = {
   catalogueMarkUnavailable: "Marcar indisponível",
   catalogueMarkAvailable: "Marcar disponível",
   navStock: "Stock",
+  navFinance: "Finanças",
   stockTitle: "Stock e compras",
   stockIntro:
     "Stock estimado a partir do que compra e do que a cozinha serve. Dados de demonstração.",
@@ -1915,6 +1917,7 @@ const fr: Dict = {
   catalogueMarkUnavailable: "Marquer indisponible",
   catalogueMarkAvailable: "Marquer disponible",
   navStock: "Stock",
+  navFinance: "Finances",
   stockTitle: "Stock et courses",
   stockIntro:
     "Stock estimé à partir de vos achats et de ce que la cuisine sert. Données de démonstration.",
@@ -2570,6 +2573,7 @@ const ar: Dict = {
   catalogueMarkUnavailable: "تعيين كغير متوفر",
   catalogueMarkAvailable: "تعيين كمتوفر",
   navStock: "المخزون",
+  navFinance: "المالية",
   stockTitle: "المخزون والمشتريات",
   stockIntro: "مخزون تقديري بناءً على ما تشتريه وما يقدّمه المطبخ. بيانات تجريبية حالياً.",
   stockDemoBadge: "تجريبي",
