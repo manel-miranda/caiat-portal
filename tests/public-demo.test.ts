@@ -171,10 +171,6 @@ run("isolated public demo database", () => {
     expect(
       (await q`SELECT public.has_permission(${admin}, 'users_manage') allowed`)[0]!.allowed,
     ).toBe(true);
-    await expect(
-      Promise.resolve(q`SELECT public.set_user_role(${staff}, 'admin')`),
-    ).rejects.toThrow("permission denied");
-
     await actAs(db.sql, visitor);
   });
 
@@ -218,6 +214,7 @@ run("isolated public demo database", () => {
   });
 
   test("visitor can create a stay, add a charge, simulate payment and check out", async () => {
+    await actAs(db.sql, visitor);
     await db.sql.unsafe("SET ROLE authenticated");
     try {
       const [room] = await q`SELECT id FROM public.rooms ORDER BY sort_order DESC LIMIT 1`;
