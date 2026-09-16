@@ -7,8 +7,7 @@ const original = { ...process.env };
 const originalFetch = globalThis.fetch;
 afterEach(() => {
   globalThis.fetch = originalFetch;
-  for (const key of Object.keys(process.env))
-    if (!(key in original)) delete process.env[key];
+  for (const key of Object.keys(process.env)) if (!(key in original)) delete process.env[key];
   Object.assign(process.env, original);
 });
 const env = { VERCEL: "1", DEMO_RATE_LIMIT_SECRET: "a".repeat(64) };
@@ -35,9 +34,7 @@ describe("server controlled demo quota", () => {
   test("stable private buckets differ by IP and ignore browser forwarding headers", () => {
     const a = demoQuotaRequest(request(), env);
     expect(a.p_bucket.length).toBe(64);
-    expect(
-      a.p_bucket === demoQuotaRequest(request("192.0.2.2"), env).p_bucket,
-    ).toBe(false);
+    expect(a.p_bucket === demoQuotaRequest(request("192.0.2.2"), env).p_bucket).toBe(false);
     const spoofed = request();
     spoofed.headers.set("x-forwarded-for", "192.0.2.99");
     spoofed.headers.set("x-real-ip", "192.0.2.99");
@@ -47,25 +44,18 @@ describe("server controlled demo quota", () => {
     );
   });
   test("missing trust boundary, malformed addresses and missing secrets fail closed", () => {
-    expect(() => demoQuotaRequest(request(), {})).toThrow(
-      "DEMO_QUOTA_NOT_CONFIGURED",
-    );
+    expect(() => demoQuotaRequest(request(), {})).toThrow("DEMO_QUOTA_NOT_CONFIGURED");
     expect(() => demoQuotaRequest(request(), { ...env, VERCEL: "0" })).toThrow(
       "DEMO_QUOTA_NOT_CONFIGURED",
     );
     for (const ip of ["", "unknown", "192.0.2.1, 192.0.2.2"]) {
-      expect(() => demoQuotaRequest(request(ip), env)).toThrow(
-        "DEMO_CLIENT_ADDRESS_UNAVAILABLE",
-      );
+      expect(() => demoQuotaRequest(request(ip), env)).toThrow("DEMO_CLIENT_ADDRESS_UNAVAILABLE");
     }
   });
   test("exhausted quota prevents Auth requests and never returns the secret", async () => {
     configure();
     let calls = 0;
-    globalThis.fetch = (async (
-      input: RequestInfo | URL,
-      init?: RequestInit,
-    ) => {
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
       calls++;
       expect(String(input)).toContain("/rpc/demo_login_allowed_v2");
       const body = JSON.parse(String(init?.body));
@@ -84,10 +74,7 @@ describe("server controlled demo quota", () => {
     let calls = 0;
     globalThis.fetch = (async () => {
       calls++;
-      return Response.json(
-        { message: "DEMO_QUOTA_UNAUTHORIZED" },
-        { status: 403 },
-      );
+      return Response.json({ message: "DEMO_QUOTA_UNAUTHORIZED" }, { status: 403 });
     }) as typeof fetch;
     expect((await demoLogin(request())).status).toBe(503);
     expect(calls).toBe(1);
