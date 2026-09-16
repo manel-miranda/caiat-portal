@@ -16,10 +16,7 @@ export async function demoLogin(request: Request): Promise<Response> {
   try {
     config = requireDemoConfig();
   } catch {
-    return Response.json(
-      { error: "DEMO_NOT_CONFIGURED" },
-      { status: 404, headers },
-    );
+    return Response.json({ error: "DEMO_NOT_CONFIGURED" }, { status: 404, headers });
   }
   const client = createClient(config.url, config.key, {
     auth: {
@@ -28,17 +25,13 @@ export async function demoLogin(request: Request): Promise<Response> {
       detectSessionInUrl: false,
     },
     global: {
-      fetch: (input, init) =>
-        fetch(input, { ...init, signal: AbortSignal.timeout(10_000) }),
+      fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(10_000) }),
     },
   });
   try {
     // A server-authenticated, per-address quota shared across Vercel instances.
     const quota = demoQuotaRequest(request);
-    const { data: allowed, error: quotaError } = await client.rpc(
-      "demo_login_allowed_v2",
-      quota,
-    );
+    const { data: allowed, error: quotaError } = await client.rpc("demo_login_allowed_v2", quota);
     if (quotaError) throw new Error("DEMO_QUOTA_UNAVAILABLE");
     if (allowed !== true) {
       return Response.json(
@@ -60,9 +53,6 @@ export async function demoLogin(request: Request): Promise<Response> {
     );
   } catch {
     // Never log credentials, sessions or upstream auth responses.
-    return Response.json(
-      { error: "DEMO_UNAVAILABLE" },
-      { status: 503, headers },
-    );
+    return Response.json({ error: "DEMO_UNAVAILABLE" }, { status: 503, headers });
   }
 }
