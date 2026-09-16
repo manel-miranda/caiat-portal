@@ -59,7 +59,11 @@ BEGIN
       'customer_upsert', 'customer_update_profile', 'merge_customers',
       'complete_request', 'cancel_request', 'cash_reconcile',
       'guest_token_generate', 'guest_token_revoke',
-      'staff_create_food_order', 'preview_food_order_set_status'
+      'staff_create_food_order', 'preview_food_order_set_status',
+      'inventory_receive', 'inventory_adjust', 'inventory_waste',
+      'inventory_record_purchase', 'inventory_simulate_week',
+      'inventory_simulate_purchase', 'inventory_simulation_reset',
+      'inventory_simulate_history'
     ])
   LOOP
     EXECUTE format('GRANT EXECUTE ON FUNCTION %s TO authenticated', f.signature);
