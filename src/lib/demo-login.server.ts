@@ -1,7 +1,18 @@
 import { createClient } from "@supabase/supabase-js";
-import { DEMO_EMAIL } from "./demo";
+import { DEMO_IDENTITIES, isDemoRole, type DemoRole } from "./demo";
 import { requireDemoConfig } from "./demo-config.server";
 import { demoQuotaRequest } from "./demo-rate-limit.server";
+
+async function requestedRole(request: Request): Promise<DemoRole | null> {
+  const body = await request.text();
+  if (!body) return "supervisor";
+  try {
+    const value = JSON.parse(body) as { role?: unknown };
+    return isDemoRole(value.role) ? value.role : null;
+  } catch {
+    return null;
+  }
+}
 
 /** A fresh client per request: never share a visitor's refresh token in server memory. */
 export async function demoLogin(request: Request): Promise<Response> {
@@ -18,6 +29,9 @@ export async function demoLogin(request: Request): Promise<Response> {
   } catch {
     return Response.json({ error: "DEMO_NOT_CONFIGURED" }, { status: 404, headers });
   }
+  const role = await requestedRole(request);
+  if (!role) return Response.json({ error: "INVALID_DEMO_ROLE" }, { status: 400, headers });
+
   const client = createClient(config.url, config.key, {
     auth: {
       persistSession: false,
@@ -29,7 +43,7 @@ export async function demoLogin(request: Request): Promise<Response> {
     },
   });
   try {
-    // A server-authenticated, per-address quota shared across Vercel instances.
+    // A server-authenticated, per-address quota shared across Vercel instances and roles.
     const quota = demoQuotaRequest(request);
     const { data: allowed, error: quotaError } = await client.rpc("demo_login_allowed_v2", quota);
     if (quotaError) {
@@ -46,7 +60,7 @@ export async function demoLogin(request: Request): Promise<Response> {
       );
     }
     const { data, error } = await client.auth.signInWithPassword({
-      email: DEMO_EMAIL,
+      email: DEMO_IDENTITIES[role].email,
       password: config.password,
     });
     if (error || !data.session) throw new Error("DEMO_LOGIN_FAILED");
@@ -58,7 +72,7 @@ export async function demoLogin(request: Request): Promise<Response> {
       { headers },
     );
   } catch (error) {
-    // Never log credentials, sessions or upstream auth responses.
+    // Never log credentials, sessions, addresses or upstream auth responses.
     const knownErrors = new Set([
       "DEMO_QUOTA_NOT_CONFIGURED",
       "DEMO_CLIENT_ADDRESS_UNAVAILABLE",
@@ -68,6 +82,7 @@ export async function demoLogin(request: Request): Promise<Response> {
     ]);
     console.error("[demo-login]", {
       reason: error instanceof Error && knownErrors.has(error.message) ? error.message : "UNKNOWN",
+      role,
       vercelRuntime: process.env["VERCEL"] === "1",
       quotaSecretConfigured: /^[a-f0-9]{64}$/.test(process.env["DEMO_RATE_LIMIT_SECRET"] ?? ""),
     });

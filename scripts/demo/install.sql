@@ -18,20 +18,34 @@ REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA public FROM PUBLIC, anon, authenticate
 ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
 REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon;
 REVOKE INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER
-  ON public.profiles, public.user_roles, public.user_permissions FROM authenticated;
+  ON public.profiles, public.user_roles, public.user_permissions,
+     public.rooms, public.service_types, public.service_recommendations
+  FROM authenticated;
 REVOKE ALL ON public.payment_sessions FROM authenticated;
 
 CREATE OR REPLACE FUNCTION public.has_role(_user_id uuid, _role public.app_role)
 RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $$
-  SELECT _user_id = auth.uid() AND _role = 'supervisor'::public.app_role
-    AND EXISTS (SELECT 1 FROM public.profiles
-      WHERE id = _user_id AND username = 'public-demo' AND active)
+  SELECT _user_id = auth.uid()
+    AND EXISTS (
+      SELECT 1 FROM public.profiles p
+      JOIN public.user_roles r ON r.user_id = p.id
+      WHERE p.id = _user_id AND p.active AND p.username LIKE 'public-demo-%' AND r.role = _role
+    )
 $$;
 CREATE OR REPLACE FUNCTION public.has_permission(_user_id uuid, _key text)
 RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $$
-  SELECT public.has_role(_user_id, 'supervisor'::public.app_role)
-    AND _key IN ('reservations_manage', 'payments_manage', 'checkout_override',
-      'cash_reconcile', 'customers_manage', 'guest_access_manage', 'requests_manage', 'activity_view')
+  SELECT CASE
+    WHEN public.has_role(_user_id, 'admin'::public.app_role) THEN
+      _key IN ('reservations_manage','payments_manage','checkout_override','cash_reconcile',
+        'customers_manage','guest_access_manage','requests_manage','activity_view',
+        'users_manage','roles_manage','pin_reset')
+    WHEN public.has_role(_user_id, 'supervisor'::public.app_role) THEN
+      _key IN ('reservations_manage','payments_manage','checkout_override','cash_reconcile',
+        'customers_manage','guest_access_manage','requests_manage','activity_view')
+    WHEN public.has_role(_user_id, 'staff'::public.app_role) THEN
+      _key IN ('payments_manage','requests_manage')
+    ELSE false
+  END
 $$;
 
 DO $$
@@ -73,8 +87,14 @@ CREATE FUNCTION demo_private.guard_auth_user() RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 BEGIN
   IF TG_OP = 'INSERT' THEN
-    IF NEW.id IS DISTINCT FROM 'df101cea-e2ed-4a3a-956b-b817038bb648'::uuid
-      OR NEW.email IS DISTINCT FROM 'public-demo@caiat.invalid' THEN
+    IF NOT (
+      (NEW.id = '6ffc1230-ee90-473d-b2fb-9c36736d37f2'::uuid
+        AND NEW.email = 'public-demo-staff@caiat.invalid')
+      OR (NEW.id = 'df101cea-e2ed-4a3a-956b-b817038bb648'::uuid
+        AND NEW.email = 'public-demo@caiat.invalid')
+      OR (NEW.id = '55672d38-529a-49c8-88a6-f604ad6096ca'::uuid
+        AND NEW.email = 'public-demo-admin@caiat.invalid')
+    ) THEN
       RAISE EXCEPTION 'DEMO_SECURITY_LOCKED';
     END IF;
     UPDATE demo_private.provisioning SET creation_transaction = txid_current() WHERE singleton;
@@ -83,7 +103,6 @@ BEGIN
   ELSE
     IF EXISTS (SELECT 1 FROM demo_private.provisioning
       WHERE singleton AND creation_transaction = txid_current()) THEN
-      -- This exception is reachable only inside the account's original admin creation transaction.
       IF NEW.id IS DISTINCT FROM OLD.id OR NEW.email IS DISTINCT FROM OLD.email THEN
         RAISE EXCEPTION 'DEMO_SECURITY_LOCKED';
       END IF;
@@ -101,9 +120,23 @@ CREATE TRIGGER caiat_demo_auth_guard BEFORE INSERT OR UPDATE OR DELETE ON auth.u
 
 CREATE FUNCTION demo_private.provision_profile() RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
+DECLARE demo_role public.app_role;
+DECLARE demo_username text;
+DECLARE demo_name text;
 BEGIN
-  INSERT INTO public.profiles(id, username, full_name) VALUES (NEW.id, 'public-demo', 'Demo visitor');
-  INSERT INTO public.user_roles(user_id, role) VALUES (NEW.id, 'supervisor');
+  SELECT x.role, x.username, x.full_name INTO demo_role, demo_username, demo_name
+  FROM (VALUES
+    ('6ffc1230-ee90-473d-b2fb-9c36736d37f2'::uuid, 'staff'::public.app_role,
+      'public-demo-staff', 'Demo staff'),
+    ('df101cea-e2ed-4a3a-956b-b817038bb648'::uuid, 'supervisor'::public.app_role,
+      'public-demo-supervisor', 'Demo supervisor'),
+    ('55672d38-529a-49c8-88a6-f604ad6096ca'::uuid, 'admin'::public.app_role,
+      'public-demo-admin', 'Demo admin')
+  ) AS x(id, role, username, full_name)
+  WHERE x.id = NEW.id;
+  IF demo_role IS NULL THEN RAISE EXCEPTION 'DEMO_SECURITY_LOCKED'; END IF;
+  INSERT INTO public.profiles(id, username, full_name) VALUES (NEW.id, demo_username, demo_name);
+  INSERT INTO public.user_roles(user_id, role) VALUES (NEW.id, demo_role);
   RETURN NEW;
 END $$;
 CREATE TRIGGER caiat_demo_profile AFTER INSERT ON auth.users
@@ -119,7 +152,16 @@ CREATE FUNCTION demo_private.guard_identity() RETURNS trigger
 LANGUAGE plpgsql SET search_path = '' AS $$
 BEGIN
   IF TG_OP = 'INSERT' AND NEW.provider = 'email'
-    AND EXISTS (SELECT 1 FROM auth.users WHERE id = NEW.user_id AND email = 'public-demo@caiat.invalid') THEN
+    AND EXISTS (
+      SELECT 1 FROM auth.users
+      WHERE id = NEW.user_id
+        AND raw_app_meta_data ->> 'caiat_demo' = 'true'
+        AND (id, email) IN (
+          ('6ffc1230-ee90-473d-b2fb-9c36736d37f2'::uuid, 'public-demo-staff@caiat.invalid'),
+          ('df101cea-e2ed-4a3a-956b-b817038bb648'::uuid, 'public-demo@caiat.invalid'),
+          ('55672d38-529a-49c8-88a6-f604ad6096ca'::uuid, 'public-demo-admin@caiat.invalid')
+        )
+    ) THEN
     RETURN NEW;
   END IF;
   IF TG_OP = 'UPDATE' AND

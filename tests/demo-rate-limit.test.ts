@@ -11,13 +11,15 @@ afterEach(() => {
   Object.assign(process.env, original);
 });
 const env = { VERCEL: "1", DEMO_RATE_LIMIT_SECRET: "a".repeat(64) };
-function request(ip = "192.0.2.1") {
+function request(ip = "192.0.2.1", role?: "staff" | "supervisor" | "admin" | string) {
   return new Request("https://demo.caiat-portal.com/api/public/demo/login", {
     method: "POST",
     headers: {
       origin: "https://demo.caiat-portal.com",
       "x-vercel-forwarded-for": ip,
+      ...(role ? { "content-type": "application/json" } : {}),
     },
+    ...(role ? { body: JSON.stringify({ role }) } : {}),
   });
 }
 function configure() {
@@ -69,6 +71,19 @@ describe("server controlled demo quota", () => {
     expect(await response.json()).toEqual({ error: "DEMO_BUSY" });
     expect(calls).toBe(1);
   });
+  test("invalid roles are rejected before quota or Auth", async () => {
+    configure();
+    let calls = 0;
+    globalThis.fetch = (async () => {
+      calls++;
+      return Response.json(true);
+    }) as typeof fetch;
+    const response = await demoLogin(request("192.0.2.1", "owner"));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "INVALID_DEMO_ROLE" });
+    expect(calls).toBe(0);
+  });
+
   test("quota backend errors fail closed before Auth", async () => {
     configure();
     let calls = 0;
@@ -83,10 +98,11 @@ describe("server controlled demo quota", () => {
     configure();
     let calls = 0;
     const token = `${btoa(JSON.stringify({ alg: "HS256" }))}.${btoa(JSON.stringify({ sub: "test", exp: 4102444800 }))}.test`;
-    globalThis.fetch = (async (input: RequestInfo | URL) => {
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
       calls++;
       if (String(input).includes("/rpc/")) return Response.json(true);
       expect(String(input)).toContain("/auth/v1/token");
+      expect(JSON.parse(String(init?.body)).email).toBe("public-demo-staff@caiat.invalid");
       return Response.json({
         access_token: token,
         refresh_token: "test-refresh",
@@ -95,7 +111,7 @@ describe("server controlled demo quota", () => {
         user: { id: "test", aud: "authenticated" },
       });
     }) as typeof fetch;
-    const response = await demoLogin(request());
+    const response = await demoLogin(request("192.0.2.1", "staff"));
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
       access_token: token,

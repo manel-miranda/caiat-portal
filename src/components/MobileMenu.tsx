@@ -58,7 +58,9 @@ export function MobileMenu({ variant = "icon" }: { variant?: "icon" | "tab" | "m
         ] as MenuLink[])
       : []
   ).filter(
-    (link) => (!isPublicDemo || link.to !== "/stock") && (!link.permission || can(link.permission)),
+    (link) =>
+      (!isPublicDemo || link.to !== "/stock" || role === "admin") &&
+      (!link.permission || can(link.permission)),
   );
 
   if (desktopManage && links.length === 0) return null;
