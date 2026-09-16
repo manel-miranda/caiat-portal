@@ -174,6 +174,51 @@ run("isolated public demo database", () => {
     await actAs(db.sql, visitor);
   });
 
+  test("stock RPCs are executable but still enforce the caller's demo role", async () => {
+    const [grants] = await q`SELECT bool_and(
+      has_function_privilege('authenticated', signature, 'EXECUTE')
+    ) allowed
+    FROM unnest(ARRAY[
+      'public.inventory_receive(uuid,numeric,numeric,text)',
+      'public.inventory_adjust(uuid,numeric,text)',
+      'public.inventory_waste(uuid,numeric,text)',
+      'public.inventory_record_purchase(uuid,uuid,timestamptz,text,jsonb)',
+      'public.inventory_simulate_week(uuid,text)',
+      'public.inventory_simulate_purchase(uuid)',
+      'public.inventory_simulation_reset()',
+      'public.inventory_simulate_history(uuid,integer)'
+    ]) signature`;
+    expect(grants!.allowed).toBe(true);
+
+    await actAs(db.sql, visitor);
+    await db.sql.unsafe("SET ROLE authenticated");
+    try {
+      await expect(
+        Promise.resolve(q`SELECT public.inventory_simulate_week(gen_random_uuid(), 'quiet')`),
+      ).rejects.toThrow("PERMISSION_DENIED");
+    } finally {
+      await db.sql.unsafe("RESET ROLE");
+    }
+
+    await actAs(db.sql, admin);
+    await db.sql.unsafe("SET ROLE authenticated");
+    try {
+      const [item] = await q`SELECT i.id,
+        (coalesce(sum(m.quantity), 0) + 1)::int n
+        FROM public.inventory_items i
+        LEFT JOIN public.inventory_movements m ON m.inventory_item_id = i.id
+        WHERE i.active
+        GROUP BY i.id
+        ORDER BY i.id
+        LIMIT 1`;
+      await q`SELECT public.inventory_adjust(${item!.id}::uuid, ${item!.n}, 'Demo permission test')`;
+      await q`SELECT public.inventory_simulate_week(gen_random_uuid(), 'quiet')`;
+    } finally {
+      await db.sql.unsafe("RESET ROLE");
+      await actAs(db.sql, visitor);
+    }
+  });
+
   test("raw authenticated calls cannot change security or reset data", async () => {
     await db.sql.unsafe("SET ROLE authenticated");
     try {
@@ -206,7 +251,7 @@ run("isolated public demo database", () => {
         "permission denied",
       );
       await expect(Promise.resolve(q`SELECT public.inventory_simulation_reset()`)).rejects.toThrow(
-        "permission denied",
+        "PERMISSION_DENIED",
       );
     } finally {
       await db.sql.unsafe("RESET ROLE");
