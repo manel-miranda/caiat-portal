@@ -22,6 +22,24 @@ See the [isolated demo operations guide](docs/public-demo.md) for setup, restric
 
 ## Feature overview
 
+Finance indicators are available under **Manage → Finance** to users with the
+`activity_view` permission (normally Supervisor and Admin). They show latest
+recorded ingredient purchase costs, recipe cost per portion, estimated ingredient
+gross profit, and margin percentage. Missing costs remain unknown; labour,
+overheads, taxes, and waste are not included, so these are not net-profit figures.
+The average is an unweighted average of dishes with a calculable margin.
+The isolated public demo includes its demo-only recipes; costs stay unknown until
+purchase prices are recorded. Production excludes demo-only recipes by default.
+
+Existing curated guest food recommendations are ordered by margin within each
+dish's suggestions, with unknown margins last and curated order preserved for ties.
+Guest responses never include internal costs or margins. This feature does not
+provide sales forecasts or customer-level profitability profiling.
+
+Deploy the three `20260916` finance migrations before releasing the frontend, to both
+the production and isolated demo databases. The demo installer also allowlists the
+read-only finance RPC; existing demo installations receive its grant via migration.
+
 | Area                      | Capabilities                                                                                                                                                                              |
 | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Daily operations**      | Live room board, stays, arrivals and departures, reservation calendar, charges, service requests, payments and guarded checkout                                                           |

@@ -1273,6 +1273,10 @@ export type Database = {
       };
     };
     Functions: {
+      finance_profitability: {
+        Args: { p_include_preview?: boolean };
+        Returns: Json;
+      };
       cancel_request: { Args: { p_request_id: string }; Returns: string };
       cash_reconcile: {
         Args: {

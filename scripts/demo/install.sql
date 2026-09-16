@@ -54,7 +54,7 @@ BEGIN
   FOR f IN SELECT p.oid::regprocedure AS signature FROM pg_proc p
     JOIN pg_namespace n ON n.oid = p.pronamespace
     WHERE n.nspname = 'public' AND p.proname = ANY (ARRAY[
-      'has_role', 'has_permission', 'create_stay_with_guest', 'edit_stay',
+      'has_role', 'has_permission', 'finance_profitability', 'create_stay_with_guest', 'edit_stay',
       'confirm_reservation', 'reject_reservation', 'checkout_stay',
       'customer_upsert', 'customer_update_profile', 'merge_customers',
       'complete_request', 'cancel_request', 'cash_reconcile',
