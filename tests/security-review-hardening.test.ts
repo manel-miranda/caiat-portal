@@ -123,7 +123,8 @@ suite("independent security review hardening", () => {
     await actAs(staffSql, staffId);
 
     await expectDenied(
-      () => staffSql`UPDATE public.preview_food_orders SET status = 'delivered' WHERE id = ${orderId}`,
+      () =>
+        staffSql`UPDATE public.preview_food_orders SET status = 'delivered' WHERE id = ${orderId}`,
       "permission denied",
     );
     await expectDenied(

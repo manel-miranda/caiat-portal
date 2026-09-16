@@ -111,7 +111,9 @@ function HomePage() {
                   {shortDate(stay.check_in)}–{shortDate(stay.check_out)}
                 </p>
               ) : (
-                <p className="mt-2 text-[13px] text-muted-foreground sm:mt-3 sm:text-sm">{t("available")}</p>
+                <p className="mt-2 text-[13px] text-muted-foreground sm:mt-3 sm:text-sm">
+                  {t("available")}
+                </p>
               )}
             </div>
           );

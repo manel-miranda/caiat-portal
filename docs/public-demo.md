@@ -134,7 +134,6 @@ INVENTORY_TEST_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/postgres
 
 The tests use disposable PostgreSQL databases. `tests/public-demo.test.ts` applies the normal repository baseline and then the demo-only installer, verifying both permitted operational work and direct bypass attempts. `tests/demo-server.test.ts` checks environment isolation, login origin/configuration checks and provider blocking. Full end-to-end authentication requires the actual demo account and its local/server-only password.
 
-
 ## Demo role selector
 
 The public landing page sends only the selected role name to the server. The server maps it to one

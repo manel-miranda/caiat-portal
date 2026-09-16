@@ -249,12 +249,7 @@ export const DEMO_MENU: DemoDish[] = [
   },
 ];
 
-export const DEMO_CATEGORY_ORDER: DemoCategory[] = [
-  "signature",
-  "mains",
-  "drinks",
-  "desserts",
-];
+export const DEMO_CATEGORY_ORDER: DemoCategory[] = ["signature", "mains", "drinks", "desserts"];
 
 export function demoDish(id: string): DemoDish | undefined {
   return DEMO_MENU.find((d) => d.id === id);

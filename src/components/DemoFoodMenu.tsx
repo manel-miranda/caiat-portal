@@ -176,13 +176,7 @@ function DemoMenuBody({
     for (const line of lines) {
       for (const id of line.dish.recommendationIds) {
         const rec = byId.get(id);
-        if (
-          !rec ||
-          !rec.available ||
-          !rec.orderable ||
-          cart[id] ||
-          out.some((d) => d.id === id)
-        ) {
+        if (!rec || !rec.available || !rec.orderable || cart[id] || out.some((d) => d.id === id)) {
           continue;
         }
         out.push(rec);
@@ -323,11 +317,7 @@ function DemoMenuBody({
                         {qty} × {mad(dish.priceMad)}
                       </span>
                     </span>
-                    <Stepper
-                      qty={qty}
-                      onAdd={() => add(dish, 1)}
-                      onRemove={() => add(dish, -1)}
-                    />
+                    <Stepper qty={qty} onAdd={() => add(dish, 1)} onRemove={() => add(dish, -1)} />
                     <span className="w-20 shrink-0 text-end text-sm font-semibold">
                       {mad(dish.priceMad * qty)}
                     </span>

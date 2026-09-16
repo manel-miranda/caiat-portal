@@ -158,7 +158,8 @@ suite("system permission boundaries", () => {
       "PERMISSION_DENIED:reservations_manage",
     );
 
-    const [stillActive] = await sql`SELECT status::text AS status FROM public.stays WHERE id = ${stayId}`;
+    const [stillActive] =
+      await sql`SELECT status::text AS status FROM public.stays WHERE id = ${stayId}`;
     expect(String((stillActive as { status: string }).status)).toBe("active");
 
     await actAs(sql, supervisorId);
@@ -206,7 +207,8 @@ suite("system permission boundaries", () => {
     await actAs(sql, staffId);
     await expectDenied(() => sql`SELECT public.customer_upsert('Nope', NULL, NULL, NULL, NULL)`);
     await expectDenied(
-      () => sql`SELECT public.customer_update_profile(${guestId}, 'Changed', NULL, NULL, NULL, NULL)`,
+      () =>
+        sql`SELECT public.customer_update_profile(${guestId}, 'Changed', NULL, NULL, NULL, NULL)`,
       "PERMISSION_DENIED:customers_manage",
     );
     await expectDenied(() => sql`SELECT public.merge_customers(${guestId}, ${guestId})`);
@@ -232,24 +234,46 @@ suite("system permission boundaries", () => {
       `,
       "PERMISSION_DENIED",
     );
-    await expectDenied(() => sql`SELECT public.catalog_set_active(${serviceId}, false)`, "PERMISSION_DENIED");
-    await expectDenied(() => sql`SELECT public.catalog_set_available(${serviceId}, false)`, "PERMISSION_DENIED");
     await expectDenied(
-      () => sql`SELECT public.inventory_upsert_item(NULL, 'blocked_item', 'Blocked', 'kg', 0, 4, true, false, NULL)`,
+      () => sql`SELECT public.catalog_set_active(${serviceId}, false)`,
+      "PERMISSION_DENIED",
+    );
+    await expectDenied(
+      () => sql`SELECT public.catalog_set_available(${serviceId}, false)`,
+      "PERMISSION_DENIED",
+    );
+    await expectDenied(
+      () =>
+        sql`SELECT public.inventory_upsert_item(NULL, 'blocked_item', 'Blocked', 'kg', 0, 4, true, false, NULL)`,
     );
     await expectDenied(() => sql`SELECT public.inventory_set_recipe(${serviceId}, '[]'::jsonb)`);
-    await expectDenied(() => sql`SELECT public.set_user_role(${staffId}, 'supervisor'::public.app_role)`, "ADMIN_REQUIRED");
-    await expectDenied(() => sql`SELECT public.set_user_active(${staffId}, false)`, "ADMIN_REQUIRED");
-    await expectDenied(() => sql`SELECT public.set_user_permission(${staffId}, 'cash_reconcile', true)`, "PERMISSION_DENIED");
+    await expectDenied(
+      () => sql`SELECT public.set_user_role(${staffId}, 'supervisor'::public.app_role)`,
+      "ADMIN_REQUIRED",
+    );
+    await expectDenied(
+      () => sql`SELECT public.set_user_active(${staffId}, false)`,
+      "ADMIN_REQUIRED",
+    );
+    await expectDenied(
+      () => sql`SELECT public.set_user_permission(${staffId}, 'cash_reconcile', true)`,
+      "PERMISSION_DENIED",
+    );
   });
 
   test("an authenticated account with no app permissions cannot mutate inventory", async () => {
     const outsiderSql = db.connect();
     await actAs(outsiderSql, outsiderId);
 
-    await expectDenied(() => outsiderSql`SELECT public.inventory_receive(${inventoryItemId}, 1, NULL, NULL)`);
-    await expectDenied(() => outsiderSql`SELECT public.inventory_adjust(${inventoryItemId}, 1, NULL)`);
-    await expectDenied(() => outsiderSql`SELECT public.inventory_waste(${inventoryItemId}, 1, NULL)`);
+    await expectDenied(
+      () => outsiderSql`SELECT public.inventory_receive(${inventoryItemId}, 1, NULL, NULL)`,
+    );
+    await expectDenied(
+      () => outsiderSql`SELECT public.inventory_adjust(${inventoryItemId}, 1, NULL)`,
+    );
+    await expectDenied(
+      () => outsiderSql`SELECT public.inventory_waste(${inventoryItemId}, 1, NULL)`,
+    );
   });
 
   test("RLS and grants block unauthorized financial writes while preserving staff payment access", async () => {

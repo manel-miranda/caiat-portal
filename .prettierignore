@@ -1,4 +1,5 @@
 node_modules
+.worktrees
 dist
 .output
 .vinxi
@@ -6,3 +7,9 @@ pnpm-lock.yaml
 package-lock.json
 bun.lock
 routeTree.gen.ts
+.wrangler
+.vercel
+.tanstack
+.nitro
+# Lovable-managed generated code; changes belong in its generator.
+src/integrations/supabase/previewAuthStorage.ts

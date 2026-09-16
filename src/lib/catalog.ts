@@ -157,9 +157,12 @@ export async function setCatalogRecommendations(id: string, ids: string[]) {
  * removes single rows on each source, keeping the 3-per-source cap intact.
  */
 export async function setCatalogIncomingRecommendations(id: string, sourceIds: string[]) {
-  const { error } = await supabase.rpc("catalog_set_incoming_recommendations" as never, {
-    p_id: id,
-    p_source_ids: sourceIds,
-  } as never);
+  const { error } = await supabase.rpc(
+    "catalog_set_incoming_recommendations" as never,
+    {
+      p_id: id,
+      p_source_ids: sourceIds,
+    } as never,
+  );
   if (error) throw error;
 }

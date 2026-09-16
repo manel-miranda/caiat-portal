@@ -269,9 +269,7 @@ function NewStayPage() {
             {suggestions.length > 0 ? (
               <div
                 className={`rounded-xl border p-3 ${
-                  hasContactMatch
-                    ? "border-warning/50 bg-warning/10"
-                    : "border-border bg-muted/40"
+                  hasContactMatch ? "border-warning/50 bg-warning/10" : "border-border bg-muted/40"
                 }`}
               >
                 <p className="text-xs font-semibold">
@@ -305,7 +303,6 @@ function NewStayPage() {
             ) : null}
           </>
         )}
-
 
         <Field label={t("room")}>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">

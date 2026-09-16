@@ -140,7 +140,9 @@ function ServicesPage() {
       {services.isLoading ? (
         <p className="surface-card mt-4 p-3 sm:p-4 text-sm text-muted-foreground">{t("loading")}</p>
       ) : items.length === 0 ? (
-        <p className="surface-card mt-4 p-3 sm:p-4 text-sm text-muted-foreground">{t("noResults")}</p>
+        <p className="surface-card mt-4 p-3 sm:p-4 text-sm text-muted-foreground">
+          {t("noResults")}
+        </p>
       ) : (
         <>
           {(() => {

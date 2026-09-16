@@ -202,7 +202,6 @@ function Portal({ token, data }: { token: string; data: GuestPortalData }) {
         demoServices={data.demo_services ?? []}
       />
 
-
       {/* ---- Request something ---- */}
       <section className="surface-card mt-4 p-3 sm:p-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">

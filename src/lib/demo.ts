@@ -6,10 +6,7 @@ export const DEMO_SUPABASE_URL = `https://${DEMO_PROJECT_REF}.supabase.co`;
 export const DEMO_ROLES = ["staff", "supervisor", "admin"] as const;
 export type DemoRole = (typeof DEMO_ROLES)[number];
 
-export const DEMO_IDENTITIES: Record<
-  DemoRole,
-  { id: string; email: string; name: string }
-> = {
+export const DEMO_IDENTITIES: Record<DemoRole, { id: string; email: string; name: string }> = {
   staff: {
     id: "6ffc1230-ee90-473d-b2fb-9c36736d37f2",
     email: "public-demo-staff@caiat.invalid",

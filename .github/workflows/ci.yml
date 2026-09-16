@@ -27,6 +27,8 @@ jobs:
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.2"
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -37,8 +39,10 @@ jobs:
       - name: Typecheck tests
         run: bun run typecheck:tests
 
-      - name: Lint (baseline, non-blocking)
-        continue-on-error: true
+      - name: Check formatting
+        run: bun run format:check
+
+      - name: Lint
         run: bun run lint
 
       - name: Production build
@@ -68,6 +72,8 @@ jobs:
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.2"
 
       - name: Install dependencies
         run: bun install --frozen-lockfile

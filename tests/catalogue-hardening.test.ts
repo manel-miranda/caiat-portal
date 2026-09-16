@@ -1,6 +1,11 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { SQL } from "bun";
-import { actAs, createTestDatabase, databaseAvailable, type TestDatabase } from "./support/preview-db";
+import {
+  actAs,
+  createTestDatabase,
+  databaseAvailable,
+  type TestDatabase,
+} from "./support/preview-db";
 
 const canRun = databaseAvailable();
 const suite = canRun ? describe : describe.skip;
