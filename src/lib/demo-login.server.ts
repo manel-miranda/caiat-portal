@@ -32,7 +32,13 @@ export async function demoLogin(request: Request): Promise<Response> {
     // A server-authenticated, per-address quota shared across Vercel instances.
     const quota = demoQuotaRequest(request);
     const { data: allowed, error: quotaError } = await client.rpc("demo_login_allowed_v2", quota);
-    if (quotaError) throw new Error("DEMO_QUOTA_UNAVAILABLE");
+    if (quotaError) {
+      throw new Error(
+        quotaError.message === "DEMO_QUOTA_UNAUTHORIZED"
+          ? "DEMO_QUOTA_UNAUTHORIZED"
+          : "DEMO_QUOTA_UNAVAILABLE",
+      );
+    }
     if (allowed !== true) {
       return Response.json(
         { error: "DEMO_BUSY" },
@@ -51,8 +57,20 @@ export async function demoLogin(request: Request): Promise<Response> {
       },
       { headers },
     );
-  } catch {
+  } catch (error) {
     // Never log credentials, sessions or upstream auth responses.
+    const knownErrors = new Set([
+      "DEMO_QUOTA_NOT_CONFIGURED",
+      "DEMO_CLIENT_ADDRESS_UNAVAILABLE",
+      "DEMO_QUOTA_UNAUTHORIZED",
+      "DEMO_QUOTA_UNAVAILABLE",
+      "DEMO_LOGIN_FAILED",
+    ]);
+    console.error("[demo-login]", {
+      reason: error instanceof Error && knownErrors.has(error.message) ? error.message : "UNKNOWN",
+      vercelRuntime: process.env["VERCEL"] === "1",
+      quotaSecretConfigured: /^[a-f0-9]{64}$/.test(process.env["DEMO_RATE_LIMIT_SECRET"] ?? ""),
+    });
     return Response.json({ error: "DEMO_UNAVAILABLE" }, { status: 503, headers });
   }
 }
