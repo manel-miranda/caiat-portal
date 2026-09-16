@@ -54,10 +54,23 @@ run("isolated public demo database", () => {
     END $$;
     DELETE FROM public.user_permissions; DELETE FROM public.user_roles; DELETE FROM public.profiles;
     DELETE FROM auth.users;
-    ALTER TABLE auth.users ADD COLUMN raw_app_meta_data jsonb DEFAULT '{}',
-      ADD COLUMN encrypted_password text, ADD COLUMN last_sign_in_at timestamptz,
-      ADD COLUMN updated_at timestamptz, ADD COLUMN email_confirmed_at timestamptz,
-      ADD COLUMN phone_confirmed_at timestamptz,
+    ALTER TABLE auth.users
+      ADD COLUMN instance_id uuid, ADD COLUMN aud text, ADD COLUMN role text,
+      ADD COLUMN raw_app_meta_data jsonb DEFAULT '{}', ADD COLUMN raw_user_meta_data jsonb,
+      ADD COLUMN encrypted_password text, ADD COLUMN invited_at timestamptz,
+      ADD COLUMN confirmation_token text, ADD COLUMN confirmation_sent_at timestamptz,
+      ADD COLUMN recovery_token text, ADD COLUMN recovery_sent_at timestamptz,
+      ADD COLUMN email_change_token_new text, ADD COLUMN email_change text,
+      ADD COLUMN email_change_sent_at timestamptz, ADD COLUMN last_sign_in_at timestamptz,
+      ADD COLUMN updated_at timestamptz, ADD COLUMN created_at timestamptz,
+      ADD COLUMN email_confirmed_at timestamptz, ADD COLUMN phone text,
+      ADD COLUMN phone_confirmed_at timestamptz, ADD COLUMN phone_change text,
+      ADD COLUMN phone_change_token text, ADD COLUMN phone_change_sent_at timestamptz,
+      ADD COLUMN email_change_token_current text, ADD COLUMN email_change_confirm_status smallint,
+      ADD COLUMN banned_until timestamptz, ADD COLUMN reauthentication_token text,
+      ADD COLUMN reauthentication_sent_at timestamptz, ADD COLUMN is_super_admin boolean,
+      ADD COLUMN is_sso_user boolean, ADD COLUMN deleted_at timestamptz,
+      ADD COLUMN is_anonymous boolean,
       ADD COLUMN confirmed_at timestamptz GENERATED ALWAYS AS (LEAST(email_confirmed_at, phone_confirmed_at)) STORED;
     CREATE TABLE auth.identities(id uuid DEFAULT gen_random_uuid(), provider_id text,
       user_id uuid REFERENCES auth.users, identity_data jsonb, provider text,
