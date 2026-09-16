@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, usernameToEmail } from "@/lib/auth";
 import { resolveLandingPath } from "@/lib/landing";
-import { isPublicDemo } from "@/lib/demo";
+import { isPublicDemo, type DemoRole } from "@/lib/demo";
 import { t } from "@/lib/i18n";
 
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,7 @@ function LoginPage() {
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<DemoRole | null>(null);
   // Guards against a double navigation when the auth state settles while the
   // post-login redirect is already in flight.
   const redirecting = useRef(false);
@@ -60,11 +61,16 @@ function LoginPage() {
     }
   }, [loading, session, goToLanding]);
 
-  async function tryDemo() {
+  async function tryDemo(role: DemoRole) {
+    setSelectedRole(role);
     setBusy(true);
     setError(null);
     try {
-      const response = await fetch("/api/public/demo/login", { method: "POST" });
+      const response = await fetch("/api/public/demo/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+      });
       if (!response.ok)
         throw new Error(
           "The demo is busy or temporarily unavailable. Please try again in a minute.",
@@ -77,6 +83,7 @@ function LoginPage() {
       setError("The demo is busy or temporarily unavailable. Please try again in a minute.");
     } finally {
       setBusy(false);
+      setSelectedRole(null);
     }
   }
 
@@ -110,25 +117,46 @@ function LoginPage() {
           <section className="surface-card space-y-4 p-5">
             <h2 className="text-xl font-semibold">Explore Caiat Portal</h2>
             <p className="text-sm text-muted-foreground">
-              Try managing a stay, adding charges and recording a simulated payment before checkout.
-              No registration needed.
+              Choose a role to see how Caiat adapts its navigation, permissions and management
+              tools. No registration is needed.
             </p>
-            <p className="text-sm text-muted-foreground">
-              This is a shared demo with fictional data. Changes reset every hour. Please use
-              invented names and details. No real payments are processed.
+            <div className="grid gap-2" role="group" aria-label="Choose a demo role">
+              <DemoRoleButton
+                role="staff"
+                title="Staff"
+                description="Daily rooms, requests and payment tasks."
+                busy={busy}
+                selectedRole={selectedRole}
+                disabled={loading}
+                onSelect={tryDemo}
+              />
+              <DemoRoleButton
+                role="supervisor"
+                title="Supervisor"
+                description="Operational control, customers, cash and activity."
+                busy={busy}
+                selectedRole={selectedRole}
+                disabled={loading}
+                onSelect={tryDemo}
+              />
+              <DemoRoleButton
+                role="admin"
+                title="Admin"
+                description="Complete navigation with security settings safely locked."
+                busy={busy}
+                selectedRole={selectedRole}
+                disabled={loading}
+                onSelect={tryDemo}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Shared fictional data resets every hour. Payments are simulated.
             </p>
             {error ? (
               <p role="alert" className="text-sm text-destructive">
                 {error}
               </p>
             ) : null}
-            <Button
-              className="tap-target w-full"
-              disabled={busy || loading}
-              onClick={() => void tryDemo()}
-            >
-              {busy ? "Opening demo…" : "Try demo"}
-            </Button>
           </section>
         ) : (
           <form onSubmit={submit} className="surface-card space-y-4 p-5">
@@ -182,5 +210,42 @@ function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+
+function DemoRoleButton({
+  role,
+  title,
+  description,
+  busy,
+  selectedRole,
+  disabled,
+  onSelect,
+}: {
+  role: DemoRole;
+  title: string;
+  description: string;
+  busy: boolean;
+  selectedRole: DemoRole | null;
+  disabled: boolean;
+  onSelect: (role: DemoRole) => Promise<void>;
+}) {
+  const opening = busy && selectedRole === role;
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      className="h-auto min-h-16 justify-start rounded-xl px-4 py-3 text-start"
+      disabled={busy || disabled}
+      onClick={() => void onSelect(role)}
+    >
+      <span>
+        <span className="block font-semibold">{opening ? `Opening ${title}…` : title}</span>
+        <span className="mt-0.5 block whitespace-normal text-xs font-normal text-muted-foreground">
+          {description}
+        </span>
+      </span>
+    </Button>
   );
 }
