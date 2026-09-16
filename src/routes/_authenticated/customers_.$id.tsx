@@ -357,8 +357,6 @@ function CustomerDetailPage() {
         </DialogContent>
       </Dialog>
 
-
-
       <section className="mt-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           {t("stayHistory")}

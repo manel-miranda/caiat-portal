@@ -11,9 +11,7 @@ import {
   type TestDatabase,
 } from "./support/preview-db";
 
-const ORDER: OrderLine[] = [
-  { dish: "demo_chicken_tajine", quantity: 1 },
-];
+const ORDER: OrderLine[] = [{ dish: "demo_chicken_tajine", quantity: 1 }];
 
 const canRun = databaseAvailable();
 const suite = canRun ? describe : describe.skip;

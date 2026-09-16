@@ -1,0 +1,4 @@
+# Normalize text consistently on every operating system; preserve binary files.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf

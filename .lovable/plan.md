@@ -3,6 +3,7 @@
 ## What the team gets
 
 **Customers**
+
 - A new **Customers** page (all signed-in users) with search by name, phone or email, showing each person's number of stays, last stay date and a New / Returning tag.
 - A **customer profile** page: contact details, first and last stay, total stays, total billed and total paid, the full chronological list of stays linked to each booking, and internal notes only staff can see.
 - **New stay** gets a customer step: search an existing customer and pick them (the booking attaches to that same person, no duplicate created) or create a new one with just a name, optionally phone/email. Picking an existing customer shows "Returning · 2 previous stays · last stayed 12 Aug" right away.
@@ -11,6 +12,7 @@
 - The guest QR portal stays exactly as private as today: first name only, no contact details, no history.
 
 **Users, roles and PINs**
+
 - New **Supervisor** role between Staff and Admin. Ahmed becomes Supervisor.
 - Admin-only **Users & Permissions** page: everyone listed with name, username, role, active/inactive and what they are allowed to do. Admins can change a role, switch individual permissions on or off, deactivate/reactivate someone, reset a PIN, and add a new user.
 - PIN reset never reveals the old PIN. The admin types a new 6-digit PIN or taps **Generate PIN**, and the generated PIN is shown once, right then, to hand over.
@@ -20,17 +22,17 @@
 
 ### Permission defaults
 
-| Permission | Staff | Supervisor | Admin |
-|---|---|---|---|
-| reservations_manage (create/edit/confirm/reject) | no | yes | yes |
-| payments_manage (charges & payments) | yes | yes | yes |
-| checkout_override | no | yes | yes |
-| cash_reconcile | no | yes | yes |
-| customers_manage (edit profile & notes) | no | yes | yes |
-| guest_access_manage (QR links) | no | yes | yes |
-| requests_manage | yes | yes | yes |
-| activity_view (history log) | no | yes | yes |
-| users_manage / roles_manage / pin_reset | admin only, never grantable |
+| Permission                                       | Staff                       | Supervisor | Admin |
+| ------------------------------------------------ | --------------------------- | ---------- | ----- |
+| reservations_manage (create/edit/confirm/reject) | no                          | yes        | yes   |
+| payments_manage (charges & payments)             | yes                         | yes        | yes   |
+| checkout_override                                | no                          | yes        | yes   |
+| cash_reconcile                                   | no                          | yes        | yes   |
+| customers_manage (edit profile & notes)          | no                          | yes        | yes   |
+| guest_access_manage (QR links)                   | no                          | yes        | yes   |
+| requests_manage                                  | yes                         | yes        | yes   |
+| activity_view (history log)                      | no                          | yes        | yes   |
+| users_manage / roles_manage / pin_reset          | admin only, never grantable |
 
 Admins can grant or revoke any of the first eight per person; the last three stay admin-only.
 
@@ -49,6 +51,7 @@ Admins can grant or revoke any of the first eight per person; the last three sta
 ### PIN reset and user creation
 
 Supabase Auth admin calls cannot happen client-side, so these run as authenticated server functions in `src/lib/users.functions.ts` (`requireSupabaseAuth`, then verify the caller is admin through `context.supabase.rpc('has_role', ...)`, then `await import('@/integrations/supabase/client.server')` inside the handler):
+
 - `resetUserPin` — validates 6 digits, `supabaseAdmin.auth.admin.updateUserById`, audits `user.pin_reset` with no value. Generation happens on the server; the plaintext is returned once in the response and never stored.
 - `changeMyPin` — the signed-in user updates their own PIN via `supabase.auth.updateUser`, no admin path needed.
 - `createUser` — creates the auth user with a confirmed `<username>@caiat.local` identity, inserts profile + role row, audits.
@@ -64,6 +67,7 @@ Supabase Auth admin calls cannot happen client-side, so these run as authenticat
 - `src/lib/i18n.tsx` — new EN/PT/FR/AR keys; layout already uses logical properties so RTL holds.
 
 ### Verification
+
 - `tsgo` typecheck and production build.
 - Backend tests in rolled-back transactions: permission resolution per role, override precedence, protected keys not grantable, last-admin protection, stay creation with an existing `p_guest_id` creating no duplicate guest, supervisor allowed to confirm/edit, staff denied, anon still blocked from `guests`/`user_permissions`.
 - Temporary QA user for the PIN reset round trip (old PIN fails, new PIN works), then deleted.

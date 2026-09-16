@@ -242,17 +242,23 @@ export async function completeRequest(params: {
   withCharge: boolean;
   userId?: string | undefined;
 }) {
-  const { error } = await supabase.rpc("complete_request" as never, {
-    p_request_id: params.requestId,
-    p_with_charge: params.withCharge,
-  } as never);
+  const { error } = await supabase.rpc(
+    "complete_request" as never,
+    {
+      p_request_id: params.requestId,
+      p_with_charge: params.withCharge,
+    } as never,
+  );
   if (error) throw error;
 }
 
 export async function cancelRequest(requestId: string, _userId?: string) {
-  const { error } = await supabase.rpc("cancel_request" as never, {
-    p_request_id: requestId,
-  } as never);
+  const { error } = await supabase.rpc(
+    "cancel_request" as never,
+    {
+      p_request_id: requestId,
+    } as never,
+  );
   if (error) throw error;
 }
 
@@ -293,11 +299,14 @@ export async function saveCashCount(params: {
   existingId?: string | null | undefined;
   userId: string;
 }) {
-  const { data, error } = await supabase.rpc("cash_reconcile" as never, {
-    p_business_date: params.date,
-    p_counted_total: params.countedTotal,
-    p_notes: params.notes?.trim() || null,
-  } as never);
+  const { data, error } = await supabase.rpc(
+    "cash_reconcile" as never,
+    {
+      p_business_date: params.date,
+      p_counted_total: params.countedTotal,
+      p_notes: params.notes?.trim() || null,
+    } as never,
+  );
   if (error) throw error;
   return data as unknown as { id: string; difference: number };
 }

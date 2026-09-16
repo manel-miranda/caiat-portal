@@ -22,18 +22,18 @@ See the [isolated demo operations guide](docs/public-demo.md) for setup, restric
 
 ## Feature overview
 
-| Area | Capabilities |
-| --- | --- |
-| **Daily operations** | Live room board, stays, arrivals and departures, reservation calendar, charges, service requests, payments and guarded checkout |
-| **Customers** | Searchable customer database, returning-guest indicators, contact details, internal notes, stay history and billed/paid totals |
-| **Users & access** | Supabase authentication; Admin, Supervisor and Staff roles; user creation and deactivation; PIN management; role defaults and per-user permission overrides |
-| **Dashboard & control** | Occupancy, guests in house, daily revenue and payments, outstanding balances, expected cash, reconciliation and drill-downs |
-| **Kitchen & inventory** | Food orders, ingredient recipes, automatic stock consumption, purchase and supplier records, low/out-of-stock alerts, shopping recommendations, waste/adjustments and forecast simulation |
-| **Catalogue** | Multilingual items, prices, categories, availability, featured/signature flags, configurable recipes and curated cross-sell recommendations |
-| **Guest portal** | Revocable per-stay access link and QR code, bill and request tracking, service catalogue, food ordering, PayPal Sandbox flow, recommendations and a 3D/AR dish prototype |
-| **Realtime alerts** | Supabase Realtime refreshes operational screens; the task bell combines pending reservations, overdue requests, food orders and low-stock warnings |
-| **Audit & security** | Append-only activity log, actor and timestamp tracking, Row Level Security, permission-checked database RPCs and token-scoped guest access |
-| **Mobile & localisation** | Installable PWA, offline awareness, Moroccan dirham accounting, Casablanca business-day rules, and English, Portuguese, French and Arabic with RTL support |
+| Area                      | Capabilities                                                                                                                                                                              |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Daily operations**      | Live room board, stays, arrivals and departures, reservation calendar, charges, service requests, payments and guarded checkout                                                           |
+| **Customers**             | Searchable customer database, returning-guest indicators, contact details, internal notes, stay history and billed/paid totals                                                            |
+| **Users & access**        | Supabase authentication; Admin, Supervisor and Staff roles; user creation and deactivation; PIN management; role defaults and per-user permission overrides                               |
+| **Dashboard & control**   | Occupancy, guests in house, daily revenue and payments, outstanding balances, expected cash, reconciliation and drill-downs                                                               |
+| **Kitchen & inventory**   | Food orders, ingredient recipes, automatic stock consumption, purchase and supplier records, low/out-of-stock alerts, shopping recommendations, waste/adjustments and forecast simulation |
+| **Catalogue**             | Multilingual items, prices, categories, availability, featured/signature flags, configurable recipes and curated cross-sell recommendations                                               |
+| **Guest portal**          | Revocable per-stay access link and QR code, bill and request tracking, service catalogue, food ordering, PayPal Sandbox flow, recommendations and a 3D/AR dish prototype                  |
+| **Realtime alerts**       | Supabase Realtime refreshes operational screens; the task bell combines pending reservations, overdue requests, food orders and low-stock warnings                                        |
+| **Audit & security**      | Append-only activity log, actor and timestamp tracking, Row Level Security, permission-checked database RPCs and token-scoped guest access                                                |
+| **Mobile & localisation** | Installable PWA, offline awareness, Moroccan dirham accounting, Casablanca business-day rules, and English, Portuguese, French and Arabic with RTL support                                |
 
 ---
 
@@ -142,10 +142,10 @@ display name is real.
 | UI              | React 19, TypeScript, Tailwind CSS 4, [shadcn/ui](https://ui.shadcn.com) on Radix primitives        |
 | Data            | TanStack Query, TanStack Router and Supabase Realtime                                               |
 | Backend         | [Supabase](https://supabase.com) - PostgreSQL, Auth, Row Level Security                             |
-| Payments        | PayPal REST Orders v2 Sandbox flow; simulated and provider-disabled in the public demo             |
+| Payments        | PayPal REST Orders v2 Sandbox flow; simulated and provider-disabled in the public demo              |
 | Build / runtime | Vite 8, [Bun](https://bun.sh)                                                                       |
 | CI              | GitHub Actions - typecheck, build, and database regression tests on a real PostgreSQL service       |
-| Hosting         | Vercel serves `caiat-portal.com` and the isolated `demo.caiat-portal.com` deployment               |
+| Hosting         | Vercel serves `caiat-portal.com` and the isolated `demo.caiat-portal.com` deployment                |
 
 This is a **TanStack Start** application on React, Vite and Supabase. It is **not** a Next.js
 project, the ESLint config actively blocks Next's `server-only` import, because server code
@@ -160,8 +160,9 @@ Verified from the live site and this repository:
 - The Lovable subdomain `caiat-portal.lovable.app` **redirects** to `caiat-portal.com`.
 - Vercel builds a **preview deployment for each pull request** on this repository; preview
   URLs sit behind Vercel's deployment protection and are not publicly browsable.
-- The repository is connected to **Lovable**, which syncs product changes to its connected
-  branch, hence the "do not rewrite published history" rule in [`AGENTS.md`](AGENTS.md).
+- The repository retains its **Lovable** integration and build package. Lovable changes
+  must follow the same branch, PR, and CI requirements as other contributors; see
+  [`AGENTS.md`](AGENTS.md). Direct sync to protected `main` is not permitted.
 
 Which branch Vercel promotes to production, and the exact division of responsibility between
 the Lovable and Vercel pipelines, is configured outside this repository and is not documented
@@ -211,7 +212,7 @@ charges, requests and payments hang off. Around it sit an inventory ledger
 `suppliers`), kitchen orders, cash reconciliations, guest access tokens, payment sessions
 and an append-only audit log (25 tables across 47 additive migrations).
 
-**Mutations go through RPCs, not table writes.** Anything with a rule attached  (creating a
+**Mutations go through RPCs, not table writes.** Anything with a rule attached (creating a
 stay, checking out, reconciling cash, completing a request, consuming inventory) is a
 `SECURITY DEFINER` PostgreSQL function that checks permissions, enforces the rule, writes
 the audit row and returns. Direct `INSERT`/`UPDATE` on those tables is revoked from the
@@ -384,7 +385,7 @@ Codex/ChatGPT together with [Claude Code](https://claude.com/claude-code) for th
 testing and review passes. `AGENTS.md`, `CLAUDE.md` and the commit history all reflect that.
 
 My background is management and economics, not software engineering even though I always had interest in this area and I've always been curious about this area (specially if it involves AI too). What I brought to this
-was mainly my problem solving ability skill, my vision and my knowledge working with AI models, such as tools, skills and some other "tweaks" but also how to write prompts following the best practices. I've also brought  the domain and I specified the operational model, the roles, the data model and every
+was mainly my problem solving ability skill, my vision and my knowledge working with AI models, such as tools, skills and some other "tweaks" but also how to write prompts following the best practices. I've also brought the domain and I specified the operational model, the roles, the data model and every
 workflow from how a real 7-room guesthouse actually runs, and, increasingly as the project
 went on, the engineering process around the generated code:
 
@@ -499,7 +500,32 @@ Apply the migrations in `supabase/migrations/` to your project, in filename orde
 Supabase CLI or dashboard. Migrations are **additive and backward-compatible** by policy - see
 [`AGENTS.md`](AGENTS.md).
 
-### Commands
+### Shared formatting and code quality
+
+Use Bun 1.4.2 and install dependencies with `bun install --frozen-lockfile`.
+All contributors and AI tools follow `.editorconfig`, `.gitattributes`,
+`.prettierrc`, and `eslint.config.js`. Text uses UTF-8 and LF endings; Prettier
+uses two-space indentation, double quotes, semicolons, trailing commas, and a
+100-character target width. These are shared conventions; ESLint also checks
+React hooks and other code-quality rules.
+
+Run `bun run format` after edits and `bun run check:full` before a PR.
+`bun run format:check` checks formatting without changing files. VS Code users
+can install the recommended extensions for formatting on save. Other editors
+should enable EditorConfig and use the project's installed Prettier version.
+Generated routes, Lovable-managed preview auth storage, lockfiles, and build
+outputs are excluded from Prettier. Existing lint warnings remain visible;
+formatting and lint errors fail CI.
+
+Every contributor, including Lovable, must use a branch and PR for changes to
+`main`. The `Main: PR and CI required` GitHub ruleset requires the GitHub Actions
+checks `Typecheck and build` and `Database regression tests`, an up-to-date
+branch, and resolved review conversations. No actor has bypass permission.
+External review approval is optional so the solo maintainer can merge after CI.
+Lovable must use a compatible branch/PR workflow; direct sync to `main` is blocked.
+The Lovable build package and Vercel hosting remain in use unchanged.
+
+### Available commands
 
 | Command             | What it does                                              |
 | ------------------- | --------------------------------------------------------- |

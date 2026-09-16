@@ -1,1 +1,73 @@
-{"asset": {"version": "2.0", "generator": "caiat-dish-prototype"}, "scene": 0, "scenes": [{"nodes": [0]}], "nodes": [{"mesh": 0, "name": "CaiatTajine"}], "meshes": [{"name": "CaiatTajine", "primitives": [{"attributes": {"POSITION": 0, "NORMAL": 1, "TEXCOORD_0": 2}, "indices": 3, "material": 0}, {"attributes": {"POSITION": 4, "NORMAL": 5}, "indices": 6, "material": 1}]}], "materials": [{"name": "DishTop", "pbrMetallicRoughness": {"baseColorTexture": {"index": 0}, "metallicFactor": 0.0, "roughnessFactor": 0.45}}, {"name": "Ceramic", "pbrMetallicRoughness": {"baseColorFactor": [0.16, 0.11, 0.09, 1.0], "metallicFactor": 0.0, "roughnessFactor": 0.55}}], "textures": [{"source": 0, "sampler": 0}], "samplers": [{"magFilter": 9729, "minFilter": 9987, "wrapS": 33071, "wrapT": 33071}], "images": [{"uri": "caiat-tajine.jpg"}], "buffers": [{"uri": "caiat-tajine.bin", "byteLength": 321456}], "bufferViews": [{"buffer": 0, "byteOffset": 0, "byteLength": 63468, "target": 34962}, {"buffer": 0, "byteOffset": 63468, "byteLength": 63468, "target": 34962}, {"buffer": 0, "byteOffset": 126936, "byteLength": 42312, "target": 34962}, {"buffer": 0, "byteOffset": 169248, "byteLength": 122880, "target": 34963}, {"buffer": 0, "byteOffset": 292128, "byteLength": 7752, "target": 34962}, {"buffer": 0, "byteOffset": 299880, "byteLength": 7752, "target": 34962}, {"buffer": 0, "byteOffset": 307632, "byteLength": 13824, "target": 34963}], "accessors": [{"bufferView": 0, "componentType": 5126, "count": 5289, "type": "VEC3", "min": [-0.17, 0.04, -0.17], "max": [0.17, 0.06000000000000001, 0.17]}, {"bufferView": 1, "componentType": 5126, "count": 5289, "type": "VEC3"}, {"bufferView": 2, "componentType": 5126, "count": 5289, "type": "VEC2"}, {"bufferView": 3, "componentType": 5125, "count": 30720, "type": "SCALAR"}, {"bufferView": 4, "componentType": 5126, "count": 646, "type": "VEC3", "min": [-0.17170000000000002, 0.0, -0.17170000000000002], "max": [0.17170000000000002, 0.052000000000000005, 0.17170000000000002]}, {"bufferView": 5, "componentType": 5126, "count": 646, "type": "VEC3"}, {"bufferView": 6, "componentType": 5125, "count": 3456, "type": "SCALAR"}]}
+{
+  "asset": { "version": "2.0", "generator": "caiat-dish-prototype" },
+  "scene": 0,
+  "scenes": [{ "nodes": [0] }],
+  "nodes": [{ "mesh": 0, "name": "CaiatTajine" }],
+  "meshes": [
+    {
+      "name": "CaiatTajine",
+      "primitives": [
+        {
+          "attributes": { "POSITION": 0, "NORMAL": 1, "TEXCOORD_0": 2 },
+          "indices": 3,
+          "material": 0
+        },
+        { "attributes": { "POSITION": 4, "NORMAL": 5 }, "indices": 6, "material": 1 }
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "DishTop",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": { "index": 0 },
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.45
+      }
+    },
+    {
+      "name": "Ceramic",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [0.16, 0.11, 0.09, 1.0],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.55
+      }
+    }
+  ],
+  "textures": [{ "source": 0, "sampler": 0 }],
+  "samplers": [{ "magFilter": 9729, "minFilter": 9987, "wrapS": 33071, "wrapT": 33071 }],
+  "images": [{ "uri": "caiat-tajine.jpg" }],
+  "buffers": [{ "uri": "caiat-tajine.bin", "byteLength": 321456 }],
+  "bufferViews": [
+    { "buffer": 0, "byteOffset": 0, "byteLength": 63468, "target": 34962 },
+    { "buffer": 0, "byteOffset": 63468, "byteLength": 63468, "target": 34962 },
+    { "buffer": 0, "byteOffset": 126936, "byteLength": 42312, "target": 34962 },
+    { "buffer": 0, "byteOffset": 169248, "byteLength": 122880, "target": 34963 },
+    { "buffer": 0, "byteOffset": 292128, "byteLength": 7752, "target": 34962 },
+    { "buffer": 0, "byteOffset": 299880, "byteLength": 7752, "target": 34962 },
+    { "buffer": 0, "byteOffset": 307632, "byteLength": 13824, "target": 34963 }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 5289,
+      "type": "VEC3",
+      "min": [-0.17, 0.04, -0.17],
+      "max": [0.17, 0.06000000000000001, 0.17]
+    },
+    { "bufferView": 1, "componentType": 5126, "count": 5289, "type": "VEC3" },
+    { "bufferView": 2, "componentType": 5126, "count": 5289, "type": "VEC2" },
+    { "bufferView": 3, "componentType": 5125, "count": 30720, "type": "SCALAR" },
+    {
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 646,
+      "type": "VEC3",
+      "min": [-0.17170000000000002, 0.0, -0.17170000000000002],
+      "max": [0.17170000000000002, 0.052000000000000005, 0.17170000000000002]
+    },
+    { "bufferView": 5, "componentType": 5126, "count": 646, "type": "VEC3" },
+    { "bufferView": 6, "componentType": 5125, "count": 3456, "type": "SCALAR" }
+  ]
+}

@@ -27,10 +27,7 @@ import {
 } from "@/lib/service-i18n";
 import type { GuestService } from "@/lib/guest";
 
-export type CatalogSelection =
-  | { kind: "item"; service: GuestService }
-  | { kind: "else" }
-  | null;
+export type CatalogSelection = { kind: "item"; service: GuestService } | { kind: "else" } | null;
 
 type CategoryDef = { key: string; icon: LucideIcon; labelKey: TranslationKey; subs: string[] };
 
@@ -223,9 +220,7 @@ export function GuestCatalog({
   }
 
   /* ---------- level 3: items ---------- */
-  const shown = useSubs
-    ? items.filter((i) => (i.guest_subcategory ?? "other") === sub)
-    : items;
+  const shown = useSubs ? items.filter((i) => (i.guest_subcategory ?? "other") === sub) : items;
 
   return (
     <div className="space-y-2">
