@@ -71,3 +71,8 @@ The additive v2 schema and secret digest have been applied to the verified demo
 project. The Vercel secret has been configured by the project owner. A fresh
 preview must verify the paired configuration before merge. Legacy RPC access
 remains enabled until the final deployment verification and finalize step.
+
+The owner has corrected the Vercel secret after the first preview detected a
+secret/digest mismatch. Verification requires a new build: environment changes
+do not update existing deployments. Once finalized, historical previews using
+the legacy RPC will no longer support login; use the current demo deployment.
