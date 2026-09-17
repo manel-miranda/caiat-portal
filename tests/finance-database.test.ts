@@ -78,6 +78,12 @@ suite("finance database boundaries and calculations", () => {
         await sql`INSERT INTO public.purchases (purchased_at) VALUES (${date}::timestamptz) RETURNING id`;
       await sql`INSERT INTO public.purchase_lines (purchase_id,inventory_item_id,quantity,unit_cost) VALUES (${(purchase as { id: string }).id},${ingredient},1,${cost})`;
     }
+    const [recentPurchase] =
+      await sql`INSERT INTO public.purchases (purchased_at,total_cost,line_count) VALUES (now(),40,1) RETURNING id`;
+    await sql`INSERT INTO public.purchase_lines (purchase_id,inventory_item_id,quantity,unit_cost,line_total)
+      VALUES (${(recentPurchase as { id: string }).id},${ingredient},2,20,40)`;
+    await sql`INSERT INTO public.inventory_movements (inventory_item_id,movement_type,quantity,unit_cost,source_type,source_id,notes)
+      VALUES (${ingredient},'receipt',3,20,'purchase',${(recentPurchase as { id: string }).id},'Finance summary stock')`;
     for (const [position, name] of (["low", "missing", "high"] as const).entries()) {
       await sql`INSERT INTO public.service_recommendations (service_type_id,recommended_service_type_id,position) VALUES (${dishes.preview},${dishes[name]},${position})`;
     }
@@ -123,6 +129,11 @@ suite("finance database boundaries and calculations", () => {
     });
     expect(report.dishes.some((d) => d.id === dishes.preview)).toBe(false);
     expect(report.ingredients.find((i) => i.id === ingredient)?.unitCost).toBe(20);
+    expect(report.summary).toMatchObject({
+      currentStockValue: 60,
+      recommendedBuyCost: 0,
+      purchaseSpend30d: 40,
+    });
     const [previewReport] = await manager`SELECT public.finance_profitability(true) AS report`;
     expect(
       ((previewReport as { report: FinanceReport }).report as FinanceReport).dishes.some(

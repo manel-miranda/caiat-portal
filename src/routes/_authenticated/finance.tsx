@@ -20,6 +20,11 @@ function FinancePage() {
   const dishes = report.data?.dishes ?? [];
   const ingredients = report.data?.ingredients ?? [];
   const known = dishes.filter((dish) => dish.marginPercent != null);
+  const summary = {
+    currentStockValue: report.data?.summary?.currentStockValue ?? 0,
+    recommendedBuyCost: report.data?.summary?.recommendedBuyCost ?? 0,
+    purchaseSpend30d: report.data?.summary?.purchaseSpend30d ?? 0,
+  };
   const averageMargin = known.length
     ? known.reduce((sum, dish) => sum + Number(dish.marginPercent), 0) / known.length
     : null;
@@ -36,7 +41,7 @@ function FinancePage() {
         <p className="surface-card mt-3 p-3 text-sm text-muted-foreground">{t("loading")}</p>
       ) : (
         <>
-          <section className="mt-4 grid grid-cols-2 gap-3">
+          <section className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-5">
             <StatCard
               icon={<ChartNoAxesCombined className="size-4" />}
               label={t("financeCostCoverage")}
@@ -46,6 +51,21 @@ function FinancePage() {
               icon={<ChartNoAxesCombined className="size-4" />}
               label={t("financeAverage")}
               value={averageMargin == null ? "—" : `${averageMargin.toFixed(1)}%`}
+            />
+            <StatCard
+              icon={<ChartNoAxesCombined className="size-4" />}
+              label={t("financeStockValue")}
+              value={mad(summary.currentStockValue)}
+            />
+            <StatCard
+              icon={<ChartNoAxesCombined className="size-4" />}
+              label={t("financeRecommendedBuyCost")}
+              value={mad(summary.recommendedBuyCost)}
+            />
+            <StatCard
+              icon={<ChartNoAxesCombined className="size-4" />}
+              label={t("financePurchaseSpend30d")}
+              value={mad(summary.purchaseSpend30d)}
             />
           </section>
 

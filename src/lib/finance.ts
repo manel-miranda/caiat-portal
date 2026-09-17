@@ -81,9 +81,16 @@ export type FinanceIngredient = {
   lastPurchasedAt: string | null;
 };
 
+export type FinanceSummary = {
+  currentStockValue: number;
+  recommendedBuyCost: number;
+  purchaseSpend30d: number;
+};
+
 export type FinanceReport = {
   ingredients: FinanceIngredient[];
   dishes: DishProfitability[];
+  summary: FinanceSummary;
 };
 
 export const financeReportQuery = {
