@@ -145,18 +145,25 @@ function FinancePage() {
                     <div className="flex items-start justify-between gap-3">
                       <p className="min-w-0 truncate text-sm font-semibold">{dish.label}</p>
                       {dish.missingCost ? (
-                        <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-warning-foreground">
+                        <span
+                          className="flex shrink-0 items-center gap-1 text-xs font-semibold text-warning-foreground"
+                        >
                           <AlertTriangle className="size-3.5" /> {t("financeMissing")}
                         </span>
                       ) : null}
                     </div>
                     {dish.missingCost ? (
-                      <p className="mt-1 text-xs text-muted-foreground">{t("financeMissingHint")}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {t("financeMissingHint")}
+                      </p>
                     ) : (
                       <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-4">
                         <Metric label={t("financeSellingPrice")} value={mad(dish.price)} />
                         <Metric label={t("financeFoodCost")} value={mad(dish.cost ?? 0)} />
-                        <Metric label={t("financeGrossProfit")} value={mad(dish.grossProfit ?? 0)} />
+                        <Metric
+                          label={t("financeGrossProfit")}
+                          value={mad(dish.grossProfit ?? 0)}
+                        />
                         <Metric
                           label={t("financeMargin")}
                           value={
@@ -183,7 +190,10 @@ function FinancePage() {
             </div>
             <div className="surface-card divide-y divide-border">
               {ingredients.map((ingredient) => (
-                <div key={ingredient.id} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
+                <div
+                  key={ingredient.id}
+                  className="flex items-center justify-between gap-3 px-4 py-3 text-sm"
+                >
                   <span className="min-w-0 truncate font-medium">{ingredient.label}</span>
                   <span className="shrink-0 text-end text-muted-foreground">
                     {ingredient.unitCost == null
@@ -217,11 +227,21 @@ function FinanceSection({ title, children }: { title: string; children: ReactNod
   );
 }
 
-function Metric({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
+function Metric({
+  label,
+  value,
+  accent = false,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+}) {
   return (
     <div>
       <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
-      <p className={accent ? "text-sm font-semibold text-primary" : "text-sm font-semibold"}>
+      <p
+        className={accent ? "text-sm font-semibold text-primary" : "text-sm font-semibold"}
+      >
         {value}
       </p>
     </div>
