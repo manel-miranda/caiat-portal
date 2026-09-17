@@ -203,8 +203,7 @@ function FinancePage() {
                       : `${mad(ingredient.unitCost)} / ${ingredient.unit}`}
                     {ingredient.lastPurchasedAt ? (
                       <span className="mt-0.5 block text-xs">
-                        {t("financeLastPurchase")}{" "}
-                        {shortDate(ingredient.lastPurchasedAt)}
+                        {t("financeLastPurchase")} {shortDate(ingredient.lastPurchasedAt)}
                       </span>
                     ) : null}
                   </span>
