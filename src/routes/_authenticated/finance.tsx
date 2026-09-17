@@ -48,13 +48,13 @@ function FinancePage() {
   const dishes = report.data?.dishes ?? [];
   const ingredients = report.data?.ingredients ?? [];
   const ingredientCosts = new Map(ingredients.map((ingredient) => [ingredient.id, ingredient]));
-  const stockRows = (inventory.data ?? [])
-    .filter((row) => ingredientCosts.get(row.id)?.unitCost != null)
-    .map((row) => ({
-      ...row,
-      unitCost: Number(ingredientCosts.get(row.id)?.unitCost),
-      value: Math.max(row.estimated_stock, 0) * Number(ingredientCosts.get(row.id)?.unitCost),
-    }));
+  const stockRows = (inventory.data ?? []).flatMap((row) => {
+    const ingredient = ingredientCosts.get(row.id);
+    if (ingredient?.unitCost == null) return [];
+
+    const unitCost = Number(ingredient.unitCost);
+    return [{ ...row, unitCost, value: Math.max(row.estimated_stock, 0) * unitCost }];
+  });
   const coverageRows = stockRows
     .filter((row) => row.days_remaining != null && row.avg_daily_usage > 0)
     .sort((a, b) => Number(a.days_remaining) - Number(b.days_remaining));
@@ -85,6 +85,10 @@ function FinancePage() {
           summary.purchaseSpendPrevious30d) *
         100
       : null;
+  const purchaseRows = (purchases.data ?? []).filter(
+    (purchase) =>
+      new Date(purchase.purchased_at).getTime() >= Date.now() - 30 * 24 * 60 * 60 * 1000,
+  );
 
   function openDetail(next: FinanceDetail, event: MouseEvent<HTMLButtonElement>) {
     detailOpenerRef.current = event.currentTarget;
@@ -329,9 +333,7 @@ function FinancePage() {
                 render={(row) => (
                   <DetailRow
                     label={row.label}
-                    meta={`${row.avg_daily_usage.toFixed(2)} ${row.unit} / ${t("financeDays", {
-                      count: 1,
-                    })}`}
+                    meta={`${t("financeDailyUsage")} · ${row.avg_daily_usage.toFixed(2)} ${row.unit}`}
                     value={t("financeDays", { count: Number(row.days_remaining).toFixed(1) })}
                     tone={Number(row.days_remaining) < 3 ? "warning" : "default"}
                   />
@@ -367,8 +369,8 @@ function FinancePage() {
             ) : null}
             {detail === "purchases" ? (
               <DetailList
-                rows={purchases.data ?? []}
-                empty={(purchases.data ?? []).length === 0}
+                rows={purchaseRows}
+                empty={purchaseRows.length === 0}
                 render={(purchase) => (
                   <DetailRow
                     label={purchase.supplier_name ?? t("purchaseNoSupplier")}
@@ -445,7 +447,7 @@ function Metric({
   );
 }
 
-function DetailList<T>({
+function DetailList<T extends { id: string }>({
   rows,
   empty,
   render,
@@ -457,7 +459,11 @@ function DetailList<T>({
   return empty ? (
     <p className="text-sm text-muted-foreground">{t("noResults")}</p>
   ) : (
-    <div className="divide-y divide-border">{rows.map(render)}</div>
+    <div className="divide-y divide-border">
+      {rows.map((row) => (
+        <div key={row.id}>{render(row)}</div>
+      ))}
+    </div>
   );
 }
 
@@ -478,7 +484,13 @@ function DetailRow({
         <span className="block truncate font-medium">{label}</span>
         <span className="block text-xs text-muted-foreground">{meta}</span>
       </span>
-      <span className={tone === "warning" ? "shrink-0 font-semibold text-warning-foreground" : "shrink-0 font-semibold"}>
+      <span
+        className={
+          tone === "warning"
+            ? "shrink-0 font-semibold text-warning-foreground"
+            : "shrink-0 font-semibold"
+        }
+      >
         {value}
       </span>
     </div>
