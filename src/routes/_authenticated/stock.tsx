@@ -7,7 +7,7 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { StockSimulationPanel } from "@/components/StockSimulationPanel";
@@ -503,7 +503,7 @@ function TabButton({
 
 /* ---------------- purchases & suppliers ---------------- */
 
-type DraftLine = { itemId: string; quantity: string; cost: string };
+type DraftLine = { itemId: string; quantity: string; cost: string; costDerived?: boolean };
 
 /** Small, non-binding buying hint on the shopping list. */
 function ShoppingHint({
@@ -545,11 +545,14 @@ function PurchasesTab({
   const [open, setOpen] = useState<Purchase | null>(null);
   const [suppliersOpen, setSuppliersOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const normalizedSearch = search.trim().toLocaleLowerCase();
   const list = [...(purchases.data ?? [])]
-    .filter((purchase) =>
-      [purchase.supplier_name, purchase.notes]
-        .filter(Boolean)
-        .some((value) => value?.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())),
+    .filter(
+      (purchase) =>
+        !normalizedSearch ||
+        [purchase.supplier_name, purchase.notes]
+          .filter(Boolean)
+          .some((value) => value?.toLocaleLowerCase().includes(normalizedSearch)),
     )
     .sort(
       (a, b) =>
@@ -685,6 +688,7 @@ function PurchaseForm({
     initialLines.length > 0 ? initialLines : [{ itemId: "", quantity: "", cost: "" }],
   );
   const [busy, setBusy] = useState(false);
+  const [initialised, setInitialised] = useState(false);
   // Stable across retries: the server records this purchase at most once.
   const [purchaseId, setPurchaseId] = useState(() => newPurchaseId());
 
@@ -694,24 +698,55 @@ function PurchaseForm({
   const total = lines.reduce((sum, l) => sum + (Number(l.cost) || 0), 0);
   const chosen = lines.map((l) => l.itemId).filter(Boolean);
 
+  function derivedCost(line: DraftLine, hint: PurchaseContext | undefined) {
+    const quantity = Number(line.quantity);
+    return hint?.last_unit_cost != null && Number.isFinite(quantity) && quantity > 0
+      ? (quantity * hint.last_unit_cost).toFixed(2)
+      : "";
+  }
+
+  useEffect(() => {
+    if (initialised || !suppliers.data) return;
+
+    const firstPreviousSupplier = initialLines
+      .map(
+        (line) => context.find((item) => item.inventory_item_id === line.itemId)?.last_supplier_id,
+      )
+      .find((supplierId) => activeSuppliers.some((supplier) => supplier.id === supplierId));
+    if (firstPreviousSupplier) setSupplierId(firstPreviousSupplier);
+
+    setLines((currentLines) =>
+      currentLines.map((line) => {
+        const cost = derivedCost(
+          line,
+          context.find((item) => item.inventory_item_id === line.itemId),
+        );
+        return cost && !line.cost ? { ...line, cost, costDerived: true } : line;
+      }),
+    );
+    setInitialised(true);
+  }, [activeSuppliers, context, initialLines, initialised, suppliers.data]);
+
   function update(index: number, patch: Partial<DraftLine>) {
     const current = lines[index];
     if (!current) return;
     const next = { ...current, ...patch };
     const hint = context.find((item) => item.inventory_item_id === next.itemId);
 
-    if (patch.itemId && !supplierId && hint?.last_supplier_name) {
+    if (patch.itemId && !supplierId && hint?.last_supplier_id) {
       const previousSupplier = activeSuppliers.find(
-        (supplier) => supplier.name === hint.last_supplier_name,
+        (supplier) => supplier.id === hint.last_supplier_id,
       );
       if (previousSupplier) setSupplierId(previousSupplier.id);
     }
 
-    if (patch.quantity && !current.cost && hint?.last_unit_cost != null) {
-      const quantity = Number(patch.quantity);
-      if (Number.isFinite(quantity) && quantity > 0) {
-        next.cost = (quantity * hint.last_unit_cost).toFixed(2);
-      }
+    if ((patch.quantity || patch.itemId) && (!current.cost || current.costDerived)) {
+      const cost = derivedCost(next, hint);
+      next.cost = cost;
+      next.costDerived = Boolean(cost);
+    }
+    if (patch.cost !== undefined) {
+      next.costDerived = false;
     }
 
     setLines((prev) => prev.map((line, i) => (i === index ? next : line)));
@@ -923,11 +958,14 @@ function SuppliersTab({
   const suppliers = useQuery(suppliersQuery);
   const [draft, setDraft] = useState<Supplier | "new" | null>(null);
   const [search, setSearch] = useState("");
+  const normalizedSearch = search.trim().toLocaleLowerCase();
   const list = [...(suppliers.data ?? [])]
-    .filter((supplier) =>
-      [supplier.name, supplier.phone, supplier.location]
-        .filter(Boolean)
-        .some((value) => value?.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())),
+    .filter(
+      (supplier) =>
+        !normalizedSearch ||
+        [supplier.name, supplier.phone, supplier.location]
+          .filter(Boolean)
+          .some((value) => value?.toLocaleLowerCase().includes(normalizedSearch)),
     )
     .sort((a, b) => Number(b.active) - Number(a.active) || a.name.localeCompare(b.name));
 
