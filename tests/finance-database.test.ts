@@ -133,6 +133,9 @@ suite("finance database boundaries and calculations", () => {
       currentStockValue: 60,
       recommendedBuyCost: 0,
       purchaseSpend30d: 40,
+      purchaseSpendPrevious30d: 0,
+      stockCoverageDays: 28,
+      lowStockItems: 0,
     });
     const [previewReport] = await manager`SELECT public.finance_profitability(true) AS report`;
     expect(
