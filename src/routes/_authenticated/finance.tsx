@@ -14,7 +14,7 @@ import {
 import { AppShell } from "@/components/AppShell";
 import { StatCard } from "@/components/ui/stat-card";
 import { requirePermission } from "@/lib/admin-guard";
-import { mad } from "@/lib/format";
+import { mad, shortDate } from "@/lib/format";
 import { t, useLang } from "@/lib/i18n";
 import { financeReportQuery } from "@/lib/finance";
 
@@ -204,7 +204,7 @@ function FinancePage() {
                     {ingredient.lastPurchasedAt ? (
                       <span className="mt-0.5 block text-xs">
                         {t("financeLastPurchase")}{" "}
-                        {new Date(ingredient.lastPurchasedAt).toLocaleDateString()}
+                        {shortDate(ingredient.lastPurchasedAt)}
                       </span>
                     ) : null}
                   </span>
