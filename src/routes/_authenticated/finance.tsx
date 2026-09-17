@@ -76,7 +76,11 @@ function FinancePage() {
                   : t("financeDays", { count: summary.stockCoverageDays.toFixed(1) })
               }
               hint={t("financeStockCoverageHint")}
-              tone={summary.stockCoverageDays != null && summary.stockCoverageDays < 3 ? "warning" : "default"}
+              tone={
+                summary.stockCoverageDays != null && summary.stockCoverageDays < 3
+                  ? "warning"
+                  : "default"
+              }
             />
             <StatCard
               icon={<CircleAlert className="size-4" />}
@@ -101,7 +105,9 @@ function FinancePage() {
               hint={
                 spendChange == null
                   ? t("financePurchaseSpendNoComparison")
-                  : `${spendChange >= 0 ? "+" : ""}${spendChange.toFixed(1)}% · ${t("financeComparedWithPrevious")}`
+                  : `${spendChange >= 0 ? "+" : ""}${spendChange.toFixed(1)}% · ${t(
+                      "financeComparedWithPrevious",
+                    )}`
               }
               tone={spendChange != null && spendChange > 0 ? "warning" : "default"}
             />
@@ -153,7 +159,11 @@ function FinancePage() {
                         <Metric label={t("financeGrossProfit")} value={mad(dish.grossProfit ?? 0)} />
                         <Metric
                           label={t("financeMargin")}
-                          value={dish.marginPercent == null ? t("financeNoPrice") : `${dish.marginPercent.toFixed(1)}%`}
+                          value={
+                            dish.marginPercent == null
+                              ? t("financeNoPrice")
+                              : `${dish.marginPercent.toFixed(1)}%`
+                          }
                           accent
                         />
                       </div>
@@ -180,7 +190,10 @@ function FinancePage() {
                       ? t("financeUnknown")
                       : `${mad(ingredient.unitCost)} / ${ingredient.unit}`}
                     {ingredient.lastPurchasedAt ? (
-                      <span className="mt-0.5 block text-xs">{t("financeLastPurchase")} {new Date(ingredient.lastPurchasedAt).toLocaleDateString()}</span>
+                      <span className="mt-0.5 block text-xs">
+                        {t("financeLastPurchase")}{" "}
+                        {new Date(ingredient.lastPurchasedAt).toLocaleDateString()}
+                      </span>
                     ) : null}
                   </span>
                 </div>
@@ -196,7 +209,9 @@ function FinancePage() {
 function FinanceSection({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="mt-6">
-      <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">{title}</h2>
+      <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        {title}
+      </h2>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">{children}</div>
     </section>
   );
@@ -206,7 +221,9 @@ function Metric({ label, value, accent = false }: { label: string; value: string
   return (
     <div>
       <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
-      <p className={accent ? "text-sm font-semibold text-primary" : "text-sm font-semibold"}>{value}</p>
+      <p className={accent ? "text-sm font-semibold text-primary" : "text-sm font-semibold"}>
+        {value}
+      </p>
     </div>
   );
 }
