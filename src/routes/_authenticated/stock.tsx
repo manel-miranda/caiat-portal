@@ -544,7 +544,18 @@ function PurchasesTab({
   const purchases = useQuery(purchasesQuery);
   const [open, setOpen] = useState<Purchase | null>(null);
   const [suppliersOpen, setSuppliersOpen] = useState(false);
-  const list = purchases.data ?? [];
+  const [search, setSearch] = useState("");
+  const list = [...(purchases.data ?? [])]
+    .filter((purchase) =>
+      [purchase.supplier_name, purchase.notes]
+        .filter(Boolean)
+        .some((value) => value?.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())),
+    )
+    .sort(
+      (a, b) =>
+        new Date(b.purchased_at).getTime() - new Date(a.purchased_at).getTime() ||
+        (a.supplier_name ?? "").localeCompare(b.supplier_name ?? ""),
+    );
 
   return (
     <div className="mt-3 space-y-3">
@@ -559,6 +570,14 @@ function PurchasesTab({
         </div>
       ) : null}
       <p className="text-xs text-muted-foreground">{t("purchaseHint")}</p>
+      {(purchases.data ?? []).length > 4 ? (
+        <Input
+          value={search}
+          placeholder={t("purchaseSearch")}
+          aria-label={t("purchaseSearch")}
+          onChange={(event) => setSearch(event.target.value)}
+        />
+      ) : null}
 
       {purchases.isLoading ? (
         <p className="surface-card p-3 text-sm text-muted-foreground">{t("loading")}</p>
@@ -669,11 +688,32 @@ function PurchaseForm({
   // Stable across retries: the server records this purchase at most once.
   const [purchaseId, setPurchaseId] = useState(() => newPurchaseId());
 
+  const activeSuppliers = (suppliers.data ?? [])
+    .filter((supplier) => supplier.active)
+    .sort((a, b) => a.name.localeCompare(b.name));
   const total = lines.reduce((sum, l) => sum + (Number(l.cost) || 0), 0);
   const chosen = lines.map((l) => l.itemId).filter(Boolean);
 
   function update(index: number, patch: Partial<DraftLine>) {
-    setLines((prev) => prev.map((l, i) => (i === index ? { ...l, ...patch } : l)));
+    const current = lines[index];
+    const next = { ...current, ...patch };
+    const hint = context.find((item) => item.inventory_item_id === next.itemId);
+
+    if (patch.itemId && !supplierId && hint?.last_supplier_name) {
+      const previousSupplier = activeSuppliers.find(
+        (supplier) => supplier.name === hint.last_supplier_name,
+      );
+      if (previousSupplier) setSupplierId(previousSupplier.id);
+    }
+
+    if (patch.quantity && !current.cost && hint?.last_unit_cost != null) {
+      const quantity = Number(patch.quantity);
+      if (Number.isFinite(quantity) && quantity > 0) {
+        next.cost = (quantity * hint.last_unit_cost).toFixed(2);
+      }
+    }
+
+    setLines((prev) => prev.map((line, i) => (i === index ? next : line)));
   }
 
   async function addSupplier() {
@@ -751,9 +791,7 @@ function PurchaseForm({
           className="min-h-11 rounded-xl border border-border bg-background px-3 text-sm"
         >
           <option value="">{t("purchaseNoSupplier")}</option>
-          {(suppliers.data ?? [])
-            .filter((s) => s.active)
-            .map((s) => (
+          {activeSuppliers.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
               </option>
@@ -822,9 +860,19 @@ function PurchaseForm({
                 onChange={(e) => update(index, { cost: e.target.value })}
               />
             </div>
-            {hint?.last_unit_cost != null ? (
+            {hint?.last_supplier_name || hint?.last_unit_cost != null ? (
               <p className="text-xs text-muted-foreground">
-                {t("purchaseLastPrice")} {mad(hint.last_unit_cost)}
+                {hint?.last_supplier_name ? (
+                  <span>
+                    {t("purchaseLastBoughtAt")} {hint.last_supplier_name}
+                    {hint.last_unit_cost != null ? " · " : ""}
+                  </span>
+                ) : null}
+                {hint?.last_unit_cost != null ? (
+                  <span>
+                    {t("purchaseLastPrice")} {mad(hint.last_unit_cost)}
+                  </span>
+                ) : null}
               </p>
             ) : null}
             {lines.length > 1 ? (
@@ -873,7 +921,17 @@ function SuppliersTab({
 }) {
   const suppliers = useQuery(suppliersQuery);
   const [draft, setDraft] = useState<Supplier | "new" | null>(null);
-  const list = suppliers.data ?? [];
+  const [search, setSearch] = useState("");
+  const list = [...(suppliers.data ?? [])]
+    .filter((supplier) =>
+      [supplier.name, supplier.phone, supplier.location]
+        .filter(Boolean)
+        .some((value) => value?.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())),
+    )
+    .sort(
+      (a, b) =>
+        Number(b.active) - Number(a.active) || a.name.localeCompare(b.name),
+    );
 
   async function toggle(supplier: Supplier) {
     try {
@@ -892,6 +950,15 @@ function SuppliersTab({
         <Button className="w-full rounded-xl" onClick={() => setDraft("new")}>
           {t("supplierNew")}
         </Button>
+      ) : null}
+
+      {(suppliers.data ?? []).length > 4 ? (
+        <Input
+          value={search}
+          placeholder={t("supplierSearch")}
+          aria-label={t("supplierSearch")}
+          onChange={(event) => setSearch(event.target.value)}
+        />
       ) : null}
 
       {suppliers.isLoading ? (
