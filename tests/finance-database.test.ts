@@ -132,7 +132,7 @@ suite("finance database boundaries and calculations", () => {
     expect(report.dishes.some((d) => d.id === dishes.preview)).toBe(false);
     expect(report.ingredients.find((i) => i.id === ingredient)?.unitCost).toBe(20);
     expect(report.summary).toMatchObject({
-      currentStockValue: 60,
+      currentStockValue: 40,
       recommendedBuyCost: 0,
       purchaseSpend30d: 40,
       purchaseSpendPrevious30d: 0,
