@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -12,11 +12,22 @@ import {
   UtensilsCrossed,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
+import { DashboardKpiSheet } from "@/components/DashboardKpiSheet";
 import { StatCard } from "@/components/ui/stat-card";
 import { requirePermission } from "@/lib/admin-guard";
-import { mad, shortDate } from "@/lib/format";
-import { t, useLang } from "@/lib/i18n";
 import { financeReportQuery } from "@/lib/finance";
+import { mad, shortDate } from "@/lib/format";
+import { inventoryStatusQuery, purchasesQuery } from "@/lib/inventory";
+import { t, useLang } from "@/lib/i18n";
+
+type FinanceDetail =
+  | "stockValue"
+  | "coverage"
+  | "attention"
+  | "recommendedBuy"
+  | "purchases"
+  | "margin"
+  | "costCoverage";
 
 export const Route = createFileRoute("/_authenticated/finance")({
   beforeLoad: requirePermission("activity_view"),
@@ -29,9 +40,34 @@ export const Route = createFileRoute("/_authenticated/finance")({
 function FinancePage() {
   useLang();
   const report = useQuery(financeReportQuery);
+  const inventory = useQuery(inventoryStatusQuery);
+  const purchases = useQuery(purchasesQuery);
+  const [detail, setDetail] = useState<FinanceDetail | null>(null);
+  const detailOpenerRef = useRef<HTMLButtonElement | null>(null);
+
   const dishes = report.data?.dishes ?? [];
   const ingredients = report.data?.ingredients ?? [];
+  const ingredientCosts = new Map(ingredients.map((ingredient) => [ingredient.id, ingredient]));
+  const stockRows = (inventory.data ?? [])
+    .filter((row) => ingredientCosts.get(row.id)?.unitCost != null)
+    .map((row) => ({
+      ...row,
+      unitCost: Number(ingredientCosts.get(row.id)?.unitCost),
+      value: Math.max(row.estimated_stock, 0) * Number(ingredientCosts.get(row.id)?.unitCost),
+    }));
+  const coverageRows = stockRows
+    .filter((row) => row.days_remaining != null && row.avg_daily_usage > 0)
+    .sort((a, b) => Number(a.days_remaining) - Number(b.days_remaining));
+  const attentionRows = stockRows.filter((row) => row.status !== "good");
+  const buyRows = stockRows
+    .filter((row) => row.recommended_quantity > 0)
+    .map((row) => ({ ...row, buyCost: row.recommended_quantity * row.unitCost }))
+    .sort((a, b) => b.buyCost - a.buyCost);
   const known = dishes.filter((dish) => dish.marginPercent != null);
+  const missingCosts = dishes.filter((dish) => dish.missingCost);
+  const leastProfitable = [...known].sort(
+    (a, b) => Number(a.marginPercent) - Number(b.marginPercent),
+  );
   const summary = {
     currentStockValue: report.data?.summary?.currentStockValue ?? 0,
     recommendedBuyCost: report.data?.summary?.recommendedBuyCost ?? 0,
@@ -49,6 +85,40 @@ function FinancePage() {
           summary.purchaseSpendPrevious30d) *
         100
       : null;
+
+  function openDetail(next: FinanceDetail, event: MouseEvent<HTMLButtonElement>) {
+    detailOpenerRef.current = event.currentTarget;
+    setDetail(next);
+  }
+
+  const detailTitle =
+    detail === "stockValue"
+      ? t("financeStockValue")
+      : detail === "coverage"
+        ? t("financeStockCoverage")
+        : detail === "attention"
+          ? t("financeItemsNeedAttention")
+          : detail === "recommendedBuy"
+            ? t("financeRecommendedBuyCost")
+            : detail === "purchases"
+              ? t("financePurchaseSpend30d")
+              : detail === "margin"
+                ? t("financeDishes")
+                : t("financeCostCoverage");
+  const detailScope =
+    detail === "coverage"
+      ? t("financeStockCoverageHint")
+      : detail === "attention"
+        ? t("financeItemsNeedAttentionHint")
+        : detail === "recommendedBuy"
+          ? t("financeRecommendedBuyHint")
+          : detail === "purchases"
+            ? t("financeComparedWithPrevious")
+            : detail === "margin"
+              ? t("financeAverageHint")
+              : detail === "costCoverage"
+                ? t("financeCostCoverageHint")
+                : t("financeStockValueHint");
 
   return (
     <AppShell title={t("financeTitle")}>
@@ -68,6 +138,9 @@ function FinancePage() {
               label={t("financeStockValue")}
               value={mad(summary.currentStockValue)}
               hint={t("financeStockValueHint")}
+              onClick={(event) => openDetail("stockValue", event)}
+              expanded={detail === "stockValue"}
+              controls="finance-detail"
             />
             <StatCard
               icon={<Timer className="size-4" />}
@@ -75,9 +148,7 @@ function FinancePage() {
               value={
                 summary.stockCoverageDays == null
                   ? t("financeStockNoCoverage")
-                  : t("financeDays", {
-                      count: summary.stockCoverageDays.toFixed(1),
-                    })
+                  : t("financeDays", { count: summary.stockCoverageDays.toFixed(1) })
               }
               hint={t("financeStockCoverageHint")}
               tone={
@@ -85,6 +156,9 @@ function FinancePage() {
                   ? "warning"
                   : "default"
               }
+              onClick={(event) => openDetail("coverage", event)}
+              expanded={detail === "coverage"}
+              controls="finance-detail"
             />
             <StatCard
               icon={<CircleAlert className="size-4" />}
@@ -92,6 +166,9 @@ function FinancePage() {
               value={summary.lowStockItems}
               hint={t("financeItemsNeedAttentionHint")}
               tone={summary.lowStockItems > 0 ? "warning" : "success"}
+              onClick={(event) => openDetail("attention", event)}
+              expanded={detail === "attention"}
+              controls="finance-detail"
             />
           </FinanceSection>
 
@@ -101,6 +178,9 @@ function FinancePage() {
               label={t("financeRecommendedBuyCost")}
               value={mad(summary.recommendedBuyCost)}
               hint={t("financeRecommendedBuyHint")}
+              onClick={(event) => openDetail("recommendedBuy", event)}
+              expanded={detail === "recommendedBuy"}
+              controls="finance-detail"
             />
             <StatCard
               icon={<TrendingUp className="size-4" />}
@@ -114,6 +194,9 @@ function FinancePage() {
                     )}`
               }
               tone={spendChange != null && spendChange > 0 ? "warning" : "default"}
+              onClick={(event) => openDetail("purchases", event)}
+              expanded={detail === "purchases"}
+              controls="finance-detail"
             />
           </FinanceSection>
 
@@ -123,13 +206,19 @@ function FinancePage() {
               label={t("financeAverage")}
               value={averageMargin == null ? "—" : `${averageMargin.toFixed(1)}%`}
               hint={t("financeAverageHint")}
+              onClick={(event) => openDetail("margin", event)}
+              expanded={detail === "margin"}
+              controls="finance-detail"
             />
             <StatCard
               icon={<ChartNoAxesCombined className="size-4" />}
               label={t("financeCostCoverage")}
               value={`${dishes.filter((dish) => !dish.missingCost).length}/${dishes.length}`}
               hint={t("financeCostCoverageHint")}
-              tone={dishes.some((dish) => dish.missingCost) ? "warning" : "success"}
+              tone={missingCosts.length > 0 ? "warning" : "success"}
+              onClick={(event) => openDetail("costCoverage", event)}
+              expanded={detail === "costCoverage"}
+              controls="finance-detail"
             />
           </FinanceSection>
 
@@ -211,6 +300,115 @@ function FinancePage() {
               ))}
             </div>
           </section>
+
+          <DashboardKpiSheet
+            open={detail !== null}
+            onOpenChange={(open) => !open && setDetail(null)}
+            title={detailTitle}
+            scope={detailScope}
+            openerRef={detailOpenerRef}
+            contentId="finance-detail"
+          >
+            {detail === "stockValue" ? (
+              <DetailList
+                rows={[...stockRows].sort((a, b) => b.value - a.value)}
+                empty={stockRows.length === 0}
+                render={(row) => (
+                  <DetailRow
+                    label={row.label}
+                    meta={`${row.estimated_stock} ${row.unit}`}
+                    value={mad(row.value)}
+                  />
+                )}
+              />
+            ) : null}
+            {detail === "coverage" ? (
+              <DetailList
+                rows={coverageRows}
+                empty={coverageRows.length === 0}
+                render={(row) => (
+                  <DetailRow
+                    label={row.label}
+                    meta={`${row.avg_daily_usage.toFixed(2)} ${row.unit} / ${t("financeDays", {
+                      count: 1,
+                    })}`}
+                    value={t("financeDays", { count: Number(row.days_remaining).toFixed(1) })}
+                    tone={Number(row.days_remaining) < 3 ? "warning" : "default"}
+                  />
+                )}
+              />
+            ) : null}
+            {detail === "attention" ? (
+              <DetailList
+                rows={attentionRows}
+                empty={attentionRows.length === 0}
+                render={(row) => (
+                  <DetailRow
+                    label={row.label}
+                    meta={`${row.estimated_stock} ${row.unit} · ${t("stockSafety")} ${row.safety_stock}`}
+                    value={row.status === "buy" ? t("stockStatusBuy") : t("stockStatusLow")}
+                    tone="warning"
+                  />
+                )}
+              />
+            ) : null}
+            {detail === "recommendedBuy" ? (
+              <DetailList
+                rows={buyRows}
+                empty={buyRows.length === 0}
+                render={(row) => (
+                  <DetailRow
+                    label={row.label}
+                    meta={`${t("stockRecommended")} ${row.recommended_quantity} ${row.unit}`}
+                    value={mad(row.buyCost)}
+                  />
+                )}
+              />
+            ) : null}
+            {detail === "purchases" ? (
+              <DetailList
+                rows={purchases.data ?? []}
+                empty={(purchases.data ?? []).length === 0}
+                render={(purchase) => (
+                  <DetailRow
+                    label={purchase.supplier_name ?? t("purchaseNoSupplier")}
+                    meta={`${shortDate(purchase.purchased_at)} · ${purchase.line_count} ${t(
+                      "purchaseItemsCount",
+                    )}`}
+                    value={mad(purchase.total_cost)}
+                  />
+                )}
+              />
+            ) : null}
+            {detail === "margin" ? (
+              <DetailList
+                rows={leastProfitable}
+                empty={leastProfitable.length === 0}
+                render={(dish) => (
+                  <DetailRow
+                    label={dish.label}
+                    meta={`${t("financeGrossProfit")} ${mad(dish.grossProfit ?? 0)}`}
+                    value={`${dish.marginPercent?.toFixed(1) ?? "—"}%`}
+                    tone={Number(dish.marginPercent) < 30 ? "warning" : "default"}
+                  />
+                )}
+              />
+            ) : null}
+            {detail === "costCoverage" ? (
+              <DetailList
+                rows={missingCosts}
+                empty={missingCosts.length === 0}
+                render={(dish) => (
+                  <DetailRow
+                    label={dish.label}
+                    meta={t("financeMissingHint")}
+                    value={t("financeMissing")}
+                    tone="warning"
+                  />
+                )}
+              />
+            ) : null}
+          </DashboardKpiSheet>
         </>
       )}
     </AppShell>
@@ -243,6 +441,46 @@ function Metric({
       <p className={accent ? "text-sm font-semibold text-primary" : "text-sm font-semibold"}>
         {value}
       </p>
+    </div>
+  );
+}
+
+function DetailList<T>({
+  rows,
+  empty,
+  render,
+}: {
+  rows: T[];
+  empty: boolean;
+  render: (row: T) => ReactNode;
+}) {
+  return empty ? (
+    <p className="text-sm text-muted-foreground">{t("noResults")}</p>
+  ) : (
+    <div className="divide-y divide-border">{rows.map(render)}</div>
+  );
+}
+
+function DetailRow({
+  label,
+  meta,
+  value,
+  tone = "default",
+}: {
+  label: string;
+  meta: string;
+  value: string;
+  tone?: "default" | "warning";
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-3 text-sm">
+      <span className="min-w-0">
+        <span className="block truncate font-medium">{label}</span>
+        <span className="block text-xs text-muted-foreground">{meta}</span>
+      </span>
+      <span className={tone === "warning" ? "shrink-0 font-semibold text-warning-foreground" : "shrink-0 font-semibold"}>
+        {value}
+      </span>
     </div>
   );
 }
