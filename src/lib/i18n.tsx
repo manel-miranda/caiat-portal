@@ -628,7 +628,7 @@ export const en = {
   financeMissingHint: "Add a recipe and purchase cost to calculate this dish.",
   financeIngredients: "Ingredient costs",
   financeIngredientsHint: "Latest recorded cost per ingredient.",
-  financeLastPurchase: "Last purchase"
+  financeLastPurchase: "Last purchase",
   stockTitle: "Stock & groceries",
   stockIntro:
     "Estimated stock based on what you buy and what the kitchen serves. Demo data for now.",
