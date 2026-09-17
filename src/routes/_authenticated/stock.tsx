@@ -696,6 +696,7 @@ function PurchaseForm({
 
   function update(index: number, patch: Partial<DraftLine>) {
     const current = lines[index];
+    if (!current) return;
     const next = { ...current, ...patch };
     const hint = context.find((item) => item.inventory_item_id === next.itemId);
 
@@ -792,10 +793,10 @@ function PurchaseForm({
         >
           <option value="">{t("purchaseNoSupplier")}</option>
           {activeSuppliers.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
         </select>
         {newSupplier === null ? (
           <Button
@@ -928,10 +929,7 @@ function SuppliersTab({
         .filter(Boolean)
         .some((value) => value?.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())),
     )
-    .sort(
-      (a, b) =>
-        Number(b.active) - Number(a.active) || a.name.localeCompare(b.name),
-    );
+    .sort((a, b) => Number(b.active) - Number(a.active) || a.name.localeCompare(b.name));
 
   async function toggle(supplier: Supplier) {
     try {
