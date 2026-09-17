@@ -107,7 +107,10 @@ function StockPage() {
   }, [rows, tab, filter, search]);
 
   async function refresh() {
-    await queryClient.invalidateQueries({ queryKey: ["inventory"] });
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["inventory"] }),
+      queryClient.invalidateQueries({ queryKey: ["finance"] }),
+    ]);
   }
 
   return (
