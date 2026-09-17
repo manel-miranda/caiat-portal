@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -192,7 +193,7 @@ function FinancePage() {
   );
 }
 
-function FinanceSection({ title, children }: { title: string; children: React.ReactNode }) {
+function FinanceSection({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="mt-6">
       <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">{title}</h2>
