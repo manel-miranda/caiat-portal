@@ -58,13 +58,21 @@ function FinancePage() {
   const coverageRows = stockRows
     .filter((row) => row.days_remaining != null && row.avg_daily_usage > 0)
     .sort((a, b) => Number(a.days_remaining) - Number(b.days_remaining));
-  const attentionRows = stockRows.filter((row) => row.status !== "good");
+  const attentionRows = stockRows
+    .filter((row) => row.status !== "good")
+    .sort(
+      (a, b) =>
+        Number(a.days_remaining ?? Number.POSITIVE_INFINITY) -
+          Number(b.days_remaining ?? Number.POSITIVE_INFINITY) || a.label.localeCompare(b.label),
+    );
   const buyRows = stockRows
     .filter((row) => row.recommended_quantity > 0)
     .map((row) => ({ ...row, buyCost: row.recommended_quantity * row.unitCost }))
     .sort((a, b) => b.buyCost - a.buyCost);
   const known = dishes.filter((dish) => dish.marginPercent != null);
-  const missingCosts = dishes.filter((dish) => dish.missingCost);
+  const missingCosts = dishes
+    .filter((dish) => dish.missingCost)
+    .sort((a, b) => a.label.localeCompare(b.label));
   const leastProfitable = [...known].sort(
     (a, b) => Number(a.marginPercent) - Number(b.marginPercent),
   );
@@ -85,10 +93,17 @@ function FinancePage() {
           summary.purchaseSpendPrevious30d) *
         100
       : null;
-  const purchaseRows = (purchases.data ?? []).filter(
-    (purchase) =>
-      new Date(purchase.purchased_at).getTime() >= Date.now() - 30 * 24 * 60 * 60 * 1000,
-  );
+  const purchaseRows = (purchases.data ?? [])
+    .filter(
+      (purchase) =>
+        new Date(purchase.purchased_at).getTime() >= Date.now() - 30 * 24 * 60 * 60 * 1000,
+    )
+    .sort(
+      (a, b) =>
+        new Date(b.purchased_at).getTime() - new Date(a.purchased_at).getTime() ||
+        a.supplier_name?.localeCompare(b.supplier_name ?? "") ||
+        0,
+    );
 
   function openDetail(next: FinanceDetail, event: MouseEvent<HTMLButtonElement>) {
     detailOpenerRef.current = event.currentTarget;

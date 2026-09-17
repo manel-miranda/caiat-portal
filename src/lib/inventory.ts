@@ -154,6 +154,7 @@ export type Purchase = {
 export type PurchaseContext = {
   inventory_item_id: string;
   last_purchased_at: string;
+  last_supplier_id: string | null;
   last_supplier_name: string | null;
   last_unit_cost: number | null;
 };
@@ -226,11 +227,14 @@ export const purchaseContextQuery = {
   queryFn: async (): Promise<PurchaseContext[]> => {
     const { data, error } = await supabase
       .from("inventory_purchase_context" as never)
-      .select("inventory_item_id, last_purchased_at, last_supplier_name, last_unit_cost");
+      .select(
+        "inventory_item_id, last_purchased_at, last_supplier_id, last_supplier_name, last_unit_cost",
+      );
     if (error) throw error;
     return ((data ?? []) as unknown as Record<string, unknown>[]).map((r) => ({
       inventory_item_id: String(r["inventory_item_id"]),
       last_purchased_at: String(r["last_purchased_at"]),
+      last_supplier_id: (r["last_supplier_id"] as string | null) ?? null,
       last_supplier_name: (r["last_supplier_name"] as string | null) ?? null,
       last_unit_cost: r["last_unit_cost"] == null ? null : num(r["last_unit_cost"]),
     }));

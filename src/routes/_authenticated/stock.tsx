@@ -7,7 +7,7 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { StockSimulationPanel } from "@/components/StockSimulationPanel";
@@ -503,7 +503,7 @@ function TabButton({
 
 /* ---------------- purchases & suppliers ---------------- */
 
-type DraftLine = { itemId: string; quantity: string; cost: string };
+type DraftLine = { itemId: string; quantity: string; cost: string; costDerived?: boolean };
 
 /** Small, non-binding buying hint on the shopping list. */
 function ShoppingHint({
@@ -544,7 +544,21 @@ function PurchasesTab({
   const purchases = useQuery(purchasesQuery);
   const [open, setOpen] = useState<Purchase | null>(null);
   const [suppliersOpen, setSuppliersOpen] = useState(false);
-  const list = purchases.data ?? [];
+  const [search, setSearch] = useState("");
+  const normalizedSearch = search.trim().toLocaleLowerCase();
+  const list = [...(purchases.data ?? [])]
+    .filter(
+      (purchase) =>
+        !normalizedSearch ||
+        [purchase.supplier_name, purchase.notes]
+          .filter(Boolean)
+          .some((value) => value?.toLocaleLowerCase().includes(normalizedSearch)),
+    )
+    .sort(
+      (a, b) =>
+        new Date(b.purchased_at).getTime() - new Date(a.purchased_at).getTime() ||
+        (a.supplier_name ?? "").localeCompare(b.supplier_name ?? ""),
+    );
 
   return (
     <div className="mt-3 space-y-3">
@@ -559,6 +573,14 @@ function PurchasesTab({
         </div>
       ) : null}
       <p className="text-xs text-muted-foreground">{t("purchaseHint")}</p>
+      {(purchases.data ?? []).length > 4 ? (
+        <Input
+          value={search}
+          placeholder={t("purchaseSearch")}
+          aria-label={t("purchaseSearch")}
+          onChange={(event) => setSearch(event.target.value)}
+        />
+      ) : null}
 
       {purchases.isLoading ? (
         <p className="surface-card p-3 text-sm text-muted-foreground">{t("loading")}</p>
@@ -666,14 +688,68 @@ function PurchaseForm({
     initialLines.length > 0 ? initialLines : [{ itemId: "", quantity: "", cost: "" }],
   );
   const [busy, setBusy] = useState(false);
+  const [initialised, setInitialised] = useState(false);
   // Stable across retries: the server records this purchase at most once.
   const [purchaseId, setPurchaseId] = useState(() => newPurchaseId());
 
+  const activeSuppliers = (suppliers.data ?? [])
+    .filter((supplier) => supplier.active)
+    .sort((a, b) => a.name.localeCompare(b.name));
   const total = lines.reduce((sum, l) => sum + (Number(l.cost) || 0), 0);
   const chosen = lines.map((l) => l.itemId).filter(Boolean);
 
+  function derivedCost(line: DraftLine, hint: PurchaseContext | undefined) {
+    const quantity = Number(line.quantity);
+    return hint?.last_unit_cost != null && Number.isFinite(quantity) && quantity > 0
+      ? (quantity * hint.last_unit_cost).toFixed(2)
+      : "";
+  }
+
+  useEffect(() => {
+    if (initialised || !suppliers.data) return;
+
+    const firstPreviousSupplier = initialLines
+      .map(
+        (line) => context.find((item) => item.inventory_item_id === line.itemId)?.last_supplier_id,
+      )
+      .find((supplierId) => activeSuppliers.some((supplier) => supplier.id === supplierId));
+    if (firstPreviousSupplier) setSupplierId(firstPreviousSupplier);
+
+    setLines((currentLines) =>
+      currentLines.map((line) => {
+        const cost = derivedCost(
+          line,
+          context.find((item) => item.inventory_item_id === line.itemId),
+        );
+        return cost && !line.cost ? { ...line, cost, costDerived: true } : line;
+      }),
+    );
+    setInitialised(true);
+  }, [activeSuppliers, context, initialLines, initialised, suppliers.data]);
+
   function update(index: number, patch: Partial<DraftLine>) {
-    setLines((prev) => prev.map((l, i) => (i === index ? { ...l, ...patch } : l)));
+    const current = lines[index];
+    if (!current) return;
+    const next = { ...current, ...patch };
+    const hint = context.find((item) => item.inventory_item_id === next.itemId);
+
+    if (patch.itemId && !supplierId && hint?.last_supplier_id) {
+      const previousSupplier = activeSuppliers.find(
+        (supplier) => supplier.id === hint.last_supplier_id,
+      );
+      if (previousSupplier) setSupplierId(previousSupplier.id);
+    }
+
+    if ((patch.quantity || patch.itemId) && (!current.cost || current.costDerived)) {
+      const cost = derivedCost(next, hint);
+      next.cost = cost;
+      next.costDerived = Boolean(cost);
+    }
+    if (patch.cost !== undefined) {
+      next.costDerived = false;
+    }
+
+    setLines((prev) => prev.map((line, i) => (i === index ? next : line)));
   }
 
   async function addSupplier() {
@@ -751,13 +827,11 @@ function PurchaseForm({
           className="min-h-11 rounded-xl border border-border bg-background px-3 text-sm"
         >
           <option value="">{t("purchaseNoSupplier")}</option>
-          {(suppliers.data ?? [])
-            .filter((s) => s.active)
-            .map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
+          {activeSuppliers.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
         </select>
         {newSupplier === null ? (
           <Button
@@ -822,9 +896,19 @@ function PurchaseForm({
                 onChange={(e) => update(index, { cost: e.target.value })}
               />
             </div>
-            {hint?.last_unit_cost != null ? (
+            {hint?.last_supplier_name || hint?.last_unit_cost != null ? (
               <p className="text-xs text-muted-foreground">
-                {t("purchaseLastPrice")} {mad(hint.last_unit_cost)}
+                {hint?.last_supplier_name ? (
+                  <span>
+                    {t("purchaseLastBoughtAt")} {hint.last_supplier_name}
+                    {hint.last_unit_cost != null ? " · " : ""}
+                  </span>
+                ) : null}
+                {hint?.last_unit_cost != null ? (
+                  <span>
+                    {t("purchaseLastPrice")} {mad(hint.last_unit_cost)}
+                  </span>
+                ) : null}
               </p>
             ) : null}
             {lines.length > 1 ? (
@@ -873,7 +957,17 @@ function SuppliersTab({
 }) {
   const suppliers = useQuery(suppliersQuery);
   const [draft, setDraft] = useState<Supplier | "new" | null>(null);
-  const list = suppliers.data ?? [];
+  const [search, setSearch] = useState("");
+  const normalizedSearch = search.trim().toLocaleLowerCase();
+  const list = [...(suppliers.data ?? [])]
+    .filter(
+      (supplier) =>
+        !normalizedSearch ||
+        [supplier.name, supplier.phone, supplier.location]
+          .filter(Boolean)
+          .some((value) => value?.toLocaleLowerCase().includes(normalizedSearch)),
+    )
+    .sort((a, b) => Number(b.active) - Number(a.active) || a.name.localeCompare(b.name));
 
   async function toggle(supplier: Supplier) {
     try {
@@ -892,6 +986,15 @@ function SuppliersTab({
         <Button className="w-full rounded-xl" onClick={() => setDraft("new")}>
           {t("supplierNew")}
         </Button>
+      ) : null}
+
+      {(suppliers.data ?? []).length > 4 ? (
+        <Input
+          value={search}
+          placeholder={t("supplierSearch")}
+          aria-label={t("supplierSearch")}
+          onChange={(event) => setSearch(event.target.value)}
+        />
       ) : null}
 
       {suppliers.isLoading ? (
