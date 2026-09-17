@@ -713,6 +713,8 @@ export const en = {
   simScenarioInvalid: "Unknown scenario",
 
   purchaseHint: "Saving a purchase adds the quantities to estimated stock.",
+  purchaseSearch: "Search purchases",
+  supplierSearch: "Search suppliers",
   purchaseLastBought: "Bought before",
   purchaseLastBoughtAt: "Last bought at",
   purchaseLastPrice: "Last unit price:",
@@ -1418,6 +1420,8 @@ const pt: Dict = {
   simScenarioInvalid: "Cenário desconhecido",
 
   purchaseHint: "Ao guardar a compra, as quantidades entram no stock estimado.",
+  purchaseSearch: "Pesquisar compras",
+  supplierSearch: "Pesquisar fornecedores",
   purchaseLastBought: "Comprado antes",
   purchaseLastBoughtAt: "Última compra em",
   purchaseLastPrice: "Último preço unitário:",
