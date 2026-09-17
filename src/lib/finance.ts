@@ -85,6 +85,9 @@ export type FinanceSummary = {
   currentStockValue: number;
   recommendedBuyCost: number;
   purchaseSpend30d: number;
+  purchaseSpendPrevious30d: number;
+  stockCoverageDays: number | null;
+  lowStockItems: number;
 };
 
 export type FinanceReport = {
